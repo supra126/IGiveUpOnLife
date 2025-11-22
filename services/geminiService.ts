@@ -15,6 +15,57 @@ const cleanJson = (text: string): string => {
   return clean.trim();
 };
 
+const isValidUrl = (string: string): boolean => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
+export const fetchWebsiteContent = async (url: string): Promise<string> => {
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ProductAnalyzer/1.0)',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const html = await response.text();
+
+    // 簡單的 HTML 解析：移除 script、style 標籤，提取文字
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // 移除不需要的元素
+    const unwantedTags = ['script', 'style', 'nav', 'footer', 'header'];
+    unwantedTags.forEach(tag => {
+      const elements = doc.getElementsByTagName(tag);
+      Array.from(elements).forEach(el => el.remove());
+    });
+
+    // 提取文字內容
+    const textContent = doc.body.textContent || '';
+
+    // 清理多餘空白
+    const cleaned = textContent
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 3000); // 限制字數避免超過 token 限制
+
+    return cleaned;
+  } catch (error) {
+    console.error('Failed to fetch website content:', error);
+    return ''; // 如果失敗，返回空字串，不中斷整個流程
+  }
+};
+
 export const fileToBase64 = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -40,9 +91,10 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
 // --- API Calls ---
 
 export const analyzeProductImage = async (
-    file: File, 
-    productName: string, 
-    brandContext: string,
+    file: File,
+    productName: string,
+    productInfo: string,
+    productUrl: string,
     apiKey: string
 ): Promise<DirectorOutput> => {
   if (!apiKey) {
@@ -52,10 +104,36 @@ export const analyzeProductImage = async (
   const ai = new GoogleGenAI({ apiKey });
   const imagePart = await fileToGenerativePart(file);
 
+  // 如果有提供網址，嘗試抓取內容
+  let websiteContent = '';
+  if (productUrl && isValidUrl(productUrl)) {
+    console.log('正在抓取網址內容:', productUrl);
+    websiteContent = await fetchWebsiteContent(productUrl);
+    if (websiteContent) {
+      console.log('成功抓取網址內容，長度:', websiteContent.length);
+    }
+  }
+
+  // 整合所有資訊
+  const contextParts: string[] = [];
+
+  if (productInfo) {
+    contextParts.push(`手動輸入資訊: ${productInfo}`);
+  }
+
+  if (websiteContent) {
+    contextParts.push(`官網內容摘要: ${websiteContent}`);
+  }
+
+  const combinedContext = contextParts.length > 0
+    ? contextParts.join('\n\n')
+    : '未提供';
+
   const promptText = `
     產品名稱: ${productName || "未提供"}
-    品牌/背景資訊: ${brandContext || "未提供"}
-    
+    品牌/產品資訊: ${combinedContext}
+    ${productUrl ? `產品網址: ${productUrl}` : ''}
+
     請根據上述資訊與圖片，執行視覺行銷總監的分析任務。
   `;
 

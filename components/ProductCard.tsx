@@ -18,12 +18,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ analysis, imageSrc }) 
         </div>
       </div>
       <div className="flex flex-col justify-center w-full">
-        <div className="uppercase tracking-widest text-xs text-purple-400 font-bold mb-2">分析報告</div>
+        <div className="uppercase tracking-widest text-xs text-blue-400 font-bold mb-2">分析報告</div>
         <h2 className="text-3xl font-bold text-white serif mb-1">{analysis.name}</h2>
         <p className="text-gray-400 text-sm mb-4 italic">{analysis.visual_description}</p>
-        
+
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider border-b border-white/10 pb-1 inline-block">核心賣點</h3>
+          <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider border-b border-blue-500/30 pb-1 inline-block">核心賣點</h3>
           <p className="text-gray-300 leading-relaxed">{analysis.key_features_zh}</p>
         </div>
       </div>

@@ -32,7 +32,7 @@ export const DIRECTOR_SYSTEM_PROMPT = `
 {
   "product_analysis": {
     "name": "產品中文名稱",
-    "visual_description": "產品的精確英文視覺描述",
+    "visual_description": "產品的精確中文視覺描述（詳細描述包裝設計、色彩搭配、材質質感、視覺風格等元素）",
     "key_features_zh": "產品的中文核心功能或賣點 (結合輸入資訊)"
   },
   "marketing_routes": [
