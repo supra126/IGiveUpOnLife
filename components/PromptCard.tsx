@@ -6,9 +6,10 @@ import { PromptData } from '../types';
 interface PromptCardProps {
   data: PromptData;
   index: number;
+  apiKey: string;
 }
 
-export const PromptCard: React.FC<PromptCardProps> = ({ data, index }) => {
+export const PromptCard: React.FC<PromptCardProps> = ({ data, index, apiKey }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ data, index }) => {
     setError(null);
     try {
       // Pass the current (potentially edited) prompt and the optional reference image
-      const imageUrl = await generateMarketingImage(promptText, refImage || undefined);
+      const imageUrl = await generateMarketingImage(promptText, apiKey, refImage || undefined);
       setGeneratedImage(imageUrl);
     } catch (err: any) {
       setError(err.message || "圖片生成失敗");
@@ -62,7 +63,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ data, index }) => {
   };
 
   return (
-    <div className="bg-[#15151a] rounded-xl border border-white/5 overflow-hidden flex flex-col h-full group hover:border-purple-500/30 transition-colors duration-300 shadow-lg">
+    <div className="bg-[#15151a] rounded-xl border border-white/5 overflow-hidden flex flex-col h-full group hover:border-blue-500/30 transition-colors duration-300 shadow-lg">
       {/* Result Area */}
       <div className="aspect-[3/4] bg-black relative flex items-center justify-center overflow-hidden border-b border-white/5">
         {generatedImage ? (
@@ -81,8 +82,8 @@ export const PromptCard: React.FC<PromptCardProps> = ({ data, index }) => {
           <div className="text-center p-6 w-full h-full flex flex-col items-center justify-center">
             {isLoading ? (
                 <div className="flex flex-col items-center gap-3">
-                    <Spinner className="w-8 h-8 text-purple-500" />
-                    <span className="text-xs text-purple-300 animate-pulse">AI 正在繪製中...</span>
+                    <Spinner className="w-8 h-8 text-blue-500" />
+                    <span className="text-xs text-blue-300 animate-pulse">AI 正在繪製中...</span>
                 </div>
             ) : (
                 <div className="flex flex-col items-center gap-2 opacity-20 group-hover:opacity-40 transition-opacity">
@@ -100,7 +101,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ data, index }) => {
         {/* Summary Section (New) */}
         <div>
             <div className="flex justify-between items-center mb-1">
-                 <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">設計摘要</span>
+                 <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">設計摘要</span>
                  <span className="text-[10px] text-gray-600">版本 {index + 1}</span>
             </div>
             <p className="text-sm text-gray-200 font-medium leading-relaxed">
@@ -157,7 +158,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ data, index }) => {
                 <textarea
                     value={promptText}
                     onChange={(e) => setPromptText(e.target.value)}
-                    className="w-full h-32 bg-black/40 text-xs text-gray-300 p-3 rounded border border-white/10 focus:border-purple-500 focus:outline-none resize-none"
+                    className="w-full h-32 bg-black/40 text-xs text-gray-300 p-3 rounded border border-white/10 focus:border-blue-500 focus:outline-none resize-none"
                     placeholder="編輯提示詞..."
                 />
             ) : (

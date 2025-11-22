@@ -7,6 +7,7 @@ import { Spinner } from './Spinner';
 interface ContentSuiteProps {
   plan: ContentPlan;
   onPlanUpdate: (updatedItems: ContentItem[]) => void; // Callback to update parent with edited text
+  apiKey: string;
 }
 
 // --- SUB-COMPONENT: Script Editor Row ---
@@ -17,7 +18,7 @@ const ScriptEditorRow: React.FC<{
   return (
     <div className="bg-[#1e1e24] border border-white/5 rounded-lg p-4 mb-4">
       <div className="flex items-center justify-between mb-2">
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${item.ratio === '1:1' ? 'bg-blue-500/20 text-blue-300' : 'bg-pink-500/20 text-pink-300'}`}>
+        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${item.ratio === '1:1' ? 'bg-blue-500/20 text-blue-300' : 'bg-indigo-500/20 text-indigo-300'}`}>
           {item.ratio} | {item.type.replace('_', ' ')}
         </span>
         <span className="text-xs text-gray-500">ID: {item.id}</span>
@@ -32,7 +33,7 @@ const ScriptEditorRow: React.FC<{
               type="text" 
               value={item.title_zh}
               onChange={(e) => onChange(item.id, 'title_zh', e.target.value)}
-              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none"
+              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div>
@@ -40,7 +41,7 @@ const ScriptEditorRow: React.FC<{
             <textarea 
               value={item.copy_zh}
               onChange={(e) => onChange(item.id, 'copy_zh', e.target.value)}
-              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none resize-none h-20"
+              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-20"
             />
           </div>
         </div>
@@ -51,7 +52,7 @@ const ScriptEditorRow: React.FC<{
           <textarea 
             value={item.visual_prompt_en}
             onChange={(e) => onChange(item.id, 'visual_prompt_en', e.target.value)}
-            className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none font-mono resize-none h-36"
+            className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-xs text-gray-300 focus:border-blue-500 focus:outline-none font-mono resize-none h-36"
           />
           <p className="text-[10px] text-gray-500 mt-1">摘要: {item.visual_summary_zh}</p>
         </div>
@@ -61,7 +62,7 @@ const ScriptEditorRow: React.FC<{
 };
 
 // --- SUB-COMPONENT: Production Card ---
-const ProductionCard: React.FC<{ item: ContentItem }> = ({ item }) => {
+const ProductionCard: React.FC<{ item: ContentItem; apiKey: string }> = ({ item, apiKey }) => {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +74,7 @@ const ProductionCard: React.FC<{ item: ContentItem }> = ({ item }) => {
     setError(null);
     try {
       // Use the item's edited prompt and specific reference image
-      const result = await generateMarketingImage(item.visual_prompt_en, refImage || undefined, item.ratio);
+      const result = await generateMarketingImage(item.visual_prompt_en, apiKey, refImage || undefined, item.ratio);
       setImage(result);
     } catch (e: any) {
       setError(e.message || "Failed");
@@ -95,7 +96,7 @@ const ProductionCard: React.FC<{ item: ContentItem }> = ({ item }) => {
 
   // Styling based on ratio
   const containerClass = item.ratio === '1:1' ? "aspect-square w-full" : "aspect-[9/16] w-full";
-  const labelClass = item.ratio === '1:1' ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "bg-pink-500/20 text-pink-300 border-pink-500/30";
+  const labelClass = item.ratio === '1:1' ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "bg-indigo-500/20 text-indigo-300 border-indigo-500/30";
 
   return (
     <div className="flex flex-col gap-3 group relative">
@@ -123,11 +124,11 @@ const ProductionCard: React.FC<{ item: ContentItem }> = ({ item }) => {
                     )}
                     
                     {loading ? (
-                        <Spinner className="w-8 h-8 text-purple-500 relative z-10" />
+                        <Spinner className="w-8 h-8 text-blue-500 relative z-10" />
                     ) : (
                         <button 
                             onClick={handleGenerate}
-                            className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-purple-600 hover:text-white transition-all text-gray-500 border border-white/10 relative z-10"
+                            className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all text-gray-500 border border-white/10 relative z-10"
                         >
                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </button>
@@ -164,7 +165,7 @@ const ProductionCard: React.FC<{ item: ContentItem }> = ({ item }) => {
 };
 
 // --- MAIN COMPONENT ---
-export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate }) => {
+export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate, apiKey }) => {
   const [mode, setMode] = useState<'review' | 'production'>('review');
   const [items, setItems] = useState<ContentItem[]>(plan.items);
 
@@ -205,7 +206,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate }
                 </button>
                 <button 
                     onClick={() => setMode('production')}
-                    className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${mode === 'production' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                    className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${mode === 'production' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                 >
                     2. 圖片製作 (Production)
                 </button>
@@ -240,7 +241,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate }
                 <div className="flex justify-end pt-4">
                     <button 
                         onClick={() => setMode('production')}
-                        className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
+                        className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
                     >
                         確認定稿，進入製作 ▶
                     </button>
@@ -259,7 +260,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate }
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                         {mainImages.map(item => (
-                            <ProductionCard key={item.id} item={item} />
+                            <ProductionCard key={item.id} item={item} apiKey={apiKey} />
                         ))}
                     </div>
                 </div>
@@ -267,12 +268,12 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate }
                 {/* Section 2: Story Slides */}
                 <div>
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-6 bg-pink-500 rounded-full"></span>
+                        <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
                         內容介紹組圖 (Story Suite)
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 gap-4">
                         {storySlides.map(item => (
-                            <ProductionCard key={item.id} item={item} />
+                            <ProductionCard key={item.id} item={item} apiKey={apiKey} />
                         ))}
                     </div>
                 </div>

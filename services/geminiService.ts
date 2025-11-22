@@ -42,13 +42,14 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
 export const analyzeProductImage = async (
     file: File, 
     productName: string, 
-    brandContext: string
+    brandContext: string,
+    apiKey: string
 ): Promise<DirectorOutput> => {
-  if (!process.env.API_KEY) {
-    throw new Error("找不到 API 金鑰。請選擇一個金鑰。");
+  if (!apiKey) {
+    throw new Error("找不到 API 金鑰。請在設定中輸入金鑰。");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
   const imagePart = await fileToGenerativePart(file);
 
   const promptText = `
@@ -85,11 +86,12 @@ export const analyzeProductImage = async (
 export const generateContentPlan = async (
     route: MarketingRoute,
     analysis: ProductAnalysis,
-    referenceCopy: string
+    referenceCopy: string,
+    apiKey: string
 ): Promise<ContentPlan> => {
-    if (!process.env.API_KEY) throw new Error("No API Key");
+    if (!apiKey) throw new Error("No API Key");
 
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
 
     const promptText = `
       選定策略路線: ${route.route_name}
@@ -125,14 +127,15 @@ export const generateContentPlan = async (
 
 export const generateMarketingImage = async (
     prompt: string, 
+    apiKey: string,
     referenceImageBase64?: string,
     aspectRatio: '1:1' | '9:16' | '3:4' | '4:3' | '16:9' = '3:4'
 ): Promise<string> => {
-  if (!process.env.API_KEY) {
+  if (!apiKey) {
     throw new Error("找不到 API 金鑰。");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
 
   const parts: any[] = [{ text: prompt }];
 
@@ -182,7 +185,7 @@ export const generateFullReport = (
   const route = routes[selectedRouteIndex];
   const date = new Date().toLocaleDateString();
 
-  let report = `AI PM Designer PRO v2.0 - Product Marketing Strategy Report\n`;
+  let report = `不想怒力了 I give up on life - Product Marketing Strategy Report\n`;
   report += `Date: ${date}\n`;
   report += `=================================================\n\n`;
 

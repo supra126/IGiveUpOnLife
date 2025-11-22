@@ -7,6 +7,7 @@ import { ProductCard } from './components/ProductCard';
 import { PromptCard } from './components/PromptCard';
 import { GuideModal } from './components/GuideModal';
 import { ContentSuite } from './components/ContentSuite';
+import { ApiKeyModal } from './components/ApiKeyModal';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
@@ -28,25 +29,21 @@ const App: React.FC = () => {
 
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+
+  // Load API Key on mount
+  React.useEffect(() => {
+    const storedKey = localStorage.getItem('gemini_api_key');
+    if (storedKey) {
+      setApiKey(storedKey);
+    }
+  }, []);
 
   // --- API Key Handling ---
-  // Used before critical actions to ensure a key exists
-  const ensureApiKey = async () => {
-    const aiStudio = (window as any).aistudio;
-    if (aiStudio) {
-      const hasKey = await aiStudio.hasSelectedApiKey();
-      if (!hasKey) {
-        await aiStudio.openSelectKey();
-      }
-    }
-  };
-
-  // Used for the "API Settings" button to force open the dialog
-  const openApiSettings = async () => {
-    const aiStudio = (window as any).aistudio;
-    if (aiStudio) {
-      await aiStudio.openSelectKey();
-    }
+  const handleSaveApiKey = (key: string) => {
+    setApiKey(key);
+    setErrorMsg("");
   };
 
   // --- Handlers ---
@@ -67,11 +64,16 @@ const App: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!selectedFile) return;
+    
+    if (!apiKey) {
+      setIsApiKeyModalOpen(true);
+      return;
+    }
+
     setErrorMsg("");
     setAppState(AppState.ANALYZING);
     try {
-      await ensureApiKey();
-      const result = await analyzeProductImage(selectedFile, productName, brandContext);
+      const result = await analyzeProductImage(selectedFile, productName, brandContext, apiKey);
       setAnalysisResult(result);
       setAppState(AppState.RESULTS);
     } catch (e: any) {
@@ -83,6 +85,12 @@ const App: React.FC = () => {
 
   const handleGeneratePlan = async () => {
     if (!analysisResult) return;
+    
+    if (!apiKey) {
+      setIsApiKeyModalOpen(true);
+      return;
+    }
+
     const route = analysisResult.marketing_routes[activeRouteIndex];
     const analysis = analysisResult.product_analysis;
     
@@ -90,7 +98,7 @@ const App: React.FC = () => {
     setAppState(AppState.PLANNING);
     
     try {
-      const plan = await generateContentPlan(route, analysis, refCopy);
+      const plan = await generateContentPlan(route, analysis, refCopy, apiKey);
       setContentPlan(plan);
       setEditedPlanItems(plan.items); // Initialize edited items with generated ones
       setAppState(AppState.SUITE_READY);
@@ -131,7 +139,7 @@ const App: React.FC = () => {
         <div className="order-2 md:order-1">
             <label 
                 className={`flex flex-col items-center justify-center w-full h-80 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden ${
-                selectedFile ? 'border-purple-500 bg-[#15151a]' : 'border-gray-600 hover:border-gray-400 hover:bg-[#1a1a1f]'
+                selectedFile ? 'border-blue-500 bg-[#15151a]' : 'border-gray-600 hover:border-gray-400 hover:bg-[#1a1a1f]'
                 }`}
             >
                 {imagePreview ? (
@@ -160,8 +168,8 @@ const App: React.FC = () => {
                     type="text" 
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
-                    placeholder="例如：Sony WH-1000XM5, Aesop 洗手乳..."
-                    className="w-full bg-[#15151a] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-purple-500 focus:outline-none transition-colors"
+                    placeholder="例如：我大玫瑰洗面乳..."
+                    className="w-full bg-[#15151a] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none transition-colors"
                 />
             </div>
             <div>
@@ -169,15 +177,15 @@ const App: React.FC = () => {
                 <textarea 
                     value={brandContext}
                     onChange={(e) => setBrandContext(e.target.value)}
-                    placeholder="可輸入品牌官網網址(AI會分析網址文字) 或直接貼上品牌故事、核心價值..."
-                    className="w-full bg-[#15151a] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-purple-500 focus:outline-none transition-colors h-40 resize-none text-sm leading-relaxed"
+                    placeholder="可輸入品牌官網網址或直接貼上品牌故事、核心價值..."
+                    className="w-full bg-[#15151a] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none transition-colors h-40 resize-none text-sm leading-relaxed"
                 />
             </div>
             
             {selectedFile && appState === AppState.IDLE && (
                 <button 
                 onClick={handleAnalyze}
-                className="mt-auto w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-sm uppercase tracking-widest rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-purple-900/30 flex items-center justify-center gap-2"
+                className="mt-auto w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm uppercase tracking-widest rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
                 >
                 <span>開始 AI 分析</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -226,20 +234,20 @@ const App: React.FC = () => {
         {/* Prompts for Phase 1 (The 3 Concept Posters) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
              {activeRoute.image_prompts.map((promptItem, idx) => (
-                 <PromptCard key={`p1-${activeRouteIndex}-${idx}`} data={promptItem} index={idx} />
+                 <PromptCard key={`p1-${activeRouteIndex}-${idx}`} data={promptItem} index={idx} apiKey={apiKey} />
              ))}
         </div>
 
         {/* Phase 2 Trigger Area */}
         <div className="border-t border-white/10 pt-12" id="phase2-section">
-            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-purple-500/20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-32 bg-purple-600/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-32 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
                 
                 <div className="relative z-10 flex flex-col md:flex-row gap-8">
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                             <h3 className="text-2xl font-bold text-white serif">Phase 2: 全套內容生成</h3>
-                            <span className="px-2 py-0.5 bg-purple-600 text-white text-[10px] font-bold uppercase rounded">PRO</span>
+                            <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded">PRO</span>
                         </div>
                         <p className="text-gray-400 text-sm mb-6">
                             AI 將根據 <strong>"{activeRoute.route_name}"</strong> 策略，規劃一套包含 2 張主圖與 6 張社群長圖 (Stories) 的完整銷售漏斗素材。
@@ -251,21 +259,21 @@ const App: React.FC = () => {
                                 value={refCopy}
                                 onChange={(e) => setRefCopy(e.target.value)}
                                 placeholder="請貼上同類型商品的熱銷文案，或競品官網內容。AI 將拆解其「說服邏輯」與「結構」，並應用於您的產品內容規劃中..."
-                                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none h-32 resize-none"
+                                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-sm text-gray-300 focus:border-blue-500 focus:outline-none h-32 resize-none"
                              />
                         </div>
                     </div>
                     
                     <div className="flex flex-col justify-end md:w-64 shrink-0">
                         {appState === AppState.PLANNING ? (
-                            <div className="h-12 flex items-center justify-center gap-2 text-purple-400">
+                            <div className="h-12 flex items-center justify-center gap-2 text-blue-400">
                                 <Spinner className="w-5 h-5" />
                                 <span className="text-sm font-bold animate-pulse">正在規劃腳本...</span>
                             </div>
                         ) : (
                             <button 
                                 onClick={handleGeneratePlan}
-                                className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-purple-900/50"
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/50"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
                                 生成 8 張圖腳本
@@ -291,6 +299,7 @@ const App: React.FC = () => {
                 <ContentSuite 
                     plan={contentPlan} 
                     onPlanUpdate={(newItems) => setEditedPlanItems(newItems)}
+                    apiKey={apiKey}
                 />
             </div>
         )}
@@ -299,23 +308,29 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f12] text-slate-200 selection:bg-purple-500 selection:text-white font-sans flex flex-col">
+    <div className="min-h-screen text-slate-200 selection:bg-blue-500 selection:text-white font-sans flex flex-col">
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+      <ApiKeyModal 
+        isOpen={isApiKeyModalOpen} 
+        onClose={() => setIsApiKeyModalOpen(false)} 
+        onSave={handleSaveApiKey}
+      />
 
       {/* Header */}
-      <header className="w-full py-6 border-b border-white/5 bg-[#0f0f12]/90 backdrop-blur-md sticky top-0 z-50">
+      <header className="w-full py-6 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-6 flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setAppState(AppState.IDLE)}>
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-600/50">
-                    <span className="text-white font-bold">PM</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                    <img src="/images/logo.svg" alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 <h1 className="text-lg font-bold text-white hidden md:block">
-                  AI Product Marketing Designer <span className="text-purple-500 text-xs align-top ml-1">PRO</span>
+                  不想努力了
                 </h1>
             </div>
             <div className="flex gap-4">
-                <button onClick={() => setIsGuideOpen(true)} className="text-gray-400 hover:text-white text-sm font-medium transition-colors">功能導覽 v2.0</button>
-                <button onClick={openApiSettings} className="text-purple-400 hover:text-purple-300 text-sm font-bold">API 設定</button>
+                <button onClick={() => setIsApiKeyModalOpen(true)} className="text-blue-400 hover:text-blue-300 text-sm font-bold">
+                    {apiKey ? 'API 設定 (已啟用)' : 'API 設定'}
+                </button>
             </div>
         </div>
       </header>
@@ -333,7 +348,7 @@ const App: React.FC = () => {
         {(appState === AppState.ANALYZING) && (
              <div className="flex flex-col items-center justify-center mt-20 space-y-6 text-center animate-in fade-in zoom-in duration-500">
                 <div className="relative">
-                    <Spinner className="w-20 h-20 text-purple-600" />
+                    <Spinner className="w-20 h-20 text-blue-600" />
                     <div className="absolute inset-0 flex items-center justify-center">
                          <div className="w-10 h-10 bg-white rounded-full opacity-10 animate-ping"></div>
                     </div>
@@ -348,15 +363,12 @@ const App: React.FC = () => {
         {/* Main Views */}
         {appState === AppState.IDLE && (
             <div className="flex-1 flex flex-col items-center mt-8 text-center">
-                <div className="inline-block px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-widest mb-6">
-                    New Version 2.0
-                </div>
                 <h2 className="text-4xl md:text-6xl font-bold text-white serif mb-4 leading-tight">
-                    打造完整的<br/>品牌視覺資產
+                    打造完整品牌視覺資產？<br/>
+                    不用，我不想努力了。
                 </h2>
-                <p className="text-gray-400 max-w-xl mx-auto mb-8 text-lg">
-                    結合產品識別、品牌故事與競品策略。<br/>
-                    一鍵生成廣告海報與 <span className="text-purple-400 font-bold">8 張完整的社群行銷套圖</span>。
+                <p className="text-gray-400 max-w-xl mx-auto mb-8 text-lg mt-2">
+                    讓 AI 幫你結合產品識別、品牌故事與競品策略，你只需要負責呼吸
                 </p>
                 {renderInputs()}
             </div>
@@ -366,9 +378,7 @@ const App: React.FC = () => {
 
       </main>
 
-      <footer className="w-full py-6 text-center border-t border-white/5 text-xs text-gray-600">
-         Open sourced by <a href="https://flypigai.icareu.tw/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-purple-400 transition-colors font-bold">FlyPig AI</a>
-      </footer>
+
     </div>
   );
 };
