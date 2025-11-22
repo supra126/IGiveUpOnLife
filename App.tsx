@@ -4,7 +4,13 @@ import {
   generateContentPlan,
   generateFullReport,
 } from "./services/geminiService";
-import { DirectorOutput, AppState, ContentPlan, ContentItem } from "./types";
+import {
+  DirectorOutput,
+  AppState,
+  ContentPlan,
+  ContentItem,
+  MarketingRoute,
+} from "./types";
 import { Spinner } from "./components/Spinner";
 import { ProductCard } from "./components/ProductCard";
 import { GuideModal } from "./components/GuideModal";
@@ -28,6 +34,14 @@ const App: React.FC = () => {
   );
   const [activeRouteIndex, setActiveRouteIndex] = useState<number>(0);
 
+  // Editable route data
+  const [editedRoutes, setEditedRoutes] = useState<MarketingRoute[]>([]);
+  const [routeSupplements, setRouteSupplements] = useState<string[]>([
+    "",
+    "",
+    "",
+  ]);
+
   // Phase 2 Data
   const [contentPlan, setContentPlan] = useState<ContentPlan | null>(null);
   const [editedPlanItems, setEditedPlanItems] = useState<ContentItem[]>([]);
@@ -45,40 +59,55 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Disabled auto-trigger - now using manual "Continue" button
   // Auto-trigger Phase 2 when route is selected
-  React.useEffect(() => {
-    if (
-      analysisResult &&
-      appState === AppState.RESULTS &&
-      !contentPlan &&
-      apiKey
-    ) {
-      // Auto-generate content plan when a route is available
-      const autoGenerate = async () => {
-        const route = analysisResult.marketing_routes[activeRouteIndex];
-        const analysis = analysisResult.product_analysis;
+  // React.useEffect(() => {
+  //   if (
+  //     analysisResult &&
+  //     appState === AppState.RESULTS &&
+  //     !contentPlan &&
+  //     apiKey
+  //   ) {
+  //     // Auto-generate content plan when a route is available
+  //     const autoGenerate = async () => {
+  //       const route = analysisResult.marketing_routes[activeRouteIndex];
+  //       const analysis = analysisResult.product_analysis;
 
-        setAppState(AppState.PLANNING);
-        try {
-          const plan = await generateContentPlan(route, analysis, refCopy, apiKey);
-          setContentPlan(plan);
-          setEditedPlanItems(plan.items);
-          setAppState(AppState.SUITE_READY);
+  //       setAppState(AppState.PLANNING);
+  //       try {
+  //         const plan = await generateContentPlan(
+  //           route,
+  //           analysis,
+  //           refCopy,
+  //           apiKey
+  //         );
+  //         setContentPlan(plan);
+  //         setEditedPlanItems(plan.items);
+  //         setAppState(AppState.SUITE_READY);
 
-          // Scroll to Phase 2 section
-          setTimeout(() => {
-            document.getElementById('phase2-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 300);
-        } catch (e: any) {
-          console.error(e);
-          setErrorMsg(e.message || "內容規劃失敗");
-          setAppState(AppState.RESULTS);
-        }
-      };
+  //         // Scroll to Phase 2 section
+  //         setTimeout(() => {
+  //           document
+  //             .getElementById("phase2-section")
+  //             ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  //         }, 300);
+  //       } catch (e: any) {
+  //         console.error(e);
+  //         setErrorMsg(e.message || "內容規劃失敗");
+  //         setAppState(AppState.RESULTS);
+  //       }
+  //     };
 
-      autoGenerate();
-    }
-  }, [analysisResult, activeRouteIndex, appState, contentPlan, apiKey, refCopy]);
+  //     autoGenerate();
+  //   }
+  // }, [
+  //   analysisResult,
+  //   activeRouteIndex,
+  //   appState,
+  //   contentPlan,
+  //   apiKey,
+  //   refCopy,
+  // ]);
 
   // --- API Key Handling ---
   const handleSaveApiKey = (key: string) => {
@@ -121,6 +150,7 @@ const App: React.FC = () => {
         apiKey
       );
       setAnalysisResult(result);
+      setEditedRoutes(result.marketing_routes); // Initialize editable routes
       setAppState(AppState.RESULTS);
     } catch (e: any) {
       console.error(e);
@@ -137,17 +167,36 @@ const App: React.FC = () => {
       return;
     }
 
-    const route = analysisResult.marketing_routes[activeRouteIndex];
+    // Use edited route data instead of original
+    const route = editedRoutes[activeRouteIndex];
     const analysis = analysisResult.product_analysis;
+
+    // Combine refCopy with route supplement
+    const supplement = routeSupplements[activeRouteIndex];
+    const combinedRefCopy = supplement
+      ? `${refCopy}\n\n【策略補充說明】\n${supplement}`
+      : refCopy;
 
     setErrorMsg("");
     setAppState(AppState.PLANNING);
 
     try {
-      const plan = await generateContentPlan(route, analysis, refCopy, apiKey);
+      const plan = await generateContentPlan(
+        route,
+        analysis,
+        combinedRefCopy,
+        apiKey
+      );
       setContentPlan(plan);
       setEditedPlanItems(plan.items); // Initialize edited items with generated ones
       setAppState(AppState.SUITE_READY);
+
+      // Scroll to Phase 2 section
+      setTimeout(() => {
+        document
+          .getElementById("phase2-section")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e.message || "內容規劃失敗");
@@ -321,114 +370,200 @@ const App: React.FC = () => {
         <div className="mb-10">
           <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
             <h3 className="text-xl font-bold text-white serif">
-              Phase 1: 視覺策略選擇
+              讓我努力步驟一
             </h3>
-            <span className="text-xs text-gray-500">選擇一條路線後將自動規劃內容</span>
+            <span className="text-xs text-gray-500">
+              選擇一條路線後點擊「繼續努力」
+            </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {analysisResult.marketing_routes.map((route, idx) => (
-              <button
+            {editedRoutes.map((route, idx) => (
+              <div
                 key={idx}
-                onClick={() => {
-                  setActiveRouteIndex(idx);
-                  setContentPlan(null);
-                  setEditedPlanItems([]);
-                  if (appState === AppState.SUITE_READY)
-                    setAppState(AppState.RESULTS);
-                }}
-                className={`p-6 rounded-xl border text-left transition-all duration-300 flex flex-col gap-4 ${
+                className={`p-6 rounded-xl border transition-all duration-300 flex flex-col gap-4 ${
                   activeRouteIndex === idx
                     ? "bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border-blue-500 shadow-lg shadow-blue-900/30"
-                    : "bg-[#15151a] border-white/10 hover:border-blue-500/30 hover:bg-[#1a1a1f]"
+                    : "bg-[#15151a] border-white/10"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className={`text-xs font-bold uppercase tracking-wider ${activeRouteIndex === idx ? 'text-blue-400' : 'text-gray-500'}`}>
-                    Route {String.fromCharCode(65 + idx)}
+                  <div
+                    className={`text-xs font-bold uppercase tracking-wider ${
+                      activeRouteIndex === idx
+                        ? "text-blue-400"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    努力方案 {String.fromCharCode(65 + idx)}
                   </div>
-                  {activeRouteIndex === idx && (
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                  )}
+                  <button
+                    onClick={() => {
+                      setActiveRouteIndex(idx);
+                      setContentPlan(null);
+                      setEditedPlanItems([]);
+                      if (appState === AppState.SUITE_READY)
+                        setAppState(AppState.RESULTS);
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                      activeRouteIndex === idx
+                        ? "bg-blue-500 text-white"
+                        : "bg-white/10 text-gray-400 hover:bg-white/20"
+                    }`}
+                  >
+                    {activeRouteIndex === idx ? "已選擇" : "選擇"}
+                  </button>
                 </div>
-                <div>
-                  <div className={`font-bold text-lg mb-2 ${activeRouteIndex === idx ? 'text-white' : 'text-gray-300'}`}>
-                    {route.route_name}
-                  </div>
-                  <div className={`text-sm font-medium mb-1 ${activeRouteIndex === idx ? 'text-blue-200' : 'text-gray-400'}`}>
-                    {route.headline_zh}
-                  </div>
-                  <div className={`text-xs mb-3 ${activeRouteIndex === idx ? 'text-gray-300' : 'text-gray-500'}`}>
-                    {route.subhead_zh}
-                  </div>
-                </div>
-                <div className="pt-3 border-t border-white/10 space-y-2">
+
+                {/* Editable Fields */}
+                <div className="space-y-3">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">視覺風格</div>
-                    <div className={`text-xs leading-relaxed ${activeRouteIndex === idx ? 'text-gray-300' : 'text-gray-500'}`}>
-                      {route.style_brief_zh}
-                    </div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                      路線名稱
+                    </label>
+                    <input
+                      type="text"
+                      value={route.route_name}
+                      onChange={(e) => {
+                        const newRoutes = [...editedRoutes];
+                        newRoutes[idx] = {
+                          ...route,
+                          route_name: e.target.value,
+                        };
+                        setEditedRoutes(newRoutes);
+                      }}
+                      className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-sm text-white focus:border-blue-500 focus:outline-none"
+                    />
                   </div>
+
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">目標受眾</div>
-                    <div className={`text-xs ${activeRouteIndex === idx ? 'text-gray-300' : 'text-gray-500'}`}>
-                      {route.target_audience_zh}
-                    </div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                      主打標語
+                    </label>
+                    <textarea
+                      value={route.headline_zh}
+                      onChange={(e) => {
+                        const newRoutes = [...editedRoutes];
+                        newRoutes[idx] = {
+                          ...route,
+                          headline_zh: e.target.value,
+                        };
+                        setEditedRoutes(newRoutes);
+                      }}
+                      className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-sm text-blue-200 focus:border-blue-500 focus:outline-none font-medium resize-none h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                      副標題
+                    </label>
+                    <textarea
+                      value={route.subhead_zh}
+                      onChange={(e) => {
+                        const newRoutes = [...editedRoutes];
+                        newRoutes[idx] = {
+                          ...route,
+                          subhead_zh: e.target.value,
+                        };
+                        setEditedRoutes(newRoutes);
+                      }}
+                      className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-xs text-gray-300 focus:border-blue-500 focus:outline-none resize-none h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                      視覺風格
+                    </label>
+                    <textarea
+                      value={route.style_brief_zh}
+                      onChange={(e) => {
+                        const newRoutes = [...editedRoutes];
+                        newRoutes[idx] = {
+                          ...route,
+                          style_brief_zh: e.target.value,
+                        };
+                        setEditedRoutes(newRoutes);
+                      }}
+                      className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-xs text-gray-300 focus:border-blue-500 focus:outline-none resize-none h-20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 block">
+                      目標受眾
+                    </label>
+                    <textarea
+                      value={route.target_audience_zh}
+                      onChange={(e) => {
+                        const newRoutes = [...editedRoutes];
+                        newRoutes[idx] = {
+                          ...route,
+                          target_audience_zh: e.target.value,
+                        };
+                        setEditedRoutes(newRoutes);
+                      }}
+                      className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-xs text-gray-300 focus:border-blue-500 focus:outline-none resize-none h-16"
+                    />
+                  </div>
+
+                  {/* Supplement Field */}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-blue-400 mb-1 block">
+                      💡 補充說明（選填）
+                    </label>
+                    <textarea
+                      value={routeSupplements[idx]}
+                      onChange={(e) => {
+                        const newSupplements = [...routeSupplements];
+                        newSupplements[idx] = e.target.value;
+                        setRouteSupplements(newSupplements);
+                      }}
+                      placeholder="可以補充任何想法、特殊需求或調整方向..."
+                      className="w-full bg-blue-900/10 border border-blue-500/30 rounded px-2 py-2 text-xs text-gray-300 placeholder-gray-600 focus:border-blue-500 focus:outline-none resize-none h-16"
+                    />
                   </div>
                 </div>
-              </button>
+              </div>
             ))}
+          </div>
+
+          {/* Continue Button */}
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={handleGeneratePlan}
+              disabled={appState === AppState.PLANNING}
+              className="px-12 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {appState === AppState.PLANNING ? (
+                <>
+                  <Spinner className="w-5 h-5" />
+                  <span>哭勒...</span>
+                </>
+              ) : (
+                <span>繼續努力步驟二 GoGo</span>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Phase 2 Auto-Trigger or Status Display */}
+        {/* Phase 2 Status Display - Only show when generating */}
         <div className="border-t border-white/10 pt-12" id="phase2-section">
-          {appState === AppState.PLANNING ? (
+          {appState === AppState.PLANNING && (
             <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 flex items-center justify-center gap-4">
               <Spinner className="w-6 h-6 text-blue-500" />
               <div>
                 <div className="text-lg font-bold text-white mb-1">
-                  Phase 2: 正在規劃完整內容腳本...
+                  不努力步驟二
                 </div>
                 <p className="text-sm text-gray-400">
-                  AI 正在根據 <strong>"{activeRoute.route_name}"</strong> 策略設計 8 張圖的銷售漏斗
+                  小GG正在爆肝寫腳本中，正依照
+                  <strong>"{activeRoute.route_name}"</strong>{" "}
+                  產出建議，先等著看看他的努力
                 </p>
               </div>
             </div>
-          ) : !contentPlan ? (
-            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <h3 className="text-xl font-bold text-white serif">
-                  Phase 2: 全套內容生成
-                </h3>
-                <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded">
-                  PRO
-                </span>
-              </div>
-              <p className="text-gray-400 text-sm mb-6 max-w-2xl mx-auto">
-                AI 將根據 <strong>"{activeRoute.route_name}"</strong> 策略，
-                規劃一套包含 2 張主圖與 6 張社群長圖的完整銷售漏斗素材
-              </p>
-              <button
-                onClick={handleGeneratePlan}
-                className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors inline-flex items-center gap-2 shadow-lg shadow-blue-900/50"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                  />
-                </svg>
-                立即生成 8 張圖腳本
-              </button>
-            </div>
-          ) : null}
+          )}
         </div>
 
         {/* Phase 2 Results */}
