@@ -7,7 +7,6 @@ import {
 import { DirectorOutput, AppState, ContentPlan, ContentItem } from "./types";
 import { Spinner } from "./components/Spinner";
 import { ProductCard } from "./components/ProductCard";
-import { PromptCard } from "./components/PromptCard";
 import { GuideModal } from "./components/GuideModal";
 import { ContentSuite } from "./components/ContentSuite";
 import { ApiKeyModal } from "./components/ApiKeyModal";
@@ -45,6 +44,41 @@ const App: React.FC = () => {
       setApiKey(storedKey);
     }
   }, []);
+
+  // Auto-trigger Phase 2 when route is selected
+  React.useEffect(() => {
+    if (
+      analysisResult &&
+      appState === AppState.RESULTS &&
+      !contentPlan &&
+      apiKey
+    ) {
+      // Auto-generate content plan when a route is available
+      const autoGenerate = async () => {
+        const route = analysisResult.marketing_routes[activeRouteIndex];
+        const analysis = analysisResult.product_analysis;
+
+        setAppState(AppState.PLANNING);
+        try {
+          const plan = await generateContentPlan(route, analysis, refCopy, apiKey);
+          setContentPlan(plan);
+          setEditedPlanItems(plan.items);
+          setAppState(AppState.SUITE_READY);
+
+          // Scroll to Phase 2 section
+          setTimeout(() => {
+            document.getElementById('phase2-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
+        } catch (e: any) {
+          console.error(e);
+          setErrorMsg(e.message || "內容規劃失敗");
+          setAppState(AppState.RESULTS);
+        }
+      };
+
+      autoGenerate();
+    }
+  }, [analysisResult, activeRouteIndex, appState, contentPlan, apiKey, refCopy]);
 
   // --- API Key Handling ---
   const handleSaveApiKey = (key: string) => {
@@ -235,6 +269,17 @@ const App: React.FC = () => {
             className="w-full bg-[#15151a] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none transition-colors"
           />
         </div>
+        <div>
+          <label className="block text-base font-bold text-gray-400 uppercase tracking-wider mb-2 text-center md:text-left">
+            參考文案 / 競品參考（選填）
+          </label>
+          <textarea
+            value={refCopy}
+            onChange={(e) => setRefCopy(e.target.value)}
+            placeholder="貼上同類型商品的熱銷文案，或競品官網內容。AI 將拆解其「說服邏輯」..."
+            className="w-full bg-[#15151a] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none transition-colors h-24 resize-none text-sm leading-relaxed"
+          />
+        </div>
 
         {selectedFile && appState === AppState.IDLE && (
           <button
@@ -278,111 +323,112 @@ const App: React.FC = () => {
             <h3 className="text-xl font-bold text-white serif">
               Phase 1: 視覺策略選擇
             </h3>
+            <span className="text-xs text-gray-500">選擇一條路線後將自動規劃內容</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {analysisResult.marketing_routes.map((route, idx) => (
               <button
                 key={idx}
                 onClick={() => {
                   setActiveRouteIndex(idx);
-                  setContentPlan(null); // Reset Phase 2 if route changes
+                  setContentPlan(null);
                   setEditedPlanItems([]);
                   if (appState === AppState.SUITE_READY)
                     setAppState(AppState.RESULTS);
                 }}
-                className={`p-4 rounded-xl border text-left transition-all duration-300 ${
+                className={`p-6 rounded-xl border text-left transition-all duration-300 flex flex-col gap-4 ${
                   activeRouteIndex === idx
-                    ? "bg-white text-black border-white scale-[1.02]"
-                    : "bg-[#15151a] text-gray-400 border-white/5 hover:bg-[#1a1a1f]"
+                    ? "bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border-blue-500 shadow-lg shadow-blue-900/30"
+                    : "bg-[#15151a] border-white/10 hover:border-blue-500/30 hover:bg-[#1a1a1f]"
                 }`}
               >
-                <div className="text-xs font-bold uppercase opacity-70">
-                  Route {String.fromCharCode(65 + idx)}
+                <div className="flex items-center justify-between">
+                  <div className={`text-xs font-bold uppercase tracking-wider ${activeRouteIndex === idx ? 'text-blue-400' : 'text-gray-500'}`}>
+                    Route {String.fromCharCode(65 + idx)}
+                  </div>
+                  {activeRouteIndex === idx && (
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  )}
                 </div>
-                <div className="font-bold text-lg">{route.route_name}</div>
+                <div>
+                  <div className={`font-bold text-lg mb-2 ${activeRouteIndex === idx ? 'text-white' : 'text-gray-300'}`}>
+                    {route.route_name}
+                  </div>
+                  <div className={`text-sm font-medium mb-1 ${activeRouteIndex === idx ? 'text-blue-200' : 'text-gray-400'}`}>
+                    {route.headline_zh}
+                  </div>
+                  <div className={`text-xs mb-3 ${activeRouteIndex === idx ? 'text-gray-300' : 'text-gray-500'}`}>
+                    {route.subhead_zh}
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">視覺風格</div>
+                    <div className={`text-xs leading-relaxed ${activeRouteIndex === idx ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {route.style_brief_zh}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">目標受眾</div>
+                    <div className={`text-xs ${activeRouteIndex === idx ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {route.target_audience_zh}
+                    </div>
+                  </div>
+                </div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Prompts for Phase 1 (The 3 Concept Posters) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {activeRoute.image_prompts.map((promptItem, idx) => (
-            <PromptCard
-              key={`p1-${activeRouteIndex}-${idx}`}
-              data={promptItem}
-              index={idx}
-              apiKey={apiKey}
-            />
-          ))}
-        </div>
-
-        {/* Phase 2 Trigger Area */}
+        {/* Phase 2 Auto-Trigger or Status Display */}
         <div className="border-t border-white/10 pt-12" id="phase2-section">
-          <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-32 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-
-            <div className="relative z-10 flex flex-col md:flex-row gap-8">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-2xl font-bold text-white serif">
-                    Phase 2: 全套內容生成
-                  </h3>
-                  <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded">
-                    PRO
-                  </span>
+          {appState === AppState.PLANNING ? (
+            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 flex items-center justify-center gap-4">
+              <Spinner className="w-6 h-6 text-blue-500" />
+              <div>
+                <div className="text-lg font-bold text-white mb-1">
+                  Phase 2: 正在規劃完整內容腳本...
                 </div>
-                <p className="text-gray-400 text-sm mb-6">
-                  AI 將根據 <strong>"{activeRoute.route_name}"</strong>{" "}
-                  策略，規劃一套包含 2 張主圖與 6 張社群長圖 (Stories)
-                  的完整銷售漏斗素材。
+                <p className="text-sm text-gray-400">
+                  AI 正在根據 <strong>"{activeRoute.route_name}"</strong> 策略設計 8 張圖的銷售漏斗
                 </p>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    參考文案 / 競品參考 (Optional)
-                  </label>
-                  <textarea
-                    value={refCopy}
-                    onChange={(e) => setRefCopy(e.target.value)}
-                    placeholder="請貼上同類型商品的熱銷文案，或競品官網內容。AI 將拆解其「說服邏輯」與「結構」，並應用於您的產品內容規劃中..."
-                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-sm text-gray-300 focus:border-blue-500 focus:outline-none h-32 resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-end md:w-64 shrink-0">
-                {appState === AppState.PLANNING ? (
-                  <div className="h-12 flex items-center justify-center gap-2 text-blue-400">
-                    <Spinner className="w-5 h-5" />
-                    <span className="text-sm font-bold animate-pulse">
-                      正在規劃腳本...
-                    </span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleGeneratePlan}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/50"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                      />
-                    </svg>
-                    生成 8 張圖腳本
-                  </button>
-                )}
               </div>
             </div>
-          </div>
+          ) : !contentPlan ? (
+            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h3 className="text-xl font-bold text-white serif">
+                  Phase 2: 全套內容生成
+                </h3>
+                <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded">
+                  PRO
+                </span>
+              </div>
+              <p className="text-gray-400 text-sm mb-6 max-w-2xl mx-auto">
+                AI 將根據 <strong>"{activeRoute.route_name}"</strong> 策略，
+                規劃一套包含 2 張主圖與 6 張社群長圖的完整銷售漏斗素材
+              </p>
+              <button
+                onClick={handleGeneratePlan}
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors inline-flex items-center gap-2 shadow-lg shadow-blue-900/50"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                  />
+                </svg>
+                立即生成 8 張圖腳本
+              </button>
+            </div>
+          ) : null}
         </div>
 
         {/* Phase 2 Results */}

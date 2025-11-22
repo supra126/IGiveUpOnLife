@@ -15,7 +15,7 @@ export interface MarketingRoute {
   headline_zh: string;
   subhead_zh: string;
   style_brief_zh: string;
-  image_prompts: PromptData[];
+  target_audience_zh: string;
 }
 
 export interface DirectorOutput {

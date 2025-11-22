@@ -48,28 +48,30 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  上傳與資訊輸入｜你只要給點線索就好
+                  上傳與資訊輸入｜一次填完所有資訊
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-3">
-                  上傳產品圖後，若你心情好，可以順便填這些：
+                  上傳產品圖後，可以選填以下資訊（填越多，AI 越懂你）：
                 </p>
                 <ul className="list-disc list-inside text-sm text-gray-400 space-y-1.5 ml-1">
                   <li>
-                    <strong className="text-white">產品名稱</strong>：讓 AI
-                    至少認得你家孩子叫什麼。
+                    <strong className="text-white">產品名稱</strong>：讓 AI 認得你的產品
                   </li>
                   <li>
                     <strong className="text-white">產品資訊</strong>
-                    ：品牌故事、核心價值、特色…不過你懶得寫也沒關係，我懂。
+                    ：品牌故事、核心價值、產品特色
                   </li>
                   <li>
                     <strong className="text-white">產品網址</strong>
-                    ：貼上就好，AI 自己會去爬（比你勤勞多了）。
+                    ：AI 會自動抓取官網內容進行分析
+                  </li>
+                  <li>
+                    <strong className="text-white">參考文案 / 競品參考</strong>
+                    ：貼上同類商品的熱銷文案，AI 會拆解其說服邏輯
                   </li>
                 </ul>
                 <p className="text-gray-500 text-xs mt-3">
-                  💡 小提示：網址＋手動輸入＝AI
-                  會自己拼湊出一篇博士論文般的品牌解讀。你不用努力。
+                  💡 小提示：所有資訊一次填完，就不用在流程中重複輸入了
                 </p>
               </div>
             </div>
@@ -81,17 +83,21 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  Phase 1：策略制定｜AI 總監開始賣弄專業
+                  Phase 1：策略選擇｜秒速決定視覺方向
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                  AI 總監會甩出{" "}
-                  <strong className="text-white">三條視覺路線</strong>，
-                  讓你一次看到 3 張概念海報。
+                  AI 會分析產品後，立即提供{" "}
+                  <strong className="text-white">三條截然不同的視覺策略</strong>
+                  ，每條路線包含：
                 </p>
+                <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1 mb-3">
+                  <li>主打標語與副標題</li>
+                  <li>視覺風格描述（色調、氛圍、設計元素）</li>
+                  <li>目標受眾定位</li>
+                </ul>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  你只要做一件事： 👉{" "}
-                  <strong className="text-white">選一個你喜歡的</strong>
-                  剩下風格走向交給 AI 大人繼續忙。
+                  👉 <strong className="text-white">點選一個你喜歡的路線</strong>
+                  ，系統會自動進入 Phase 2 開始規劃完整內容
                 </p>
               </div>
             </div>
@@ -103,30 +109,25 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  Phase 2：全套內容企劃｜8 張圖直接幫你排好劇本
+                  Phase 2：全套內容企劃｜自動生成 8 張圖腳本
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                  你給它：
-                </p>
-                <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1 mb-3">
-                  <li>參考文案（可以沒有）</li>
-                  <li>競品資訊（想不到也沒差）</li>
-                </ul>
-                <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                  然後 AI 就會規劃一套{" "}
+                  選擇策略路線後，AI 會<strong className="text-white">自動規劃</strong>一套{" "}
                   <strong className="text-white">8 張完整素材包</strong>：
                 </p>
-                <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1">
+                <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1 mb-3">
                   <li>
-                    <strong className="text-white">2 張方形主圖</strong>
-                    （白底乾淨去背＋情境氛圍大片，兩種一次滿足）
+                    <strong className="text-white">2 張方形主圖 (1:1)</strong>
+                    ：白底商品圖 + 情境氛圍大片
                   </li>
                   <li>
-                    <strong className="text-white">6 張 Stories 長圖</strong>
-                    包含：封面 → 痛點 → 解法 → 細節 → 背書 → CTA
-                    一整套比你店長還懂銷售流程。
+                    <strong className="text-white">6 張 Stories 長圖 (9:16)</strong>
+                    ：封面 → 痛點 → 解法 → 細節 → 背書 → CTA（完整銷售漏斗）
                   </li>
                 </ul>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  整套文案、視覺 Prompt、構圖說明，全部自動規劃完成
+                </p>
               </div>
             </div>
 
@@ -137,24 +138,24 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  審閱與製作｜你選、你改、然後 AI 生圖
+                  審閱與製作｜兩種模式自由切換
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                  這階段像是在當「懶人監製」：
+                  腳本規劃完成後，可在兩種模式間切換：
                 </p>
                 <ul className="list-disc list-inside text-sm text-gray-400 space-y-2 ml-1">
                   <li>
-                    <strong className="text-white">腳本審閱模式</strong>
-                    AI 已經把 8 張文案＋Prompt 排好，
-                    你想改哪句就改哪句，反正它不會生氣。
+                    <strong className="text-white">1. 腳本審閱模式</strong>
+                    ：檢視並編輯所有文案、Prompt、構圖說明
                   </li>
                   <li>
-                    <strong className="text-white">圖片製作模式</strong>
-                    一張一張生成圖片。 你還能{" "}
-                    <strong className="text-white">針對單張上傳參考圖</strong>
-                    （例如 CTA 放特定 Logo） AI 會乖乖照做。
+                    <strong className="text-white">2. 圖片製作模式</strong>
+                    ：逐張生成圖片，支援針對單張上傳參考圖（例如指定 Logo 或顏色）
                   </li>
                 </ul>
+                <p className="text-gray-400 text-sm leading-relaxed mt-3">
+                  所有圖片都能一鍵下載，完成後可匯出完整策略報告
+                </p>
               </div>
             </div>
           </div>

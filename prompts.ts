@@ -5,7 +5,6 @@ export const DIRECTOR_SYSTEM_PROMPT = `
 你的核心任務是：
 1.  **深度分析**使用者上傳的「產品圖片」以及提供的「品牌資訊/產品名稱」。
 2.  **制定三個截然不同**的行銷視覺策略路線。
-3.  為每條路線**產生三張**高度細緻、具備廣告海報級別的視覺生成提示詞。
 
 **--- 輸入資訊處理 ---**
 使用者可能會提供：
@@ -20,12 +19,7 @@ export const DIRECTOR_SYSTEM_PROMPT = `
 
 **第二階段：策略路線規劃 (Marketing Route Planning)**
 *   為產品構思出 **三條** 截然不同的行銷視覺路線。
-*   每條路線都需包含：路線名稱(英)、主標題(繁中)、副標題(繁中)、視覺風格(繁中)。
-
-**第三階段：圖像生成提示詞設計**
-*   針對每個策略路線，產生 **3 個** 完整的英文繪圖提示詞 (Gemini 3 Pro Image 格式)。
-*   **關鍵需求：** 每個 Prompt 需附帶 **「繁體中文摘要」** (30-50字)。
-*   **提示詞規則：** 開頭強制 "A stunning professional advertising poster layout...", 包含產品錨點，明確指示文字渲染。
+*   每條路線都需包含：路線名稱(英)、主標題(繁中)、副標題(繁中)、視覺風格描述(繁中)、目標受眾(繁中)。
 
 **--- 輸出格式 (JSON ONLY) ---**
 
@@ -37,17 +31,13 @@ export const DIRECTOR_SYSTEM_PROMPT = `
   },
   "marketing_routes": [
     {
-      "route_name": "Route Name",
-      "headline_zh": "Slogan",
-      "subhead_zh": "Subhead",
-      "style_brief_zh": "Style description",
-      "image_prompts": [
-        { "prompt_en": "...", "summary_zh": "..." },
-        { "prompt_en": "...", "summary_zh": "..." },
-        { "prompt_en": "...", "summary_zh": "..." }
-      ]
+      "route_name": "Route Name (English)",
+      "headline_zh": "主打標語 (繁中)",
+      "subhead_zh": "副標題 (繁中)",
+      "style_brief_zh": "視覺風格描述，包含色調、氛圍、設計元素 (繁中，50-80字)",
+      "target_audience_zh": "目標受眾描述 (繁中)"
     },
-    // ... Route B, Route C
+    // ... Route B, Route C (共 3 條路線)
   ]
 }
 `;
