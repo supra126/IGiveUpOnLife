@@ -8,8 +8,10 @@ import {
   DirectorOutput,
   AppState,
   ContentPlan,
-  ContentItem,
   MarketingRoute,
+  SizeSelection,
+  ImageRatio,
+  ContentSet,
 } from "./types";
 import { Spinner } from "./components/Spinner";
 import { ProductCard } from "./components/ProductCard";
@@ -42,9 +44,22 @@ const App: React.FC = () => {
     "",
   ]);
 
-  // Phase 2 Data
+  // Phase 2 Size Selection
+  const [sizeSelection, setSizeSelection] = useState<SizeSelection>({
+    "1:1": false,
+    "9:16": false,
+    "4:5": false,
+    "16:9": false,
+    "1:1-commercial": false,
+  });
+
+  // Phase 2 Content Data
   const [contentPlan, setContentPlan] = useState<ContentPlan | null>(null);
-  const [editedPlanItems, setEditedPlanItems] = useState<ContentItem[]>([]);
+  const [editedContentSets, setEditedContentSets] = useState<ContentSet[]>([]);
+
+  // Phase 2 Image Generation Settings
+  const [productImage, setProductImage] = useState<File | null>(null);
+  const [brandLogo, setBrandLogo] = useState<File | null>(null);
 
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
@@ -126,7 +141,14 @@ const App: React.FC = () => {
       // Reset results but keep inputs
       setAnalysisResult(null);
       setContentPlan(null);
-      setEditedPlanItems([]);
+      setEditedContentSets([]);
+      setSizeSelection({
+        "1:1": false,
+        "9:16": false,
+        "4:5": false,
+        "16:9": false,
+        "1:1-commercial": false,
+      });
       setAppState(AppState.IDLE);
     }
   };
@@ -160,14 +182,49 @@ const App: React.FC = () => {
   };
 
   const handleGeneratePlan = async () => {
-    if (!analysisResult) return;
+    console.log("🎯 handleGeneratePlan called");
+    console.log("Current appState:", appState);
+    console.log("Has analysisResult:", !!analysisResult);
+    console.log("Has apiKey:", !!apiKey);
+
+    if (!analysisResult) {
+      console.error("❌ No analysis result");
+      return;
+    }
 
     if (!apiKey) {
+      console.log("⚠️ No API key, opening modal");
       setIsApiKeyModalOpen(true);
       return;
     }
 
-    // Use edited route data instead of original
+    setErrorMsg("");
+    // Transition to size selection step
+    console.log("✅ Setting appState to SIZE_SELECTION");
+    setAppState(AppState.SIZE_SELECTION);
+
+    // Scroll to Phase 2 section
+    setTimeout(() => {
+      const element = document.getElementById("phase2-section");
+      console.log("📍 Phase2 section element:", element);
+      element?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+  };
+
+  const handleSizeConfirm = async () => {
+    if (!analysisResult) return;
+
+    // Check if at least one size is selected
+    const selectedSizes = Object.entries(sizeSelection)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([ratio, _]) => ratio as ImageRatio);
+
+    if (selectedSizes.length === 0) {
+      setErrorMsg("請至少選擇一個圖片尺寸");
+      return;
+    }
+
+    // Use edited route data
     const route = editedRoutes[activeRouteIndex];
     const analysis = analysisResult.product_analysis;
 
@@ -181,26 +238,32 @@ const App: React.FC = () => {
     setAppState(AppState.PLANNING);
 
     try {
+      console.log(
+        "🚀 Starting content plan generation with sizes:",
+        selectedSizes
+      );
       const plan = await generateContentPlan(
         route,
         analysis,
         combinedRefCopy,
+        selectedSizes,
         apiKey
       );
+      console.log("✅ Content plan received:", plan);
       setContentPlan(plan);
-      setEditedPlanItems(plan.items); // Initialize edited items with generated ones
+      setEditedContentSets(plan.content_sets);
       setAppState(AppState.SUITE_READY);
 
-      // Scroll to Phase 2 section
+      // Scroll to content section
       setTimeout(() => {
         document
-          .getElementById("phase2-section")
+          .getElementById("content-section")
           ?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 300);
     } catch (e: any) {
-      console.error(e);
+      console.error("❌ Content plan generation failed:", e);
       setErrorMsg(e.message || "內容規劃失敗");
-      setAppState(AppState.RESULTS);
+      setAppState(AppState.SIZE_SELECTION);
     }
   };
 
@@ -212,7 +275,7 @@ const App: React.FC = () => {
       analysisResult.marketing_routes,
       activeRouteIndex,
       contentPlan,
-      editedPlanItems
+      editedContentSets
     );
 
     const blob = new Blob([textReport], { type: "text/plain" });
@@ -376,7 +439,7 @@ const App: React.FC = () => {
               選擇一條路線後點擊「繼續努力」
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-6">
             {editedRoutes.map((route, idx) => (
               <div
                 key={idx}
@@ -400,8 +463,18 @@ const App: React.FC = () => {
                     onClick={() => {
                       setActiveRouteIndex(idx);
                       setContentPlan(null);
-                      setEditedPlanItems([]);
-                      if (appState === AppState.SUITE_READY)
+                      setEditedContentSets([]);
+                      setSizeSelection({
+                        "1:1": false,
+                        "9:16": false,
+                        "4:5": false,
+                        "1:1-commercial": false,
+                      });
+                      if (
+                        appState === AppState.SUITE_READY ||
+                        appState === AppState.SIZE_SELECTION ||
+                        appState === AppState.PLANNING
+                      )
                         setAppState(AppState.RESULTS);
                     }}
                     className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
@@ -531,7 +604,28 @@ const App: React.FC = () => {
           {/* Continue Button */}
           <div className="mt-8 flex justify-center">
             <button
-              onClick={handleGeneratePlan}
+              onClick={() => {
+                if (contentPlan) {
+                  // 如果已經有內容企劃，重置狀態並回到尺寸選擇
+                  setContentPlan(null);
+                  setEditedContentSets([]);
+                  setSizeSelection({
+                    "1:1": false,
+                    "9:16": false,
+                    "4:5": false,
+                    "1:1-commercial": false,
+                  });
+                  setAppState(AppState.SIZE_SELECTION);
+                  setTimeout(() => {
+                    document
+                      .getElementById("phase2-section")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 300);
+                } else {
+                  // 第一次點擊，執行原本的 handleGeneratePlan
+                  handleGeneratePlan();
+                }
+              }}
               disabled={appState === AppState.PLANNING}
               className="px-12 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -541,16 +635,314 @@ const App: React.FC = () => {
                   <span>哭勒...</span>
                 </>
               ) : (
-                <span>繼續努力步驟二 GoGo</span>
+                <span>{contentPlan ? "再重新努力一次" : "繼續努力"}</span>
               )}
             </button>
           </div>
         </div>
 
-        {/* Phase 2 Status Display - Only show when generating */}
+        {/* Phase 2: Size Selection */}
         <div className="border-t border-white/10 pt-12" id="phase2-section">
+          {appState === AppState.SIZE_SELECTION && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <h3 className="text-xl font-bold text-white serif mb-2">
+                努力步驟二：選擇圖片尺寸
+              </h3>
+              <p className="text-sm text-gray-400 mb-6">
+                請選擇您需要的圖片尺寸（可多選），每個尺寸將生成 3
+                組不同的內容方案
+              </p>
+
+              {errorMsg && appState === AppState.SIZE_SELECTION && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                  {errorMsg}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {/* 產品圖 1:1 */}
+                <label
+                  className={`cursor-pointer p-6 rounded-xl border-2 transition-all ${
+                    sizeSelection["1:1"]
+                      ? "border-blue-500 bg-blue-500/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={sizeSelection["1:1"]}
+                    onChange={(e) =>
+                      setSizeSelection({
+                        ...sizeSelection,
+                        "1:1": e.target.checked,
+                      })
+                    }
+                    className="sr-only"
+                  />
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        sizeSelection["1:1"]
+                          ? "border-blue-500 bg-blue-500"
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {sizeSelection["1:1"] && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white mb-1">FB 貼文</div>
+                      <div className="text-xs text-gray-400">1:1 方形圖</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        適合：FB 貼文、IG 輪播、電商主圖
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                {/* 限時動態 9:16 */}
+                <label
+                  className={`cursor-pointer p-6 rounded-xl border-2 transition-all ${
+                    sizeSelection["9:16"]
+                      ? "border-purple-500 bg-purple-500/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={sizeSelection["9:16"]}
+                    onChange={(e) =>
+                      setSizeSelection({
+                        ...sizeSelection,
+                        "9:16": e.target.checked,
+                      })
+                    }
+                    className="sr-only"
+                  />
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        sizeSelection["9:16"]
+                          ? "border-purple-500 bg-purple-500"
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {sizeSelection["9:16"] && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white mb-1">
+                        限時動態 / Stories
+                      </div>
+                      <div className="text-xs text-gray-400">9:16 直式長圖</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        適合：IG Stories、Reels、手機全螢幕
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                {/* IG 貼文 4:5 */}
+                <label
+                  className={`cursor-pointer p-6 rounded-xl border-2 transition-all ${
+                    sizeSelection["4:5"]
+                      ? "border-pink-500 bg-pink-500/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={sizeSelection["4:5"]}
+                    onChange={(e) =>
+                      setSizeSelection({
+                        ...sizeSelection,
+                        "4:5": e.target.checked,
+                      })
+                    }
+                    className="sr-only"
+                  />
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        sizeSelection["4:5"]
+                          ? "border-pink-500 bg-pink-500"
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {sizeSelection["4:5"] && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white mb-1">IG 貼文</div>
+                      <div className="text-xs text-gray-400">4:5 直式圖</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        適合：IG Feed 主頁、優化手機瀏覽
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                {/* 橫式貼文 16:9 */}
+                <label
+                  className={`cursor-pointer p-6 rounded-xl border-2 transition-all ${
+                    sizeSelection["16:9"]
+                      ? "border-green-500 bg-green-500/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={sizeSelection["16:9"]}
+                    onChange={(e) =>
+                      setSizeSelection({
+                        ...sizeSelection,
+                        "16:9": e.target.checked,
+                      })
+                    }
+                    className="sr-only"
+                  />
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        sizeSelection["16:9"]
+                          ? "border-green-500 bg-green-500"
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {sizeSelection["16:9"] && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white mb-1">橫式貼文</div>
+                      <div className="text-xs text-gray-400">16:9 橫式長圖</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        適合：封面、廣告圖片
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                {/* 商業攝影 1:1-commercial */}
+                <label
+                  className={`cursor-pointer p-6 rounded-xl border-2 transition-all ${
+                    sizeSelection["1:1-commercial"]
+                      ? "border-amber-500 bg-amber-500/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={sizeSelection["1:1-commercial"]}
+                    onChange={(e) =>
+                      setSizeSelection({
+                        ...sizeSelection,
+                        "1:1-commercial": e.target.checked,
+                      })
+                    }
+                    className="sr-only"
+                  />
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        sizeSelection["1:1-commercial"]
+                          ? "border-amber-500 bg-amber-500"
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {sizeSelection["1:1-commercial"] && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white mb-1">商業攝影</div>
+                      <div className="text-xs text-gray-400">1:1 方形圖</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        適合：電商主圖、輪播圖、專業商品攝影
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={handleSizeConfirm}
+                  disabled={appState === AppState.PLANNING}
+                  className="px-12 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>確認尺寸，讓我努力一下</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Phase 2: Planning Status */}
           {appState === AppState.PLANNING && (
-            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 flex items-center justify-center gap-4">
+            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 flex items-center justify-center gap-4 animate-in fade-in duration-300">
               <Spinner className="w-6 h-6 text-blue-500" />
               <div>
                 <div className="text-lg font-bold text-white mb-1">
@@ -568,32 +960,15 @@ const App: React.FC = () => {
 
         {/* Phase 2 Results */}
         {(appState === AppState.SUITE_READY || contentPlan) && contentPlan && (
-          <div className="mt-12 relative">
-            <div className="absolute -top-6 right-0">
-              <button
-                onClick={handleDownloadReport}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm text-gray-300 hover:text-white transition-all"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                下載全案策略報告 (.txt)
-              </button>
-            </div>
+          <div className="mt-12 relative" id="content-section">
             <ContentSuite
               plan={contentPlan}
-              onPlanUpdate={(newItems) => setEditedPlanItems(newItems)}
+              onContentUpdate={(newSets) => setEditedContentSets(newSets)}
               apiKey={apiKey}
+              productImage={productImage}
+              brandLogo={brandLogo}
+              onProductImageChange={setProductImage}
+              onBrandLogoChange={setBrandLogo}
             />
           </div>
         )}
@@ -692,13 +1067,14 @@ const App: React.FC = () => {
               不用，我不想努力了。
             </h2>
             <p className="text-gray-400 max-w-xl mx-auto mb-8 text-lg mt-2">
-              讓 AI 幫你結合產品識別、品牌故事與競品策略，你只需要負責呼吸就好
+              讓 小GG 幫你結合產品識別、品牌故事與競品策略，你只需要負責呼吸就好
             </p>
             {renderInputs()}
           </div>
         )}
 
         {(appState === AppState.RESULTS ||
+          appState === AppState.SIZE_SELECTION ||
           appState === AppState.PLANNING ||
           appState === AppState.SUITE_READY) &&
           renderPhase1Results()}

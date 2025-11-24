@@ -1,60 +1,97 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ContentPlan, ContentItem } from '../types';
-import { generateMarketingImage, fileToBase64 } from '../services/geminiService';
+import { ContentPlan, ContentSet, ImageRatio } from '../types';
+import { generateMarketingImage, generateImageFromReference, fileToBase64, regenerateVisualPrompt } from '../services/geminiService';
 import { Spinner } from './Spinner';
 
 interface ContentSuiteProps {
   plan: ContentPlan;
-  onPlanUpdate: (updatedItems: ContentItem[]) => void; // Callback to update parent with edited text
+  onContentUpdate: (updatedSets: ContentSet[]) => void;
   apiKey: string;
+  productImage: File | null;
+  brandLogo: File | null;
+  onProductImageChange: (file: File | null) => void;
+  onBrandLogoChange: (file: File | null) => void;
 }
 
-// --- SUB-COMPONENT: Script Editor Row ---
-const ScriptEditorRow: React.FC<{ 
-  item: ContentItem; 
-  onChange: (id: string, field: keyof ContentItem, value: string) => void 
-}> = ({ item, onChange }) => {
+// --- SUB-COMPONENT: Script Editor Row with Regenerate Prompt Button ---
+const ScriptEditorRow: React.FC<{
+  contentSet: ContentSet;
+  onChange: (id: string, field: keyof ContentSet, value: string) => void;
+  onRegeneratePrompt: (id: string) => void;
+  isRegenerating: boolean;
+}> = ({ contentSet, onChange, onRegeneratePrompt, isRegenerating }) => {
+  const getRatioColor = (ratio: ImageRatio) => {
+    switch(ratio) {
+      case '1:1': return 'bg-blue-500/20 text-blue-300';
+      case '9:16': return 'bg-purple-500/20 text-purple-300';
+      case '4:5': return 'bg-pink-500/20 text-pink-300';
+      case '16:9': return 'bg-green-500/20 text-green-300';
+      case '1:1-commercial': return 'bg-amber-500/20 text-amber-300';
+    }
+  };
+
   return (
     <div className="bg-[#1e1e24] border border-white/5 rounded-lg p-4 mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${item.ratio === '1:1' ? 'bg-blue-500/20 text-blue-300' : 'bg-indigo-500/20 text-indigo-300'}`}>
-          {item.ratio} | {item.type.replace('_', ' ')}
-        </span>
-        <span className="text-xs text-gray-500">ID: {item.id}</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${getRatioColor(contentSet.ratio)}`}>
+            {contentSet.size_label} - 方案 {contentSet.set_number}
+          </span>
+          <span className="text-xs text-gray-500">{contentSet.ratio}</span>
+        </div>
+        <button
+          onClick={() => onRegeneratePrompt(contentSet.id)}
+          disabled={isRegenerating}
+          className="text-xs px-3 py-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 text-white font-bold rounded-full transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          title="根據當前標題和內文重新生成視覺提示詞"
+        >
+          {isRegenerating ? (
+            <>
+              <Spinner className="w-3 h-3" />
+              <span>生成中...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>重新生成 Prompt</span>
+            </>
+          )}
+        </button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Text Content */}
         <div className="space-y-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">標題 (Headline)</label>
-            <input 
-              type="text" 
-              value={item.title_zh}
-              onChange={(e) => onChange(item.id, 'title_zh', e.target.value)}
-              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+            <label className="block text-xs text-gray-400 mb-1">標題 (Title)</label>
+            <textarea
+              value={contentSet.title_zh}
+              onChange={(e) => onChange(contentSet.id, 'title_zh', e.target.value)}
+              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-16"
             />
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">內文 (Copy)</label>
-            <textarea 
-              value={item.copy_zh}
-              onChange={(e) => onChange(item.id, 'copy_zh', e.target.value)}
-              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-20"
+            <textarea
+              value={contentSet.copy_zh}
+              onChange={(e) => onChange(contentSet.id, 'copy_zh', e.target.value)}
+              className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-24"
             />
           </div>
         </div>
 
         {/* Visual Prompt */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1">視覺提示詞 (Prompt)</label>
-          <textarea 
-            value={item.visual_prompt_en}
-            onChange={(e) => onChange(item.id, 'visual_prompt_en', e.target.value)}
-            className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-xs text-gray-300 focus:border-blue-500 focus:outline-none font-mono resize-none h-36"
+          <label className="block text-xs text-gray-400 mb-1">視覺提示詞 (Prompt) - AI 生成</label>
+          <textarea
+            value={contentSet.visual_prompt_en}
+            onChange={(e) => onChange(contentSet.id, 'visual_prompt_en', e.target.value)}
+            className="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-xs text-gray-300 focus:border-blue-500 focus:outline-none font-mono resize-none h-40"
           />
-          <p className="text-[10px] text-gray-500 mt-1">摘要: {item.visual_summary_zh}</p>
+          <p className="text-[10px] text-gray-500 mt-1">構圖摘要: {contentSet.visual_summary_zh}</p>
         </div>
       </div>
     </div>
@@ -62,102 +99,342 @@ const ScriptEditorRow: React.FC<{
 };
 
 // --- SUB-COMPONENT: Production Card ---
-const ProductionCard: React.FC<{ item: ContentItem; apiKey: string }> = ({ item, apiKey }) => {
+const ProductionCard: React.FC<{
+  contentSet: ContentSet;
+  apiKey: string;
+  productImage: string | null;
+  brandLogo: string | null;
+  onContentChange: (id: string, field: keyof ContentSet, value: string) => void;
+}> = ({ contentSet, apiKey, productImage, brandLogo, onContentChange }) => {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refImage, setRefImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Local showText state for this card
+  const [showText, setShowText] = useState(false);
+
+  // Font weight selection for title and copy
+  const [titleWeight, setTitleWeight] = useState<'regular' | 'medium' | 'bold' | 'black'>('bold');
+  const [copyWeight, setCopyWeight] = useState<'regular' | 'medium' | 'bold' | 'black'>('regular');
+
+  // Generation mode: 'prompt' (提詞版) or 'reference' (參考版)
+  const [generationMode, setGenerationMode] = useState<'prompt' | 'reference'>('prompt');
+
+  // Reference image state (for reference mode)
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [similarityLevel, setSimilarityLevel] = useState<'low' | 'medium' | 'high'>('medium');
 
   const handleGenerate = async () => {
+    if (!productImage) {
+      setError("請先上傳產品圖");
+      return;
+    }
+
+    // Reference mode: need reference image
+    if (generationMode === 'reference' && !referenceImage) {
+      setError("請先上傳參考圖");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      // Use the item's edited prompt and specific reference image
-      const result = await generateMarketingImage(item.visual_prompt_en, apiKey, refImage || undefined, item.ratio);
+      let result: string;
+
+      if (generationMode === 'reference' && referenceImage) {
+        // Reference-based generation (available for all ratios)
+        // Map similarity level to numeric value
+        const similarityValue =
+          similarityLevel === 'low' ? 20 :
+          similarityLevel === 'medium' ? 55 : 85;
+
+        result = await generateImageFromReference(
+          productImage,
+          referenceImage,
+          similarityValue,
+          apiKey,
+          contentSet.ratio,
+          brandLogo,
+          contentSet.title_zh,
+          contentSet.copy_zh,
+          showText,
+          titleWeight,
+          copyWeight
+        );
+      } else {
+        // Standard AI prompt-based generation
+        let enhancedPrompt = contentSet.visual_prompt_en;
+
+        // Add logo placement instruction if logo is provided
+        if (brandLogo) {
+          enhancedPrompt += "\n\nIMPORTANT: Place the uploaded brand logo in one of the four corners (top-left, top-right, bottom-left, or bottom-right) in a subtle, non-intrusive way. The logo should be clearly visible but not dominate the composition.";
+        }
+
+        // Add text overlay instruction if enabled
+        if (showText) {
+          // Map font weight to Noto Sans TC weight names
+          const weightMap = {
+            'regular': 'Regular (400)',
+            'medium': 'Medium (500)',
+            'bold': 'Bold (700)',
+            'black': 'Black (900)'
+          };
+
+          enhancedPrompt += `\n\nIMPORTANT: Overlay the following text on the image using Noto Sans TC (Noto Sans Traditional Chinese) font:\nTitle: "${contentSet.title_zh}" (Font: Noto Sans TC ${weightMap[titleWeight]})\nCopy: "${contentSet.copy_zh}" (Font: Noto Sans TC ${weightMap[copyWeight]})\nUse appropriate positioning, size, and styling that complements the visual design. Make sure the font is Noto Sans TC (思源黑體).`;
+        }
+
+        result = await generateMarketingImage(
+          enhancedPrompt,
+          apiKey,
+          productImage,
+          contentSet.ratio
+        );
+      }
+
       setImage(result);
     } catch (e: any) {
-      setError(e.message || "Failed");
+      setError(e.message || "生成失敗");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRefUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      try {
-        const base64 = await fileToBase64(e.target.files[0]);
-        setRefImage(base64);
-      } catch (err) {
-        console.error(err);
-      }
+  const getRatioClass = (ratio: ImageRatio) => {
+    switch(ratio) {
+      case '1:1': return 'aspect-square';
+      case '1:1-commercial': return 'aspect-square';
+      case '9:16': return 'aspect-[9/16]';
+      case '4:5': return 'aspect-[4/5]';
+      case '16:9': return 'aspect-[16/9]';
     }
   };
 
-  // Styling based on ratio
-  const containerClass = item.ratio === '1:1' ? "aspect-square w-full" : "aspect-[9/16] w-full";
-  const labelClass = item.ratio === '1:1' ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "bg-indigo-500/20 text-indigo-300 border-indigo-500/30";
+  const getRatioColor = (ratio: ImageRatio) => {
+    switch(ratio) {
+      case '1:1': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case '1:1-commercial': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+      case '9:16': return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+      case '4:5': return 'bg-pink-500/20 text-pink-300 border-pink-500/30';
+      case '16:9': return 'bg-green-500/20 text-green-300 border-green-500/30';
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3 group relative">
         {/* Image Display Area */}
-        <div className={`relative rounded-xl overflow-hidden bg-[#15151a] border border-white/10 shadow-lg ${containerClass}`}>
-            {image ? (
+        <div className={`relative rounded-xl overflow-hidden bg-[#15151a] border border-white/10 shadow-lg w-full ${getRatioClass(contentSet.ratio)}`}>
+            {loading ? (
+                <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-900/20 to-purple-900/20">
+                    <Spinner className="w-10 h-10 text-blue-500 mb-3" />
+                    <p className="text-sm text-blue-300 font-medium">生成中...</p>
+                    <p className="text-xs text-gray-400 mt-1">請稍候片刻</p>
+                </div>
+            ) : image ? (
                 <div className="relative w-full h-full">
-                    <img src={image} alt={item.title_zh} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                         <a href={image} download={`${item.id}.png`} className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm" title="下載">
+                    <img src={image} alt={contentSet.title_zh} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+                         <a href={image} download={`${contentSet.id}.png`} className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto" title="下載">
                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                          </a>
-                         <button onClick={handleGenerate} className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm" title="重繪">
+                         <button onClick={handleGenerate} disabled={loading} className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto disabled:opacity-50 disabled:cursor-not-allowed" title="重繪">
                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                          </button>
                     </div>
                 </div>
             ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center relative">
-                    {/* Ref Image Background (Blurred) */}
-                    {refImage && (
+                    {/* Product Image Background (Blurred) */}
+                    {productImage && (
                         <div className="absolute inset-0 opacity-20">
-                            <img src={refImage} className="w-full h-full object-cover blur-sm" alt="ref-bg" />
+                            <img src={productImage} className="w-full h-full object-cover blur-sm" alt="product-bg" />
                         </div>
                     )}
-                    
-                    {loading ? (
-                        <Spinner className="w-8 h-8 text-blue-500 relative z-10" />
-                    ) : (
-                        <button 
-                            onClick={handleGenerate}
-                            className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all text-gray-500 border border-white/10 relative z-10"
-                        >
-                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </button>
-                    )}
+
+                    <button
+                        onClick={handleGenerate}
+                        disabled={!productImage}
+                        className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all text-gray-500 border border-white/10 relative z-10 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </button>
                 </div>
             )}
-            <div className={`absolute top-2 left-2 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm z-20 ${labelClass}`}>
-                {item.ratio}
+            <div className={`absolute top-2 left-2 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm z-20 ${getRatioColor(contentSet.ratio)}`}>
+                方案 {contentSet.set_number}
             </div>
         </div>
 
         {/* Controls Area */}
         <div className="space-y-2">
-            <div className="flex justify-between items-start">
-                <h4 className="text-sm font-bold text-white leading-tight">{item.title_zh}</h4>
-                {/* Individual Ref Upload */}
-                <div className="relative">
-                    <input type="file" ref={fileInputRef} onChange={handleRefUpload} className="hidden" accept="image/*" />
-                    <button 
-                        onClick={() => refImage ? setRefImage(null) : fileInputRef.current?.click()}
-                        className={`text-[10px] flex items-center gap-1 px-2 py-1 rounded border transition-colors ${refImage ? 'border-red-500/50 text-red-400 hover:bg-red-900/20' : 'border-gray-600 text-gray-500 hover:text-white hover:border-gray-400'}`}
-                        title={refImage ? "移除參考圖" : "上傳參考圖 (Logo/風格)"}
-                    >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        {refImage ? '已參考' : '參考圖'}
-                    </button>
-                </div>
+            {/* Show Text Toggle */}
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                id={`showText-${contentSet.id}`}
+                checked={showText}
+                onChange={(e) => setShowText(e.target.checked)}
+                className="w-3 h-3 rounded border-gray-500 bg-black/50 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <label htmlFor={`showText-${contentSet.id}`} className="text-[10px] text-gray-400 cursor-pointer select-none">
+                顯示內容（標題 + 文案）
+              </label>
             </div>
-            <p className="text-xs text-gray-400 line-clamp-2" title={item.copy_zh}>{item.copy_zh}</p>
+
+            {/* Editable Title */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-gray-500">標題</label>
+                <select
+                  value={titleWeight}
+                  onChange={(e) => setTitleWeight(e.target.value as any)}
+                  className="text-[9px] px-1 py-0.5 bg-white/5 border border-white/10 rounded text-gray-400 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="regular">Regular</option>
+                  <option value="medium">Medium</option>
+                  <option value="bold">Bold</option>
+                  <option value="black">Black</option>
+                </select>
+              </div>
+              <input
+                type="text"
+                value={contentSet.title_zh}
+                onChange={(e) => onContentChange(contentSet.id, 'title_zh', e.target.value)}
+                className="w-full px-2 py-1 text-sm font-bold text-white bg-white/5 border border-white/10 rounded focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="輸入標題"
+              />
+            </div>
+
+            {/* Editable Copy */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-gray-500">文案</label>
+                <select
+                  value={copyWeight}
+                  onChange={(e) => setCopyWeight(e.target.value as any)}
+                  className="text-[9px] px-1 py-0.5 bg-white/5 border border-white/10 rounded text-gray-400 focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="regular">Regular</option>
+                  <option value="medium">Medium</option>
+                  <option value="bold">Bold</option>
+                  <option value="black">Black</option>
+                </select>
+              </div>
+              <textarea
+                value={contentSet.copy_zh}
+                onChange={(e) => onContentChange(contentSet.id, 'copy_zh', e.target.value)}
+                className="w-full px-2 py-1 text-xs text-gray-300 bg-white/5 border border-white/10 rounded focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                rows={2}
+                placeholder="輸入文案"
+              />
+            </div>
+
+            {/* Generation Mode Toggle - Available for all ratios */}
+            <div className="mt-3 space-y-3">
+              {/* Mode Selection Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGenerationMode('prompt')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+                    generationMode === 'prompt'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  提詞版
+                </button>
+                <button
+                  onClick={() => setGenerationMode('reference')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+                    generationMode === 'reference'
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  參考版
+                </button>
+              </div>
+
+              {/* Reference Mode Settings */}
+              {generationMode === 'reference' && (
+                <div className="p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg space-y-3">
+                  <div className="text-xs font-bold text-purple-300">參考圖設定</div>
+
+                  {/* Reference Image Upload */}
+                  <label className="block">
+                    <div className="text-[10px] text-gray-400 mb-1">上傳參考圖</div>
+                    <label className="flex items-center justify-center w-full h-20 border border-dashed border-purple-500/50 rounded cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all relative overflow-hidden">
+                      {referenceImage ? (
+                        <div className="w-full h-full relative group">
+                          <img src={referenceImage} alt="Reference" className="w-full h-full object-contain" />
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-white text-[10px]">更換參考圖</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-2">
+                          <svg className="w-6 h-6 mb-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-[10px] text-purple-300">點擊上傳</p>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const base64 = await fileToBase64(e.target.files[0]);
+                            setReferenceImage(base64);
+                          }
+                        }}
+                      />
+                    </label>
+                  </label>
+
+                  {/* Similarity Level Selection */}
+                  <div>
+                    <label className="text-[10px] text-gray-400 mb-2 block">相似度</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSimilarityLevel('low')}
+                        className={`flex-1 px-2 py-1.5 text-[10px] rounded transition-colors ${
+                          similarityLevel === 'low'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        低相似度
+                        <div className="text-[8px] opacity-70">創意發揮</div>
+                      </button>
+                      <button
+                        onClick={() => setSimilarityLevel('medium')}
+                        className={`flex-1 px-2 py-1.5 text-[10px] rounded transition-colors ${
+                          similarityLevel === 'medium'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        中等相似度
+                        <div className="text-[8px] opacity-70">適度參考</div>
+                      </button>
+                      <button
+                        onClick={() => setSimilarityLevel('high')}
+                        className={`flex-1 px-2 py-1.5 text-[10px] rounded transition-colors ${
+                          similarityLevel === 'high'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        高相似度
+                        <div className="text-[8px] opacity-70">完全模仿</div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {error && <p className="text-[10px] text-red-400">{error}</p>}
         </div>
     </div>
@@ -165,118 +442,288 @@ const ProductionCard: React.FC<{ item: ContentItem; apiKey: string }> = ({ item,
 };
 
 // --- MAIN COMPONENT ---
-export const ContentSuite: React.FC<ContentSuiteProps> = ({ plan, onPlanUpdate, apiKey }) => {
+export const ContentSuite: React.FC<ContentSuiteProps> = ({
+  plan,
+  onContentUpdate,
+  apiKey,
+  productImage: productImageFile,
+  brandLogo: brandLogoFile,
+  onProductImageChange,
+  onBrandLogoChange
+}) => {
   const [mode, setMode] = useState<'review' | 'production'>('review');
-  const [items, setItems] = useState<ContentItem[]>(plan.items);
+  const [contentSets, setContentSets] = useState<ContentSet[]>(plan.content_sets);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+
+  // Production mode states (converted from File props to base64)
+  const [productImageBase64, setProductImageBase64] = useState<string | null>(null);
+  const [brandLogoBase64, setBrandLogoBase64] = useState<string | null>(null);
+
+  // Convert File props to base64 when they change
+  useEffect(() => {
+    if (productImageFile) {
+      fileToBase64(productImageFile).then(setProductImageBase64);
+    } else {
+      setProductImageBase64(null);
+    }
+  }, [productImageFile]);
+
+  useEffect(() => {
+    if (brandLogoFile) {
+      fileToBase64(brandLogoFile).then(setBrandLogoBase64);
+    } else {
+      setBrandLogoBase64(null);
+    }
+  }, [brandLogoFile]);
 
   // Sync with props if plan changes completely
   useEffect(() => {
-    setItems(plan.items);
+    setContentSets(plan.content_sets);
     setMode('review');
   }, [plan]);
 
-  const handleItemChange = (id: string, field: keyof ContentItem, value: string) => {
-    const newItems = items.map(item => 
-      item.id === id ? { ...item, [field]: value } : item
+  const handleContentChange = (id: string, field: keyof ContentSet, value: string) => {
+    const newSets = contentSets.map(set =>
+      set.id === id ? { ...set, [field]: value } : set
     );
-    setItems(newItems);
-    onPlanUpdate(newItems); // Propagate changes up to App for export
+    setContentSets(newSets);
+    onContentUpdate(newSets);
   };
 
-  const mainImages = items.filter(i => i.ratio === '1:1');
-  const storySlides = items.filter(i => i.ratio === '9:16');
+  const handleRegeneratePrompt = async (id: string) => {
+    setRegeneratingId(id);
+
+    const targetSet = contentSets.find(s => s.id === id);
+    if (!targetSet) return;
+
+    try {
+      const newPrompt = await regenerateVisualPrompt(
+        targetSet.title_zh,
+        targetSet.copy_zh,
+        targetSet.ratio,
+        targetSet.size_label,
+        apiKey
+      );
+
+      handleContentChange(id, 'visual_prompt_en', newPrompt);
+    } catch (e: any) {
+      console.error('Failed to regenerate prompt:', e);
+      alert(`重新生成 Prompt 失敗：${e.message || '未知錯誤'}`);
+    } finally {
+      setRegeneratingId(null);
+    }
+  };
+
+  // Group content sets by ratio
+  const groupedSets = plan.selected_sizes.map(ratio => ({
+    ratio,
+    label: contentSets.find(s => s.ratio === ratio)?.size_label || ratio,
+    sets: contentSets.filter(s => s.ratio === ratio)
+  }));
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
+        {/* Upload Settings Section - Always Visible */}
+        <div className="mb-8 p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/30 rounded-xl">
+          <h4 className="text-lg font-bold text-indigo-300 mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            爆肝產圖設定
+          </h4>
+          <p className="text-sm text-gray-400 mb-6">
+            上傳產品圖或品牌 Logo，讓 AI 生成圖片時使用（隨時可以調整）
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Product Image Upload */}
+            <div>
+              <label className="block text-sm font-bold text-indigo-200 mb-2">
+                產品圖片（選填）
+              </label>
+              <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:border-indigo-400 hover:bg-indigo-500/5 relative overflow-hidden border-indigo-500/30 bg-black/20">
+                {productImageFile ? (
+                  <div className="w-full h-full relative group">
+                    <img
+                      src={URL.createObjectURL(productImageFile)}
+                      alt="Product"
+                      className="w-full h-full object-contain p-2"
+                    />
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white text-sm">更換圖片</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <svg className="w-8 h-8 mb-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-xs text-indigo-300">點擊上傳產品圖片</p>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      onProductImageChange(e.target.files[0]);
+                    }
+                  }}
+                  accept="image/*"
+                />
+              </label>
+            </div>
+
+            {/* Brand Logo Upload */}
+            <div>
+              <label className="block text-sm font-bold text-indigo-200 mb-2">
+                品牌 Logo（選填）
+              </label>
+              <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:border-indigo-400 hover:bg-indigo-500/5 relative overflow-hidden border-indigo-500/30 bg-black/20">
+                {brandLogoFile ? (
+                  <div className="w-full h-full relative group">
+                    <img
+                      src={URL.createObjectURL(brandLogoFile)}
+                      alt="Logo"
+                      className="w-full h-full object-contain p-2"
+                    />
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white text-sm">更換 Logo</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <svg className="w-8 h-8 mb-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                    <p className="text-xs text-indigo-300">點擊上傳品牌 Logo</p>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      onBrandLogoChange(e.target.files[0]);
+                    }
+                  }}
+                  accept="image/*"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
         {/* Header & Mode Switch */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
             <div>
                 <h2 className="text-2xl font-bold text-white serif mb-1">
                     {plan.plan_name}
                 </h2>
-                <p className="text-gray-400 text-sm">Content Suite Plan ({items.length} Assets)</p>
+                <p className="text-gray-400 text-sm">
+                  {plan.selected_sizes.map(r => {
+                    const count = contentSets.filter(s => s.ratio === r).length;
+                    const label = contentSets.find(s => s.ratio === r)?.size_label || r;
+                    return `${label} ${count}組`;
+                  }).join(' | ')}
+                </p>
             </div>
-            
+
             <div className="bg-[#1a1a1f] p-1 rounded-lg flex items-center border border-white/10">
-                <button 
+                <button
                     onClick={() => setMode('review')}
                     className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${mode === 'review' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                 >
-                    1. 腳本審閱 (Script)
+                    1. 內容來嘴看看
                 </button>
-                <button 
+                <button
                     onClick={() => setMode('production')}
                     className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${mode === 'production' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                 >
-                    2. 圖片製作 (Production)
+                    2. 爆肝產圖去
                 </button>
             </div>
         </div>
 
         {/* MODE: SCRIPT REVIEW */}
         {mode === 'review' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
                 <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-lg mb-6 flex items-start gap-3">
                     <svg className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <div>
-                        <p className="text-blue-200 text-sm font-bold mb-1">腳本審閱模式</p>
-                        <p className="text-blue-300/70 text-xs">請在此階段確認並編輯所有圖片的文案與 AI 提示詞。確認無誤後，點擊右上角切換至「圖片製作」模式開始生成。</p>
+                        <p className="text-blue-200 text-sm font-bold mb-1">內容來嘴看看</p>
+                        <p className="text-blue-300/70 text-xs">
+                          檢查看看小GG剛剛生了什麼內容，標題不對味？內文有點怪？沒關係，你想改就改。修改後記得點擊「重新生成 Prompt」按鈕。
+                        </p>
                     </div>
                 </div>
 
-                <div>
-                    <h3 className="text-lg font-bold text-white mb-4">A. 主圖規劃 (Square 1:1)</h3>
-                    {mainImages.map(item => (
-                        <ScriptEditorRow key={item.id} item={item} onChange={handleItemChange} />
+                {groupedSets.map(group => (
+                  <div key={group.ratio}>
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <span className={`w-2 h-6 rounded-full ${
+                        group.ratio === '1:1' ? 'bg-blue-500' :
+                        group.ratio === '9:16' ? 'bg-purple-500' :
+                        group.ratio === '4:5' ? 'bg-pink-500' :
+                        group.ratio === '16:9' ? 'bg-green-500' :
+                        group.ratio === '1:1-commercial-ai' ? 'bg-amber-500' :
+                        'bg-orange-500'
+                      }`}></span>
+                      {group.label} ({group.ratio}) - {group.sets.length} 組方案
+                    </h3>
+                    {group.sets.map(set => (
+                        <ScriptEditorRow
+                          key={set.id}
+                          contentSet={set}
+                          onChange={handleContentChange}
+                          onRegeneratePrompt={handleRegeneratePrompt}
+                          isRegenerating={regeneratingId === set.id}
+                        />
                     ))}
-                </div>
-                
-                <div>
-                    <h3 className="text-lg font-bold text-white mb-4">B. 內容長圖規劃 (Stories 9:16)</h3>
-                    {storySlides.map(item => (
-                        <ScriptEditorRow key={item.id} item={item} onChange={handleItemChange} />
-                    ))}
-                </div>
-                
-                <div className="flex justify-end pt-4">
-                    <button 
-                        onClick={() => setMode('production')}
-                        className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
-                    >
-                        確認定稿，進入製作 ▶
-                    </button>
-                </div>
+                  </div>
+                ))}
             </div>
         )}
 
         {/* MODE: PRODUCTION */}
         {mode === 'production' && (
             <div>
-                {/* Section 1: Main Images */}
-                <div className="mb-12">
+                {/* Production Grid - Grouped by Size */}
+                {groupedSets.map((group, idx) => (
+                  <div key={group.ratio} className={idx > 0 ? 'mt-12' : ''}>
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                        方形主圖 (Main Visuals)
+                        <span className={`w-2 h-6 rounded-full ${
+                          group.ratio === '1:1' ? 'bg-blue-500' :
+                          group.ratio === '9:16' ? 'bg-purple-500' :
+                          group.ratio === '4:5' ? 'bg-pink-500' :
+                          group.ratio === '16:9' ? 'bg-green-500' :
+                          group.ratio === '1:1-commercial-ai' ? 'bg-amber-500' :
+                          'bg-orange-500'
+                        }`}></span>
+                        {group.label} ({group.ratio})
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                        {mainImages.map(item => (
-                            <ProductionCard key={item.id} item={item} apiKey={apiKey} />
+                    <div className={`grid gap-6 ${
+                      group.ratio === '1:1' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
+                      group.ratio === '1:1-commercial-ai' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
+                      group.ratio === '1:1-reference' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
+                      group.ratio === '9:16' ? 'grid-cols-1 sm:grid-cols-3 md:grid-cols-6' :
+                      group.ratio === '4:5' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' :
+                      group.ratio === '16:9' ? 'grid-cols-1 sm:grid-cols-1 md:grid-cols-2' :
+                      'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+                    }`}>
+                        {group.sets.map(set => (
+                            <ProductionCard
+                              key={set.id}
+                              contentSet={set}
+                              apiKey={apiKey}
+                              productImage={productImageBase64}
+                              brandLogo={brandLogoBase64}
+                              onContentChange={handleContentChange}
+                            />
                         ))}
                     </div>
-                </div>
-
-                {/* Section 2: Story Slides */}
-                <div>
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
-                        內容介紹組圖 (Story Suite)
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                        {storySlides.map(item => (
-                            <ProductionCard key={item.id} item={item} apiKey={apiKey} />
-                        ))}
-                    </div>
-                </div>
+                  </div>
+                ))}
             </div>
         )}
     </div>
