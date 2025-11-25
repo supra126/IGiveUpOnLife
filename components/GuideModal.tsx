@@ -109,55 +109,158 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  Phase 2：全套內容企劃｜自動生成 8 張圖腳本
+                  選擇圖片尺寸｜多平台支援
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                  選擇策略路線後，AI 會<strong className="text-white">自動規劃</strong>一套{" "}
-                  <strong className="text-white">8 張完整素材包</strong>：
+                  選擇策略路線後，系統會自動進入尺寸選擇畫面，勾選你需要的尺寸：
                 </p>
                 <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1 mb-3">
                   <li>
-                    <strong className="text-white">2 張方形主圖 (1:1)</strong>
-                    ：白底商品圖 + 情境氛圍大片
+                    <strong className="text-white">1:1 方形圖</strong>
+                    ：適合 FB 貼文、IG 輪播、電商主圖
                   </li>
                   <li>
-                    <strong className="text-white">6 張 Stories 長圖 (9:16)</strong>
-                    ：封面 → 痛點 → 解法 → 細節 → 背書 → CTA（完整銷售漏斗）
+                    <strong className="text-white">9:16 直式長圖</strong>
+                    ：適合限時動態、Instagram Stories、Reels
+                  </li>
+                  <li>
+                    <strong className="text-white">4:5 直式圖</strong>
+                    ：適合 IG Feed 主頁、優化手機瀏覽
+                  </li>
+                  <li>
+                    <strong className="text-white">16:9 橫式長圖</strong>
+                    ：適合封面、廣告圖片、橫幅設計
+                  </li>
+                  <li>
+                    <strong className="text-white">1:1 商業攝影</strong>
+                    ：專業商品攝影風格（工作室燈光、高端相機質感）
                   </li>
                 </ul>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  整套文案、視覺 Prompt、構圖說明，全部自動規劃完成
+                  AI 會為<strong className="text-white">每個選定的尺寸生成 3 組不同的內容方案</strong>
+                  （功能導向、情感導向、數據導向）
                 </p>
               </div>
             </div>
 
             {/* Step 4 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-600/20 text-yellow-400 flex items-center justify-center font-bold text-lg border border-yellow-600/30">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-600/20 text-green-400 flex items-center justify-center font-bold text-lg border border-green-600/30">
                 4
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  審閱與製作｜兩種模式自由切換
+                  上傳產品圖與 Logo｜產圖前置準備
                 </h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-2">
-                  腳本規劃完成後，可在兩種模式間切換：
+                <p className="text-gray-400 text-sm leading-relaxed mb-3">
+                  在「爆肝產圖設定」區域，上傳以下素材（這些設定會在所有方案間共用）：
                 </p>
-                <ul className="list-disc list-inside text-sm text-gray-400 space-y-2 ml-1">
+                <ul className="list-disc list-inside text-sm text-gray-400 space-y-1.5 ml-1">
                   <li>
-                    <strong className="text-white">1. 腳本審閱模式</strong>
-                    ：檢視並編輯所有文案、Prompt、構圖說明
+                    <strong className="text-white">📸 產品圖片</strong>
+                    ：必要，用於圖片生成的主要素材
                   </li>
                   <li>
-                    <strong className="text-white">2. 圖片製作模式</strong>
-                    ：逐張生成圖片，支援針對單張上傳參考圖（例如指定 Logo 或顏色）
+                    <strong className="text-white">🏷️ 品牌 Logo</strong>
+                    ：選填，會自動放置在圖片角落
                   </li>
                 </ul>
-                <p className="text-gray-400 text-sm leading-relaxed mt-3">
-                  所有圖片都能一鍵下載，完成後可匯出完整策略報告
-                </p>
               </div>
             </div>
+
+            {/* Step 5 */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-600/20 text-yellow-400 flex items-center justify-center font-bold text-lg border border-yellow-600/30">
+                5
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  腳本審閱模式｜內容來嘴看看
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-3">
+                  切換至「內容來嘴看看」模式，可以：
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-400 space-y-1.5 ml-1">
+                  <li>查看所有方案的標題、文案、視覺摘要</li>
+                  <li>編輯任何不滿意的文案</li>
+                  <li>調整 AI Prompt（進階功能）</li>
+                  <li>為每個方案重新生成 Prompt</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Step 6 */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-orange-600/20 text-orange-400 flex items-center justify-center font-bold text-lg border border-orange-600/30">
+                6
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  圖片製作模式｜爆肝產圖
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-2">
+                  切換至「爆肝產圖」模式，針對每個方案可以：
+                </p>
+
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-white text-sm font-semibold mb-1.5">
+                      ✅ 文字與字體控制
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1">
+                      <li>勾選「顯示內容（標題 + 文案）」決定是否在圖片上疊加文字</li>
+                      <li>直接在產圖模式修改標題和文案</li>
+                      <li>選擇字體粗細（標題和文案各有下拉選單）：
+                        <ul className="list-disc list-inside ml-5 mt-1 space-y-0.5">
+                          <li>Regular - 正常粗細</li>
+                          <li>Medium - 適中粗細</li>
+                          <li>Bold - 粗體（標題預設）</li>
+                          <li>Black - 特粗體</li>
+                        </ul>
+                      </li>
+                      <li>所有文字使用開源字體<strong className="text-white">思源黑體（Noto Sans TC）</strong>，無版權問題</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <p className="text-white text-sm font-semibold mb-1.5">
+                      🎨 雙模式生成
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1">
+                      <li>
+                        <strong className="text-white">提詞版</strong>（預設）
+                        ：使用 AI 自動生成的視覺 Prompt 創作
+                      </li>
+                      <li>
+                        <strong className="text-white">參考版</strong>
+                        ：上傳參考圖片，選擇相似度（三個離散等級）：
+                        <ul className="list-disc list-inside ml-5 mt-1 space-y-0.5">
+                          <li><strong className="text-white">低相似度</strong> - 創意發揮（僅參考色調與氛圍）</li>
+                          <li><strong className="text-white">中等相似度</strong> - 適度參考（匹配光線與色彩，構圖可變）</li>
+                          <li><strong className="text-white">高相似度</strong> - 完全模仿（匹配構圖、佈局、風格）</li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <p className="text-white text-sm font-semibold mb-1.5">
+                      📥 生成與下載
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-gray-400 space-y-1 ml-1">
+                      <li>點擊播放按鈕開始生成（約 10-20 秒）</li>
+                      <li>滑鼠移至圖片上方：
+                        <ul className="list-disc list-inside ml-5 mt-1 space-y-0.5">
+                          <li>📥 下載按鈕 - 下載圖片</li>
+                          <li>🔄 重繪按鈕 - 重新生成</li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
