@@ -259,7 +259,8 @@ export const generateMarketingImage = async (
     prompt: string,
     apiKey: string,
     referenceImageBase64?: string,
-    aspectRatio: ImageRatio = '1:1'
+    aspectRatio: ImageRatio = '1:1',
+    secondaryImageBase64?: string | null
 ): Promise<string> => {
   if (!apiKey) {
     throw new Error("找不到 API 金鑰。");
@@ -274,7 +275,18 @@ export const generateMarketingImage = async (
     aspectRatio === '9:16' ? '9:16' :
     aspectRatio === '16:9' ? '16:9' : '1:1';
 
-  const parts: any[] = [{ text: prompt }];
+  // If secondary image is provided, add multi-product fusion instruction
+  let enhancedPrompt = prompt;
+  if (secondaryImageBase64) {
+    enhancedPrompt += `\n\nIMPORTANT - MULTI-PRODUCT COMPOSITION: This image features TWO products that must appear together naturally in the same scene.
+- PRIMARY PRODUCT (first image): Main focus, placed prominently in center or foreground
+- SECONDARY PRODUCT (second image): Supporting element, placed naturally alongside, emerging from, or complementing the primary product
+- Create a cohesive lifestyle/gift composition where both products appear together harmoniously
+- Both products should maintain their original appearance and details
+- The scene should tell a story of how these products relate to each other`;
+  }
+
+  const parts: any[] = [{ text: enhancedPrompt }];
 
   if (referenceImageBase64) {
     const match = referenceImageBase64.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
@@ -285,6 +297,19 @@ export const generateMarketingImage = async (
                 mimeType: match[1]
             }
         });
+    }
+  }
+
+  // Add secondary product image if provided
+  if (secondaryImageBase64) {
+    const secMatch = secondaryImageBase64.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (secMatch) {
+      parts.push({
+        inlineData: {
+          data: secMatch[2],
+          mimeType: secMatch[1]
+        }
+      });
     }
   }
 
@@ -308,7 +333,7 @@ export const generateMarketingImage = async (
       }
     }
   }
-  
+
   throw new Error("未生成圖片。");
 };
 
@@ -317,7 +342,8 @@ export const regenerateVisualPrompt = async (
   copyZh: string,
   ratio: ImageRatio,
   sizeLabel: string,
-  apiKey: string
+  apiKey: string,
+  visualSummaryZh?: string // 新增：使用者可編輯的構圖摘要
 ): Promise<string> => {
   if (!apiKey) throw new Error("No API Key");
 
@@ -329,22 +355,28 @@ export const regenerateVisualPrompt = async (
     "9:16": "Vertical composition, 9:16 aspect ratio, mobile screen layout",
     "4:5": "Vertical composition, 4:5 aspect ratio, Instagram feed optimized",
     "16:9": "Horizontal composition, 16:9 aspect ratio, widescreen layout, banner format",
-    "1:1-commercial": "Professional commercial photography, square composition, 1:1 aspect ratio, studio lighting setup, high-end DSLR camera quality (Canon EOS R5 or Sony A7R IV style), clean white or gradient background, soft diffused studio lighting with minimal harsh shadows, sharp focus on product details, commercial product photography aesthetic, high resolution, professional color grading"
+    "1:1-commercial": "Professional commercial photography, square composition, 1:1 aspect ratio, CLEAN SOLID COLOR BACKGROUND (light gray #f6f6f6 or pure white #ffffff), NO props NO decorations NO distracting elements, studio lighting setup with soft diffused light, high-end DSLR camera quality (Canon EOS R5 or Sony A7R IV style), product as the ABSOLUTE focal point centered in frame, sharp focus on product details and texture, minimal harsh shadows, commercial e-commerce product photography aesthetic, high resolution, professional color grading, simple minimalist composition"
   };
+
+  // 構建視覺摘要提示
+  const visualSummarySection = visualSummaryZh
+    ? `\n- 構圖摘要 (Visual Summary): ${visualSummaryZh}\n\n**重要：請務必根據「構圖摘要」的描述來生成視覺提示詞，這是使用者指定的視覺方向。**`
+    : '';
 
   const systemPrompt = `你是一位專業的視覺設計 Prompt 工程師。
 
-你的任務是根據提供的「中文標題」和「中文文案」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3 Pro Image 生成圖片。
+你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3 Pro Image 生成圖片。
 
 **輸入資訊：**
 - 標題 (Title): ${titleZh}
 - 文案 (Copy): ${copyZh}
-- 圖片尺寸: ${ratio} (${sizeLabel})
+- 圖片尺寸: ${ratio} (${sizeLabel})${visualSummarySection}
 
 **核心要求：**
 1. **必須保持產品原貌**：使用者會提供產品參考圖，生成的圖片必須「保留產品的完整外觀、包裝設計、顏色、形狀」，不可改變產品本身
-2. **只調整背景和氛圍**：根據標題和文案調整「背景、光線、道具、氛圍」，但產品本身必須維持原樣
+2. **只調整背景和氛圍**：根據標題、文案和構圖摘要調整「背景、光線、道具、氛圍」，但產品本身必須維持原樣
 3. 必須包含尺寸規範：${ratioRequirements[ratio]}
+4. ${visualSummaryZh ? '**最重要：構圖摘要中的指示優先級最高，必須完全遵循**' : ''}
 
 **Prompt 寫作指南：**
 - 在 Prompt 開頭加上：KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF
@@ -387,7 +419,8 @@ export const generateImageFromReference = async (
     copyText?: string,
     showText?: boolean,
     titleWeight?: 'regular' | 'medium' | 'bold' | 'black',
-    copyWeight?: 'regular' | 'medium' | 'bold' | 'black'
+    copyWeight?: 'regular' | 'medium' | 'bold' | 'black',
+    secondaryProductBase64?: string | null
 ): Promise<string> => {
   if (!apiKey) {
     throw new Error("找不到 API 金鑰。");
@@ -427,6 +460,16 @@ export const generateImageFromReference = async (
   // Add logo placement instruction if logo is provided
   if (brandLogoBase64) {
     prompt += "\n\nIMPORTANT: Place the uploaded brand logo in one of the four corners (top-left, top-right, bottom-left, or bottom-right) in a subtle, non-intrusive way. The logo should be clearly visible but not dominate the composition.";
+  }
+
+  // Add multi-product fusion instruction if secondary product is provided
+  if (secondaryProductBase64) {
+    prompt += `\n\nIMPORTANT - MULTI-PRODUCT COMPOSITION: This image features TWO products that must appear together naturally in the same scene.
+- PRIMARY PRODUCT: Main focus, placed prominently in center or foreground
+- SECONDARY PRODUCT: Supporting element, placed naturally alongside, emerging from, or complementing the primary product
+- Create a cohesive lifestyle/gift composition where both products appear together harmoniously
+- Both products should maintain their original appearance and details
+- The scene should tell a story of how these products relate to each other`;
   }
 
   // Add text overlay instruction if enabled
@@ -479,6 +522,19 @@ export const generateImageFromReference = async (
         inlineData: {
           data: logoMatch[2],
           mimeType: logoMatch[1]
+        }
+      });
+    }
+  }
+
+  // Add secondary product image fourth (if provided)
+  if (secondaryProductBase64) {
+    const secMatch = secondaryProductBase64.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (secMatch) {
+      parts.push({
+        inlineData: {
+          data: secMatch[2],
+          mimeType: secMatch[1]
         }
       });
     }

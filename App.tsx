@@ -59,6 +59,7 @@ const App: React.FC = () => {
 
   // Phase 2 Image Generation Settings
   const [productImage, setProductImage] = useState<File | null>(null);
+  const [secondaryProduct, setSecondaryProduct] = useState<File | null>(null);
   const [brandLogo, setBrandLogo] = useState<File | null>(null);
 
   const [errorMsg, setErrorMsg] = useState<string>("");
@@ -966,8 +967,10 @@ const App: React.FC = () => {
               onContentUpdate={(newSets) => setEditedContentSets(newSets)}
               apiKey={apiKey}
               productImage={productImage}
+              secondaryProduct={secondaryProduct}
               brandLogo={brandLogo}
               onProductImageChange={setProductImage}
+              onSecondaryProductChange={setSecondaryProduct}
               onBrandLogoChange={setBrandLogo}
             />
           </div>

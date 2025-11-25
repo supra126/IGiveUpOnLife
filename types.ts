@@ -28,6 +28,9 @@ export interface DirectorOutput {
 // Image ratio types
 export type ImageRatio = '1:1' | '9:16' | '4:5' | '16:9' | '1:1-commercial';
 
+// 商業攝影排列方式
+export type ArrangementStyle = 'single' | 'fan' | 'grid' | 'stack' | 'custom';
+
 // Size selection state (multi-select checkboxes)
 export interface SizeSelection {
   '1:1': boolean;      // FB 貼文
@@ -47,6 +50,7 @@ export interface ContentSet {
   copy_zh: string;
   visual_prompt_en: string;
   visual_summary_zh: string;
+  arrangement_style?: ArrangementStyle;  // 商業攝影排列方式（僅 1:1-commercial）
 }
 
 // Updated ContentPlan structure

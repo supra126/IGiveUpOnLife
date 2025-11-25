@@ -83,7 +83,7 @@ export const CONTENT_PLANNER_SYSTEM_PROMPT = `
 *   **9:16 直式長圖**: "Vertical composition, 9:16 aspect ratio, mobile screen layout, product placement in center"
 *   **4:5 直式圖**: "Vertical composition, 4:5 aspect ratio, Instagram feed optimized, product placement in center"
 *   **16:9 橫式長圖**: "Horizontal composition, 16:9 aspect ratio, widescreen layout, banner format, product placement in center"
-*   **1:1-commercial 商業攝影**: "Professional commercial photography, square composition, 1:1 aspect ratio, studio lighting setup, high-end DSLR camera quality (Canon EOS R5 or Sony A7R IV style), clean white or gradient background, soft diffused studio lighting with minimal harsh shadows, sharp focus on product details, commercial product photography aesthetic, high resolution, professional color grading, product placement in center"
+*   **1:1-commercial 商業攝影**: "Professional commercial photography, square composition, 1:1 aspect ratio, CLEAN SOLID COLOR BACKGROUND (light gray #f6f6f6 or pure white #ffffff), NO props NO decorations NO distracting elements, studio lighting setup with soft diffused light, high-end DSLR camera quality (Canon EOS R5 or Sony A7R IV style), product as the ABSOLUTE focal point centered in frame, sharp focus on product details and texture, minimal harsh shadows, commercial e-commerce product photography aesthetic, high resolution, professional color grading, simple minimalist composition, product placement in center"
 
 **Prompt 寫作原則：**
 - 產品本身必須保持原貌，不可改變包裝、顏色、形狀、文字
@@ -134,4 +134,9 @@ export const CONTENT_PLANNER_SYSTEM_PROMPT = `
 - 每個選定的尺寸必須生成 **恰好 3 組** 不同的內容
 - 3 組內容必須在行銷角度上有明顯差異
 - 所有文案必須符合選定的行銷策略路線
+- **ratio 欄位必須完全匹配輸入的尺寸字串**，例如：
+  - 輸入 "1:1" → ratio: "1:1"
+  - 輸入 "1:1-commercial" → ratio: "1:1-commercial" (不是 "1:1")
+  - 輸入 "9:16" → ratio: "9:16"
+- **id 格式規範**：使用 ratio 加上 set 編號，例如 "1-1-commercial_set1", "9-16_set2"
 `;
