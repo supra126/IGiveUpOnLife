@@ -1,8 +1,11 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // 保持與原 Vite 專案相同的端口
-  // 可以使用 next dev -p 3000 或在這裡設定
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb', // 增加 body size limit 以支援圖片上傳
+    },
+  },
 };
 
 export default nextConfig;
