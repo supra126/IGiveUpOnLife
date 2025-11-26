@@ -1,7 +1,6 @@
-
 import { GoogleGenAI } from "@google/genai";
-import { DIRECTOR_SYSTEM_PROMPT, CONTENT_PLANNER_SYSTEM_PROMPT } from "../prompts";
-import { DirectorOutput, ContentPlan, MarketingRoute, ProductAnalysis, ContentSet, ImageRatio } from "../types";
+import { DIRECTOR_SYSTEM_PROMPT, CONTENT_PLANNER_SYSTEM_PROMPT } from "@/prompts";
+import { DirectorOutput, ContentPlan, MarketingRoute, ProductAnalysis, ContentSet, ImageRatio } from "@/types";
 
 // --- Helpers ---
 
@@ -326,10 +325,12 @@ export const generateMarketingImage = async (
 
   const candidates = response.candidates;
   if (candidates && candidates.length > 0) {
-    const parts = candidates[0].content.parts;
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    const content = candidates[0]?.content;
+    if (content?.parts) {
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+        }
       }
     }
   }
@@ -553,10 +554,12 @@ export const generateImageFromReference = async (
 
   const candidates = response.candidates;
   if (candidates && candidates.length > 0) {
-    const parts = candidates[0].content.parts;
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    const content = candidates[0]?.content;
+    if (content?.parts) {
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+        }
       }
     }
   }

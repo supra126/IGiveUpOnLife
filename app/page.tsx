@@ -1,9 +1,11 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   analyzeProductImage,
   generateContentPlan,
   generateFullReport,
-} from "./services/geminiService";
+} from "@/services/geminiService";
 import {
   DirectorOutput,
   AppState,
@@ -12,14 +14,15 @@ import {
   SizeSelection,
   ImageRatio,
   ContentSet,
-} from "./types";
-import { Spinner } from "./components/Spinner";
-import { ProductCard } from "./components/ProductCard";
-import { GuideModal } from "./components/GuideModal";
-import { ContentSuite } from "./components/ContentSuite";
-import { ApiKeyModal } from "./components/ApiKeyModal";
+} from "@/types";
+import { Spinner } from "@/components/Spinner";
+import { ProductCard } from "@/components/ProductCard";
+import { GuideModal } from "@/components/GuideModal";
+import { ContentSuite } from "@/components/ContentSuite";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
+import Image from "next/image";
 
-const App: React.FC = () => {
+export default function Home() {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -75,56 +78,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Disabled auto-trigger - now using manual "Continue" button
-  // Auto-trigger Phase 2 when route is selected
-  // React.useEffect(() => {
-  //   if (
-  //     analysisResult &&
-  //     appState === AppState.RESULTS &&
-  //     !contentPlan &&
-  //     apiKey
-  //   ) {
-  //     // Auto-generate content plan when a route is available
-  //     const autoGenerate = async () => {
-  //       const route = analysisResult.marketing_routes[activeRouteIndex];
-  //       const analysis = analysisResult.product_analysis;
-
-  //       setAppState(AppState.PLANNING);
-  //       try {
-  //         const plan = await generateContentPlan(
-  //           route,
-  //           analysis,
-  //           refCopy,
-  //           apiKey
-  //         );
-  //         setContentPlan(plan);
-  //         setEditedPlanItems(plan.items);
-  //         setAppState(AppState.SUITE_READY);
-
-  //         // Scroll to Phase 2 section
-  //         setTimeout(() => {
-  //           document
-  //             .getElementById("phase2-section")
-  //             ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  //         }, 300);
-  //       } catch (e: any) {
-  //         console.error(e);
-  //         setErrorMsg(e.message || "內容規劃失敗");
-  //         setAppState(AppState.RESULTS);
-  //       }
-  //     };
-
-  //     autoGenerate();
-  //   }
-  // }, [
-  //   analysisResult,
-  //   activeRouteIndex,
-  //   appState,
-  //   contentPlan,
-  //   apiKey,
-  //   refCopy,
-  // ]);
-
   // --- API Key Handling ---
   const handleSaveApiKey = (key: string) => {
     setApiKey(key);
@@ -175,9 +128,9 @@ const App: React.FC = () => {
       setAnalysisResult(result);
       setEditedRoutes(result.marketing_routes); // Initialize editable routes
       setAppState(AppState.RESULTS);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setErrorMsg(e.message || "分析過程中發生了意外錯誤。");
+      setErrorMsg(e instanceof Error ? e.message : "分析過程中發生了意外錯誤。");
       setAppState(AppState.ERROR);
     }
   };
@@ -217,8 +170,8 @@ const App: React.FC = () => {
 
     // Check if at least one size is selected
     const selectedSizes = Object.entries(sizeSelection)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([ratio, _]) => ratio as ImageRatio);
+      .filter(([, isSelected]) => isSelected)
+      .map(([ratio]) => ratio as ImageRatio);
 
     if (selectedSizes.length === 0) {
       setErrorMsg("請至少選擇一個圖片尺寸");
@@ -261,9 +214,9 @@ const App: React.FC = () => {
           .getElementById("content-section")
           ?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 300);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("❌ Content plan generation failed:", e);
-      setErrorMsg(e.message || "內容規劃失敗");
+      setErrorMsg(e instanceof Error ? e.message : "內容規劃失敗");
       setAppState(AppState.SIZE_SELECTION);
     }
   };
@@ -308,6 +261,7 @@ const App: React.FC = () => {
         >
           {imagePreview ? (
             <div className="w-full h-full relative group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreview}
                 alt="Preview"
@@ -469,6 +423,7 @@ const App: React.FC = () => {
                         "1:1": false,
                         "9:16": false,
                         "4:5": false,
+                        "16:9": false,
                         "1:1-commercial": false,
                       });
                       if (
@@ -614,6 +569,7 @@ const App: React.FC = () => {
                     "1:1": false,
                     "9:16": false,
                     "4:5": false,
+                    "16:9": false,
                     "1:1-commercial": false,
                   });
                   setAppState(AppState.SIZE_SELECTION);
@@ -932,8 +888,7 @@ const App: React.FC = () => {
               <div className="flex justify-center">
                 <button
                   onClick={handleSizeConfirm}
-                  disabled={appState === AppState.PLANNING}
-                  className="px-12 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-12 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center gap-3"
                 >
                   <span>確認尺寸，讓我努力一下</span>
                 </button>
@@ -951,7 +906,7 @@ const App: React.FC = () => {
                 </div>
                 <p className="text-sm text-gray-400">
                   小GG正在爆肝寫腳本中，正依照
-                  <strong>"{activeRoute.route_name}"</strong>{" "}
+                  <strong>&quot;{activeRoute.route_name}&quot;</strong>{" "}
                   產出建議，先等著看看他的努力
                 </p>
               </div>
@@ -996,9 +951,11 @@ const App: React.FC = () => {
             onClick={() => setAppState(AppState.IDLE)}
           >
             <div className="w-8 h-8 flex items-center justify-center">
-              <img
+              <Image
                 src="/images/logo.svg"
                 alt="Logo"
+                width={32}
+                height={32}
                 className="w-full h-full object-contain animate-float"
               />
             </div>
@@ -1042,9 +999,11 @@ const App: React.FC = () => {
           <div className="flex-1 flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
             <div className="relative">
               <div className="w-20 h-20 flex items-center justify-center animate-spin">
-                <img
+                <Image
                   src="/images/logo.svg"
                   alt="Loading"
+                  width={80}
+                  height={80}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -1084,6 +1043,4 @@ const App: React.FC = () => {
       </main>
     </div>
   );
-};
-
-export default App;
+}

@@ -1,5 +1,7 @@
+"use client";
+
 import React from 'react';
-import { ProductAnalysis } from '../types';
+import { ProductAnalysis } from '@/types';
 
 interface ProductCardProps {
   analysis: ProductAnalysis;

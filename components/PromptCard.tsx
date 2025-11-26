@@ -1,7 +1,9 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
-import { generateMarketingImage, fileToBase64 } from '../services/geminiService';
+import { generateMarketingImage, fileToBase64 } from '@/services/geminiService';
 import { Spinner } from './Spinner';
-import { PromptData } from '../types';
+import { PromptData } from '@/types';
 
 interface PromptCardProps {
   data: PromptData;

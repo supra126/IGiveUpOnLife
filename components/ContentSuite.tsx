@@ -1,7 +1,8 @@
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ContentPlan, ContentSet, ImageRatio, ArrangementStyle } from '../types';
-import { generateMarketingImage, generateImageFromReference, fileToBase64, regenerateVisualPrompt } from '../services/geminiService';
+import React, { useState, useEffect } from 'react';
+import { ContentPlan, ContentSet, ImageRatio, ArrangementStyle } from '@/types';
+import { generateMarketingImage, generateImageFromReference, fileToBase64, regenerateVisualPrompt } from '@/services/geminiService';
 import { Spinner } from './Spinner';
 
 // 排列方式選項
@@ -883,7 +884,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                         group.ratio === '9:16' ? 'bg-purple-500' :
                         group.ratio === '4:5' ? 'bg-pink-500' :
                         group.ratio === '16:9' ? 'bg-green-500' :
-                        group.ratio === '1:1-commercial-ai' ? 'bg-amber-500' :
+                        group.ratio === '1:1-commercial' ? 'bg-amber-500' :
                         'bg-orange-500'
                       }`}></span>
                       {group.label} ({group.ratio}) - {group.sets.length} 組方案
@@ -914,15 +915,14 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                           group.ratio === '9:16' ? 'bg-purple-500' :
                           group.ratio === '4:5' ? 'bg-pink-500' :
                           group.ratio === '16:9' ? 'bg-green-500' :
-                          group.ratio === '1:1-commercial-ai' ? 'bg-amber-500' :
+                          group.ratio === '1:1-commercial' ? 'bg-amber-500' :
                           'bg-orange-500'
                         }`}></span>
                         {group.label} ({group.ratio})
                     </h3>
                     <div className={`grid gap-6 ${
                       group.ratio === '1:1' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
-                      group.ratio === '1:1-commercial-ai' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
-                      group.ratio === '1:1-reference' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
+                      group.ratio === '1:1-commercial' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' :
                       group.ratio === '9:16' ? 'grid-cols-1 sm:grid-cols-3 md:grid-cols-6' :
                       group.ratio === '4:5' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' :
                       group.ratio === '16:9' ? 'grid-cols-1 sm:grid-cols-1 md:grid-cols-2' :
