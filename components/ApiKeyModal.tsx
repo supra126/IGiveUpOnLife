@@ -6,9 +6,10 @@ interface ApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (key: string) => void;
+  serverHasKey?: boolean;
 }
 
-export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave }) => {
+export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, serverHasKey = false }) => {
   const [key, setKey] = useState('');
 
   useEffect(() => {
@@ -26,21 +27,58 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
     }
   };
 
+  const handleClearKey = () => {
+    localStorage.removeItem('gemini_api_key');
+    setKey('');
+    onSave('');
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-[#1e1e24] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all scale-100">
         <h3 className="text-xl font-bold text-white mb-4 serif">API Key 設定</h3>
+
+        {/* Server has key: Show free mode info */}
+        {serverHasKey && (
+          <div className="mb-6 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-green-300 font-bold text-sm">免費模式已啟用</span>
+            </div>
+            <p className="text-green-300/70 text-xs">
+              本站提供免費 API 額度，您可以直接使用而無需輸入自己的 API Key。
+              <br />
+              如需更高額度或避免流量限制，可輸入自己的 Key。
+            </p>
+          </div>
+        )}
+
         <p className="text-gray-400 text-sm mb-6">
-          請輸入您的 Google Gemini API Key 以啟用 AI 功能。
-          <br />
-          <span className="text-xs text-gray-500">您的 Key 僅會儲存在瀏覽器中，不會傳送至伺服器。</span>
+          {serverHasKey ? (
+            <>
+              輸入您自己的 Google Gemini API Key（選填）：
+              <br />
+              <span className="text-xs text-gray-500">自訂 Key 可享有獨立額度，不受免費模式的流量限制。</span>
+            </>
+          ) : (
+            <>
+              請輸入您的 Google Gemini API Key 以啟用 AI 功能。
+              <br />
+              <span className="text-xs text-gray-500">您的 Key 僅會儲存在瀏覽器中，不會傳送至伺服器。</span>
+            </>
+          )}
         </p>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gemini API Key</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Gemini API Key {serverHasKey && <span className="text-gray-600 normal-case">(選填)</span>}
+            </label>
             <input
               type="password"
               value={key}
@@ -55,17 +93,25 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
               onClick={onClose}
               className="flex-1 px-4 py-2 rounded-lg border border-white/10 text-gray-400 hover:bg-white/5 hover:text-white transition-colors text-sm font-medium"
             >
-              取消
+              {serverHasKey ? '關閉' : '取消'}
             </button>
-            <button
-              onClick={handleSave}
-              disabled={!key.trim()}
-              className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              儲存設定
-            </button>
+            {key.trim() ? (
+              <button
+                onClick={handleSave}
+                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors text-sm"
+              >
+                儲存設定
+              </button>
+            ) : serverHasKey && localStorage.getItem('gemini_api_key') ? (
+              <button
+                onClick={handleClearKey}
+                className="flex-1 px-4 py-2 rounded-lg bg-orange-600 text-white font-bold hover:bg-orange-500 transition-colors text-sm"
+              >
+                改用免費模式
+              </button>
+            ) : null}
           </div>
-          
+
           <div className="text-center pt-2">
              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 underline">
                  取得 API Key

@@ -54,7 +54,7 @@ export const getArrangementPrompt = (arrangement: ArrangementStyle): string => {
 interface ContentSuiteProps {
   plan: ContentPlan;
   onContentUpdate: (updatedSets: ContentSet[]) => void;
-  apiKey: string;
+  apiKey?: string; // Optional - server may have its own key
   productImage: File | null;
   secondaryProduct: File | null;
   brandLogo: File | null;
@@ -202,7 +202,7 @@ const ScriptEditorRow: React.FC<{
 // --- SUB-COMPONENT: Production Card ---
 const ProductionCard: React.FC<{
   contentSet: ContentSet;
-  apiKey: string;
+  apiKey?: string; // Optional - server may have its own key
   productImage: string | null;
   secondaryProduct: string | null;
   brandLogo: string | null;

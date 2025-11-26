@@ -5,6 +5,7 @@ import {
   analyzeProductImage,
   generateContentPlan,
   generateFullReport,
+  hasServerApiKey,
 } from "@/services/geminiService";
 import {
   DirectorOutput,
@@ -69,13 +70,17 @@ export default function Home() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [apiKey, setApiKey] = useState("");
+  const [serverHasKey, setServerHasKey] = useState(false);
 
-  // Load API Key on mount
+  // Load API Key on mount and check server key
   React.useEffect(() => {
     const storedKey = localStorage.getItem("gemini_api_key");
     if (storedKey) {
       setApiKey(storedKey);
     }
+
+    // Check if server has API key
+    hasServerApiKey().then(setServerHasKey);
   }, []);
 
   // --- API Key Handling ---
@@ -110,7 +115,8 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (!selectedFile) return;
 
-    if (!apiKey) {
+    // Only require user API key if server doesn't have one
+    if (!apiKey && !serverHasKey) {
       setIsApiKeyModalOpen(true);
       return;
     }
@@ -123,7 +129,7 @@ export default function Home() {
         productName,
         productInfo,
         productUrl,
-        apiKey
+        apiKey || undefined // Pass undefined if empty, server will use its key
       );
       setAnalysisResult(result);
       setEditedRoutes(result.marketing_routes); // Initialize editable routes
@@ -140,13 +146,15 @@ export default function Home() {
     console.log("Current appState:", appState);
     console.log("Has analysisResult:", !!analysisResult);
     console.log("Has apiKey:", !!apiKey);
+    console.log("Server has key:", serverHasKey);
 
     if (!analysisResult) {
       console.error("❌ No analysis result");
       return;
     }
 
-    if (!apiKey) {
+    // Only require user API key if server doesn't have one
+    if (!apiKey && !serverHasKey) {
       console.log("⚠️ No API key, opening modal");
       setIsApiKeyModalOpen(true);
       return;
@@ -201,7 +209,7 @@ export default function Home() {
         analysis,
         combinedRefCopy,
         selectedSizes,
-        apiKey
+        apiKey || undefined // Pass undefined if empty, server will use its key
       );
       console.log("✅ Content plan received:", plan);
       setContentPlan(plan);
@@ -941,6 +949,7 @@ export default function Home() {
         isOpen={isApiKeyModalOpen}
         onClose={() => setIsApiKeyModalOpen(false)}
         onSave={handleSaveApiKey}
+        serverHasKey={serverHasKey}
       />
 
       {/* Header */}
@@ -974,7 +983,13 @@ export default function Home() {
               onClick={() => setIsApiKeyModalOpen(true)}
               className="text-blue-400 hover:text-blue-300 text-sm font-bold"
             >
-              {apiKey ? "連線努力 (已努力)" : "連線努力"}
+              {serverHasKey
+                ? apiKey
+                  ? "API 設定 (自訂)"
+                  : "API 設定 (免費)"
+                : apiKey
+                  ? "連線努力 (已連線)"
+                  : "連線努力"}
             </button>
           </div>
         </div>
