@@ -34,6 +34,18 @@ const isValidUrl = (string: string): boolean => {
 };
 
 /**
+ * Get text model name from environment variable
+ * Defaults to gemini-2.5-flash if not set
+ */
+function getTextModel(): string {
+  const model = process.env.GEMINI_TEXT_MODEL;
+  if (model === "gemini-2.5-pro" || model === "gemini-2.5-flash") {
+    return model;
+  }
+  return "gemini-2.5-flash"; // default
+}
+
+/**
  * Get API key - prefers server env, falls back to user-provided key
  */
 function getApiKey(userApiKey?: string): string {
@@ -120,7 +132,7 @@ export async function analyzeProductImageAction(
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: getTextModel(),
     contents: {
       parts: [
         {
@@ -226,7 +238,7 @@ export async function generateContentPlanAction(
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: getTextModel(),
     contents: { parts: [{ text: promptText }] },
     config: {
       systemInstruction: CONTENT_PLANNER_SYSTEM_PROMPT,
@@ -424,7 +436,7 @@ export async function regenerateVisualPromptAction(
 "KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF. ${ratioRequirements[input.ratio]}, product placement in center, [background description], [lighting description around the product], [mood and atmosphere], [additional props or elements in the background]"`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: getTextModel(),
     contents: {
       parts: [{ text: "請根據上述資訊生成視覺提示詞。" }],
     },
