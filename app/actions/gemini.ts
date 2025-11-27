@@ -46,6 +46,114 @@ function getTextModel(): string {
 }
 
 /**
+ * Get image model name from environment variable
+ * Defaults to gemini-2.0-flash-preview-image-generation if not set
+ */
+function getImageModel(): string {
+  const model = process.env.GEMINI_IMAGE_MODEL;
+  if (model) {
+    return model;
+  }
+  return "gemini-2.0-flash-preview-image-generation"; // default
+}
+
+/**
+ * Get thinking budget from environment variable
+ * Defaults to 2048 if not set
+ */
+function getThinkingBudget(): number {
+  const budget = process.env.GEMINI_THINKING_BUDGET;
+  if (budget) {
+    const parsed = parseInt(budget, 10);
+    if (!isNaN(parsed) && parsed >= 0 && parsed <= 24000) {
+      return parsed;
+    }
+  }
+  return 2048; // default
+}
+
+/**
+ * Retry wrapper for API calls with exponential backoff
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      // Don't retry on non-retryable errors
+      const errorMessage = lastError.message.toLowerCase();
+      const isRetryable =
+        errorMessage.includes("network") ||
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("econnreset") ||
+        errorMessage.includes("enotfound") ||
+        errorMessage.includes("503") ||
+        errorMessage.includes("429") ||
+        errorMessage.includes("rate limit");
+
+      if (!isRetryable || attempt === maxRetries) {
+        throw lastError;
+      }
+
+      // Exponential backoff: 1s, 2s, 4s
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
+/**
+ * Enhance error message for better user experience
+ */
+function enhanceErrorMessage(error: unknown): Error {
+  const originalMessage = error instanceof Error ? error.message : String(error);
+  const lowerMessage = originalMessage.toLowerCase();
+
+  // API Key errors
+  if (lowerMessage.includes("api key") || lowerMessage.includes("unauthorized") || lowerMessage.includes("401")) {
+    return new Error("API 金鑰無效或已過期。請檢查您的金鑰設定。");
+  }
+
+  // Rate limit errors
+  if (lowerMessage.includes("rate limit") || lowerMessage.includes("429") || lowerMessage.includes("quota")) {
+    return new Error("請求過於頻繁，已達到 API 限制。請稍後再試。");
+  }
+
+  // Network errors
+  if (lowerMessage.includes("network") || lowerMessage.includes("econnreset") || lowerMessage.includes("enotfound")) {
+    return new Error("網路連線錯誤。請檢查您的網路連線後再試。");
+  }
+
+  // Timeout errors
+  if (lowerMessage.includes("timeout")) {
+    return new Error("請求超時。請稍後再試，或嘗試生成較簡單的內容。");
+  }
+
+  // Content safety errors
+  if (lowerMessage.includes("safety") || lowerMessage.includes("blocked") || lowerMessage.includes("harmful")) {
+    return new Error("內容被安全過濾器阻擋。請嘗試調整您的輸入內容。");
+  }
+
+  // Server errors
+  if (lowerMessage.includes("500") || lowerMessage.includes("502") || lowerMessage.includes("503")) {
+    return new Error("AI 服務暫時無法使用。請稍後再試。");
+  }
+
+  // Return original error if no match
+  return error instanceof Error ? error : new Error(originalMessage);
+}
+
+/**
  * Get API key - prefers server env, falls back to user-provided key
  */
 function getApiKey(userApiKey?: string): string {
@@ -131,32 +239,34 @@ export async function analyzeProductImageAction(
     請根據上述資訊與圖片，執行視覺行銷總監的分析任務。
   `;
 
-  const response = await ai.models.generateContent({
-    model: getTextModel(),
-    contents: {
-      parts: [
-        {
-          inlineData: {
-            data: input.imageBase64,
-            mimeType: input.imageMimeType,
-          },
-        },
-        { text: promptText },
-      ],
-    },
-    config: {
-      systemInstruction: DIRECTOR_SYSTEM_PROMPT,
-      responseMimeType: "application/json",
-      temperature: 1.0,
-      topP: 0.95,
-    },
-  });
-
-  if (!response.text) {
-    throw new Error("Gemini 沒有回應文字");
-  }
-
   try {
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: getTextModel(),
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: input.imageBase64,
+                mimeType: input.imageMimeType,
+              },
+            },
+            { text: promptText },
+          ],
+        },
+        config: {
+          systemInstruction: DIRECTOR_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          temperature: 1.0,
+          topP: 0.95,
+        },
+      })
+    );
+
+    if (!response.text) {
+      throw new Error("Gemini 沒有回應文字");
+    }
+
     const cleaned = cleanJson(response.text);
 
     let parsed: DirectorOutput;
@@ -181,14 +291,13 @@ export async function analyzeProductImageAction(
       try {
         parsed = JSON.parse(repaired);
       } catch {
-        throw new Error("小GG 返回了無效的格式，且自動修復失敗。請再試一次。");
+        throw new Error("AI 返回了無效的格式，且自動修復失敗。請再試一次。");
       }
     }
 
     return parsed;
   } catch (e) {
-    if (e instanceof Error) throw e;
-    throw new Error("小GG 返回了無效的格式。請再試一次。");
+    throw enhanceErrorMessage(e);
   }
 }
 
@@ -237,21 +346,23 @@ export async function generateContentPlanAction(
     請為每個選定的尺寸生成 3 組不同的內容方案 (JSON)。
   `;
 
-  const response = await ai.models.generateContent({
-    model: getTextModel(),
-    contents: { parts: [{ text: promptText }] },
-    config: {
-      systemInstruction: CONTENT_PLANNER_SYSTEM_PROMPT,
-      responseMimeType: "application/json",
-      temperature: 1.0,
-      topP: 0.95,
-      thinkingConfig: { thinkingBudget: 2048 },
-    },
-  });
-
-  if (!response.text) throw new Error("Gemini Planning failed");
-
   try {
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: getTextModel(),
+        contents: { parts: [{ text: promptText }] },
+        config: {
+          systemInstruction: CONTENT_PLANNER_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          temperature: 1.0,
+          topP: 0.95,
+          thinkingConfig: { thinkingBudget: getThinkingBudget() },
+        },
+      })
+    );
+
+    if (!response.text) throw new Error("Gemini Planning failed");
+
     const cleaned = cleanJson(response.text);
     const parsed = JSON.parse(cleaned) as ContentPlan;
 
@@ -278,8 +389,7 @@ export async function generateContentPlanAction(
 
     return parsed;
   } catch (e) {
-    if (e instanceof Error) throw e;
-    throw new Error("企劃生成格式錯誤");
+    throw enhanceErrorMessage(e);
   }
 }
 
@@ -353,30 +463,34 @@ export async function generateMarketingImageAction(
     }
   }
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-pro-image-preview",
-    contents: { parts },
-    config: {
-      imageConfig: {
-        aspectRatio: apiAspectRatio,
-        imageSize: "1K",
-      },
-    },
-  });
+  try {
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: getImageModel(),
+        contents: { parts },
+        config: {
+          responseModalities: ["image", "text"],
+          imageSafetySetting: "block_low_and_above",
+        },
+      })
+    );
 
-  const candidates = response.candidates;
-  if (candidates && candidates.length > 0) {
-    const content = candidates[0]?.content;
-    if (content?.parts) {
-      for (const part of content.parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+    const candidates = response.candidates;
+    if (candidates && candidates.length > 0) {
+      const content = candidates[0]?.content;
+      if (content?.parts) {
+        for (const part of content.parts) {
+          if (part.inlineData && part.inlineData.data) {
+            return `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+          }
         }
       }
     }
-  }
 
-  throw new Error("未生成圖片。");
+    throw new Error("未生成圖片。");
+  } catch (e) {
+    throw enhanceErrorMessage(e);
+  }
 }
 
 export interface RegeneratePromptInput {
@@ -435,23 +549,29 @@ export async function regenerateVisualPromptAction(
 **範例格式：**
 "KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF. ${ratioRequirements[input.ratio]}, product placement in center, [background description], [lighting description around the product], [mood and atmosphere], [additional props or elements in the background]"`;
 
-  const response = await ai.models.generateContent({
-    model: getTextModel(),
-    contents: {
-      parts: [{ text: "請根據上述資訊生成視覺提示詞。" }],
-    },
-    config: {
-      systemInstruction: systemPrompt,
-      temperature: 0.8,
-      topP: 0.9,
-    },
-  });
+  try {
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: getTextModel(),
+        contents: {
+          parts: [{ text: "請根據上述資訊生成視覺提示詞。" }],
+        },
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.8,
+          topP: 0.9,
+        },
+      })
+    );
 
-  if (!response.text) {
-    throw new Error("Failed to regenerate visual prompt");
+    if (!response.text) {
+      throw new Error("Failed to regenerate visual prompt");
+    }
+
+    return response.text.trim();
+  } catch (e) {
+    throw enhanceErrorMessage(e);
   }
-
-  return response.text.trim();
 }
 
 export interface GenerateFromReferenceInput {
@@ -598,28 +718,32 @@ export async function generateImageFromReferenceAction(
     }
   }
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-pro-image-preview",
-    contents: { parts },
-    config: {
-      imageConfig: {
-        aspectRatio: apiAspectRatio,
-        imageSize: "1K",
-      },
-    },
-  });
+  try {
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: getImageModel(),
+        contents: { parts },
+        config: {
+          responseModalities: ["image", "text"],
+          imageSafetySetting: "block_low_and_above",
+        },
+      })
+    );
 
-  const candidates = response.candidates;
-  if (candidates && candidates.length > 0) {
-    const content = candidates[0]?.content;
-    if (content?.parts) {
-      for (const part of content.parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+    const candidates = response.candidates;
+    if (candidates && candidates.length > 0) {
+      const content = candidates[0]?.content;
+      if (content?.parts) {
+        for (const part of content.parts) {
+          if (part.inlineData && part.inlineData.data) {
+            return `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+          }
         }
       }
     }
-  }
 
-  throw new Error("未生成圖片。");
+    throw new Error("未生成圖片。");
+  } catch (e) {
+    throw enhanceErrorMessage(e);
+  }
 }
