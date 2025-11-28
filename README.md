@@ -35,13 +35,17 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 > Open http://localhost:8080
 
+### Railway
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/Iu7ojt?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
 ---
 
 ## Features
 
 ### Phase 1: Strategy Selection
 
-*The Grind Begins*
+_The Grind Begins_
 
 - **Smart Product Analysis**: Upload product image, AI decodes visual features & brand semantics
 - **3 Strategy Routes**: Instantly generate 3 distinct marketing directions
@@ -50,17 +54,17 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 ### Phase 2: Content Planning
 
-*Still Grinding*
+_Still Grinding_
 
 #### Multi-Platform Sizes
 
-| Size | Best For |
-|------|----------|
-| **1:1 Square** | FB posts, IG carousel, e-commerce |
-| **9:16 Vertical** | Stories, Reels, full-screen mobile |
-| **4:5 Portrait** | IG Feed, mobile-optimized |
-| **16:9 Landscape** | Covers, ad banners |
-| **1:1 Commercial** | Professional product photography |
+| Size               | Best For                           |
+| ------------------ | ---------------------------------- |
+| **1:1 Square**     | FB posts, IG carousel, e-commerce  |
+| **9:16 Vertical**  | Stories, Reels, full-screen mobile |
+| **4:5 Portrait**   | IG Feed, mobile-optimized          |
+| **16:9 Landscape** | Covers, ad banners                 |
+| **1:1 Commercial** | Professional product photography   |
 
 #### Content Planning
 
@@ -77,12 +81,13 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 #### Prompt Mode & Reference Mode
 
-| Mode | Description |
-|------|-------------|
-| **Prompt** | Generate from AI visual prompts |
+| Mode          | Description                          |
+| ------------- | ------------------------------------ |
+| **Prompt**    | Generate from AI visual prompts      |
 | **Reference** | Upload reference, control similarity |
 
 **Similarity Levels:**
+
 - Low: Creative freedom (only color tone & mood)
 - Medium: Moderate reference (lighting & colors, flexible composition)
 - High: Close match (composition, layout, style)
@@ -99,15 +104,15 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Framework | Next.js 16 + React 19 + TypeScript |
-| AI Models | Google Gemini |
-| | `gemini-2.5-flash` (text analysis & content planning) |
-| | `gemini-3-pro-image-preview` (image generation) |
-| Styling | Tailwind CSS |
-| Fonts | Inter + Playfair Display (UI), Noto Sans TC (generated images) |
-| Auth | Cloudflare Zero Trust (optional) |
+| Category  | Technology                                                     |
+| --------- | -------------------------------------------------------------- |
+| Framework | Next.js 16 + React 19 + TypeScript                             |
+| AI Models | Google Gemini                                                  |
+|           | `gemini-2.5-flash` (text analysis & content planning)          |
+|           | `gemini-3-pro-image-preview` (image generation)                |
+| Styling   | Tailwind CSS                                                   |
+| Fonts     | Inter + Playfair Display (UI), Noto Sans TC (generated images) |
+| Auth      | Cloudflare Zero Trust (optional)                               |
 
 ---
 
@@ -175,13 +180,13 @@ CF_ACCESS_AUD=your-application-aud
 
 ### Server vs Static Build
 
-| Feature | Server | Static |
-|---------|--------|--------|
-| API Key | Server-side supported | User must provide |
-| Rate Limiting | Server-controlled | None |
-| Zero Trust | Supported | Not supported |
-| Deployment | Node.js server | Any static hosting |
-| Output | `.next/` | `dist/` |
+| Feature       | Server                | Static             |
+| ------------- | --------------------- | ------------------ |
+| API Key       | Server-side supported | User must provide  |
+| Rate Limiting | Server-controlled     | None               |
+| Zero Trust    | Supported             | Not supported      |
+| Deployment    | Node.js server        | Any static hosting |
+| Output        | `.next/`              | `dist/`            |
 
 ---
 
@@ -255,18 +260,21 @@ IGiveUpOnLife/
 ## Why This Exists
 
 ### User Experience
+
 - Zero design skills needed
 - Fast response (~3 sec strategy)
 - Smooth UX with polished animations
 - Full control over AI-generated content
 
 ### Marketing Expertise
+
 - Brand consistency based on story & features
 - Competitor insights from reference copy
 - Multi-angle strategies (feature, emotion, data)
 - Multi-platform support in one go
 
 ### Technical Advantages
+
 - Cost-optimized - only generate what's needed
 - Flexible deployment - server or static
 - Enterprise-ready - Cloudflare Zero Trust integration
@@ -281,14 +289,14 @@ Don't want to work alone? Neither do we.
 - **Feature idea?** Let's discuss
 - **Want to code?** PRs welcome
 
-> *"I don't want to work hard, but I'll review your PR."* — The Maintainers
+> _"I don't want to work hard, but I'll review your PR."_ — The Maintainers
 
 ---
 
 ## Authors
 
 | <a href="https://github.com/mag477"><img src="https://github.com/mag477.png" width="80" alt="mag477"/><br/><sub>@mag477</sub></a> | <a href="https://github.com/supra126"><img src="https://github.com/supra126.png" width="80" alt="supra126"/><br/><sub>@supra126</sub></a> |
-|:---:|:---:|
+| :-------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 
 ---
 
@@ -341,13 +349,17 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 > 開啟 http://localhost:8080
 
+### Railway
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/Iu7ojt?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
 ---
 
 ## 功能特色
 
 ### 第一階段：視覺策略選擇
 
-*讓我努力步驟一*
+_讓我努力步驟一_
 
 - **智能產品分析**：上傳產品圖片，AI 自動解讀視覺特徵與品牌語意
 - **三條策略路線**：即時生成 3 種截然不同的行銷策略方向
@@ -356,17 +368,17 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 ### 第二階段：完整內容企劃
 
-*不努力步驟二*
+_不努力步驟二_
 
 #### 多平台尺寸支援
 
-| 尺寸 | 適用場景 |
-|------|----------|
-| **1:1 方形圖** | FB 貼文、IG 輪播、電商主圖 |
+| 尺寸              | 適用場景                    |
+| ----------------- | --------------------------- |
+| **1:1 方形圖**    | FB 貼文、IG 輪播、電商主圖  |
 | **9:16 直式長圖** | 限時動態、Reels、手機全螢幕 |
-| **4:5 直式圖** | IG Feed 主頁、優化手機瀏覽 |
-| **16:9 橫式長圖** | 封面、廣告圖片 |
-| **1:1 商業攝影** | 專業商品攝影風格 |
+| **4:5 直式圖**    | IG Feed 主頁、優化手機瀏覽  |
+| **16:9 橫式長圖** | 封面、廣告圖片              |
+| **1:1 商業攝影**  | 專業商品攝影風格            |
 
 #### 內容企劃功能
 
@@ -383,12 +395,13 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 #### 提詞版 & 參考版
 
-| 模式 | 說明 |
-|------|------|
+| 模式       | 說明                           |
+| ---------- | ------------------------------ |
 | **提詞版** | 使用 AI 生成的視覺 Prompt 創作 |
-| **參考版** | 上傳參考圖片，控制相似度生成 |
+| **參考版** | 上傳參考圖片，控制相似度生成   |
 
 **相似度控制：**
+
 - 低：創意自由（僅參考色調與氛圍）
 - 中：適度參考（光線與色彩，構圖彈性）
 - 高：高度相似（構圖、佈局、風格）
@@ -405,15 +418,15 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 ## 技術棧
 
-| 類別 | 技術 |
-|------|------|
-| 框架 | Next.js 16 + React 19 + TypeScript |
-| AI 模型 | Google Gemini |
-| | `gemini-2.5-flash`（文字分析與內容規劃）|
-| | `gemini-3-pro-image-preview`（專業圖片生成）|
-| 樣式 | Tailwind CSS |
-| 字體 | Inter + Playfair Display（介面）、Noto Sans TC（生成圖片）|
-| 認證 | Cloudflare Zero Trust（選填）|
+| 類別    | 技術                                                       |
+| ------- | ---------------------------------------------------------- |
+| 框架    | Next.js 16 + React 19 + TypeScript                         |
+| AI 模型 | Google Gemini                                              |
+|         | `gemini-2.5-flash`（文字分析與內容規劃）                   |
+|         | `gemini-3-pro-image-preview`（專業圖片生成）               |
+| 樣式    | Tailwind CSS                                               |
+| 字體    | Inter + Playfair Display（介面）、Noto Sans TC（生成圖片） |
+| 認證    | Cloudflare Zero Trust（選填）                              |
 
 ---
 
@@ -481,13 +494,13 @@ CF_ACCESS_AUD=your-application-aud
 
 ### 伺服器版 vs 靜態版
 
-| 功能 | 伺服器版 | 靜態版 |
-|------|----------|--------|
-| API 金鑰 | 支援伺服器端 | 用戶必須提供 |
-| 速率限制 | 伺服器控制 | 無 |
-| Zero Trust | 支援 | 不支援 |
-| 部署方式 | Node.js 伺服器 | 任何靜態託管 |
-| 輸出目錄 | `.next/` | `dist/` |
+| 功能       | 伺服器版       | 靜態版       |
+| ---------- | -------------- | ------------ |
+| API 金鑰   | 支援伺服器端   | 用戶必須提供 |
+| 速率限制   | 伺服器控制     | 無           |
+| Zero Trust | 支援           | 不支援       |
+| 部署方式   | Node.js 伺服器 | 任何靜態託管 |
+| 輸出目錄   | `.next/`       | `dist/`      |
 
 ---
 
@@ -561,18 +574,21 @@ IGiveUpOnLife/
 ## 為什麼做這個
 
 ### 使用者體驗
+
 - 零設計門檻
 - 極速響應（約 3 秒完成策略分析）
 - 流暢體驗，精緻動畫
 - AI 生成內容完全可控
 
 ### 行銷專業
+
 - 基於品牌故事與特色的品牌一致性
 - 從參考文案獲得競品洞察
 - 多角度策略（功能、情感、數據）
 - 一次支援多平台
 
 ### 技術優勢
+
 - 成本優化 - 只生成需要的內容
 - 彈性部署 - 伺服器或靜態皆可
 - 企業整合 - Cloudflare Zero Trust 支援
@@ -587,14 +603,14 @@ IGiveUpOnLife/
 - **功能建議？** 來討論看看
 - **想寫程式？** 歡迎 PR
 
-> *「我不想努力了，但我會 review 你的 PR。」* — 維護者們
+> _「我不想努力了，但我會 review 你的 PR。」_ — 維護者們
 
 ---
 
 ## 作者
 
 | <a href="https://github.com/mag477"><img src="https://github.com/mag477.png" width="80" alt="mag477"/><br/><sub>@mag477</sub></a> | <a href="https://github.com/supra126"><img src="https://github.com/supra126.png" width="80" alt="supra126"/><br/><sub>@supra126</sub></a> |
-|:---:|:---:|
+| :-------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 
 ---
 

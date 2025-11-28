@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-slim AS builder
+FROM node:24.11.1-slim AS builder
 
 # 更新系統套件以修復已知漏洞
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
@@ -22,7 +22,7 @@ COPY . .
 RUN pnpm build
 
 # Production stage
-FROM node:22-slim AS production
+FROM node:24.11.1-slim AS production
 
 # 更新系統套件以修復已知漏洞
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
