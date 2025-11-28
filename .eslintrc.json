@@ -6,5 +6,6 @@
       "warn",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ]
-  }
+  },
+  "ignorePatterns": ["bin/", "dist/"]
 }

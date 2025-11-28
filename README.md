@@ -37,7 +37,7 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 ### Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/Iu7ojt?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/i-give-up?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ---
 
@@ -221,42 +221,6 @@ CF_ACCESS_AUD=your-application-aud
 
 ---
 
-## Project Structure
-
-```
-IGiveUpOnLife/
-├── app/                    # Next.js App Router
-│   ├── actions/           # Server Actions
-│   │   └── gemini.ts      # Gemini API calls
-│   ├── globals.css        # Global styles
-│   ├── page.tsx           # Main page
-│   └── layout.tsx         # Root layout
-├── components/            # React Components
-│   ├── ApiKeyModal.tsx    # API Key settings
-│   ├── ContentSuite.tsx   # Phase 2 content suite
-│   ├── GuideModal.tsx     # User guide
-│   ├── ProductCard.tsx    # Product card
-│   ├── PromptCard.tsx     # Prompt card
-│   └── Spinner.tsx        # Loading spinner
-├── services/              # Service Layer
-│   ├── geminiService.ts   # Unified entry (auto-detect build mode)
-│   └── geminiClient.ts    # Static build client-side API
-├── lib/                   # Utilities
-│   ├── rate-limit.ts      # Rate limiting
-│   ├── cloudflareAccess.ts # Cloudflare Zero Trust
-│   └── api-key-storage.ts # API Key storage
-├── locales/               # i18n translations
-│   ├── en.json            # English
-│   └── zh.json            # Traditional Chinese
-├── contexts/              # React Contexts
-│   └── LocaleContext.tsx  # Locale provider
-├── prompts.ts             # AI prompt templates
-├── types.ts               # TypeScript types
-└── next.config.ts         # Next.js config
-```
-
----
-
 ## Why This Exists
 
 ### User Experience
@@ -351,7 +315,7 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
 
 ### Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/Iu7ojt?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/i-give-up?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ---
 
@@ -532,42 +496,6 @@ CF_ACCESS_AUD=your-application-aud
 7. **腳本審閱與編輯**：切換至「內容來嘴看看」模式，編輯內容
 8. **圖片製作**：切換至「爆肝產圖」模式，生成與下載
 9. **匯出報告**：點擊「下載策略報告」
-
----
-
-## 專案結構
-
-```
-IGiveUpOnLife/
-├── app/                    # Next.js App Router
-│   ├── actions/           # Server Actions
-│   │   └── gemini.ts      # Gemini API 呼叫
-│   ├── globals.css        # 全域樣式
-│   ├── page.tsx           # 主頁面
-│   └── layout.tsx         # 根佈局
-├── components/            # React 元件
-│   ├── ApiKeyModal.tsx    # API Key 設定
-│   ├── ContentSuite.tsx   # 第二階段內容套件
-│   ├── GuideModal.tsx     # 使用指南
-│   ├── ProductCard.tsx    # 產品卡片
-│   ├── PromptCard.tsx     # 提示卡片
-│   └── Spinner.tsx        # 載入動畫
-├── services/              # 服務層
-│   ├── geminiService.ts   # 統一入口（自動偵測建置模式）
-│   └── geminiClient.ts    # 靜態版客戶端 API
-├── lib/                   # 工具函式
-│   ├── rate-limit.ts      # 速率限制
-│   ├── cloudflareAccess.ts # Cloudflare Zero Trust
-│   └── api-key-storage.ts # API Key 儲存
-├── locales/               # 多語系翻譯
-│   ├── en.json            # 英文
-│   └── zh.json            # 繁體中文
-├── contexts/              # React Contexts
-│   └── LocaleContext.tsx  # 語系提供者
-├── prompts.ts             # AI 提示模板
-├── types.ts               # TypeScript 類型
-└── next.config.ts         # Next.js 設定
-```
 
 ---
 

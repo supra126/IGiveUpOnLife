@@ -15,6 +15,11 @@ import {
   ProductAnalysis,
   ImageRatio,
 } from "@/types";
+import {
+  validateDirectorOutput,
+  validateContentPlan,
+} from "@/lib/schemas";
+import { ZodError } from "zod";
 
 // --- Server-side i18n for error messages ---
 
@@ -73,6 +78,75 @@ const cleanJson = (text: string): string => {
     clean = clean.replace(/^```/, "").replace(/```$/, "");
   }
   return clean.trim();
+};
+
+/**
+ * Attempt to repair common JSON issues from AI responses
+ * - Unquoted property names: {key: "value"} -> {"key": "value"}
+ * - Single quotes: {'key': 'value'} -> {"key": "value"}
+ * - Trailing commas: {"key": "value",} -> {"key": "value"}
+ * - Unclosed brackets/braces
+ */
+const repairJson = (text: string): string => {
+  let repaired = text;
+
+  // Fix unquoted property names (but not inside strings)
+  // Match: { key: or , key: where key is unquoted
+  repaired = repaired.replace(
+    /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g,
+    '$1"$2":'
+  );
+
+  // Fix single quotes to double quotes (careful with apostrophes in text)
+  // Only replace quotes that look like JSON string delimiters
+  repaired = repaired.replace(
+    /:\s*'([^']*)'/g,
+    ': "$1"'
+  );
+
+  // Fix trailing commas before closing brackets/braces
+  repaired = repaired.replace(/,(\s*[}\]])/g, "$1");
+
+  // Fix missing commas between properties (common AI error)
+  // Match: "value" "key" -> "value", "key"
+  repaired = repaired.replace(/"\s*\n\s*"/g, '",\n"');
+
+  // Balance unclosed brackets and braces
+  const openBraces = (repaired.match(/{/g) || []).length;
+  const closeBraces = (repaired.match(/}/g) || []).length;
+  const openBrackets = (repaired.match(/\[/g) || []).length;
+  const closeBrackets = (repaired.match(/]/g) || []).length;
+
+  if (openBrackets > closeBrackets) {
+    repaired = repaired + "]".repeat(openBrackets - closeBrackets);
+  }
+  if (openBraces > closeBraces) {
+    repaired = repaired + "}".repeat(openBraces - closeBraces);
+  }
+
+  return repaired;
+};
+
+/**
+ * Parse JSON with automatic repair attempts
+ */
+const parseJsonSafe = <T>(text: string, locale: Locale = "en"): T => {
+  const cleaned = cleanJson(text);
+
+  // First attempt: parse as-is
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    // Second attempt: repair and parse
+    try {
+      const repaired = repairJson(cleaned);
+      return JSON.parse(repaired) as T;
+    } catch {
+      // Log for debugging
+      console.error("JSON parse failed. Original text:", cleaned.substring(0, 500));
+      throw new Error(getErrorMessage("invalidFormat", locale));
+    }
+  }
 };
 
 const isValidUrl = (string: string): boolean => {
@@ -263,34 +337,22 @@ export async function analyzeProductImageClient(
       throw new Error(getErrorMessage("noResponse", locale));
     }
 
-    const cleaned = cleanJson(response.text);
+    // Parse with automatic repair
+    const rawParsed = parseJsonSafe<unknown>(response.text, locale);
 
-    let parsed: DirectorOutput;
+    // Validate with Zod schema
     try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      let repaired = cleaned;
-
-      const openBraces = (repaired.match(/{/g) || []).length;
-      const closeBraces = (repaired.match(/}/g) || []).length;
-      const openBrackets = (repaired.match(/\[/g) || []).length;
-      const closeBrackets = (repaired.match(/]/g) || []).length;
-
-      if (openBraces > closeBraces) {
-        repaired = repaired + "}".repeat(openBraces - closeBraces);
+      const validated = validateDirectorOutput(rawParsed);
+      return validated as DirectorOutput;
+    } catch (e) {
+      if (e instanceof ZodError) {
+        const issues = e.issues.map(i => i.message).join(", ");
+        throw new Error(locale === "en"
+          ? `Invalid AI response format: ${issues}`
+          : `AI 回應格式無效: ${issues}`);
       }
-      if (openBrackets > closeBrackets) {
-        repaired = repaired + "]".repeat(openBrackets - closeBrackets);
-      }
-
-      try {
-        parsed = JSON.parse(repaired);
-      } catch {
-        throw new Error(getErrorMessage("invalidFormat", locale));
-      }
+      throw e;
     }
-
-    return parsed;
   } catch (e) {
     throw enhanceErrorMessage(e, locale);
   }
@@ -388,31 +450,22 @@ export async function generateContentPlanClient(
 
     if (!response.text) throw new Error(getErrorMessage("planningFailed", locale));
 
-    const cleaned = cleanJson(response.text);
-    const parsed = JSON.parse(cleaned) as ContentPlan;
+    // Parse with automatic repair
+    const rawParsed = parseJsonSafe<unknown>(response.text, locale);
 
-    if (!parsed.content_sets || !Array.isArray(parsed.content_sets)) {
-      throw new Error(getErrorMessage("missingContentSets", locale));
+    // Validate with Zod schema
+    try {
+      const validated = validateContentPlan(rawParsed);
+      return validated as ContentPlan;
+    } catch (e) {
+      if (e instanceof ZodError) {
+        const issues = e.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+        throw new Error(locale === "en"
+          ? `Invalid content plan format: ${issues}`
+          : `內容計畫格式無效: ${issues}`);
+      }
+      throw e;
     }
-
-    if (!parsed.selected_sizes || !Array.isArray(parsed.selected_sizes)) {
-      throw new Error(getErrorMessage("missingSelectedSizes", locale));
-    }
-
-    const missingFields = parsed.content_sets.filter(
-      (set) =>
-        !set.id ||
-        !set.ratio ||
-        !set.title ||
-        !set.copy ||
-        !set.visual_prompt_en
-    );
-
-    if (missingFields.length > 0) {
-      throw new Error(locale === "en" ? "Some content sets are missing required fields" : "部分內容方案缺少必要欄位");
-    }
-
-    return parsed;
   } catch (e) {
     throw enhanceErrorMessage(e, locale);
   }

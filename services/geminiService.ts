@@ -17,37 +17,36 @@ import {
   ImageRatio,
 } from "@/types";
 import { Locale } from "@/prompts";
+import {
+  parseBase64Image,
+  ensureGeminiCompatibleFormat,
+} from "@/lib/image-utils";
 
 // Detect build mode at compile time
 const IS_STATIC_BUILD = process.env.NEXT_PUBLIC_BUILD_MODE === "static";
 
 // --- Client-side Helpers (always available) ---
 
+/**
+ * Convert a File to base64 data URL, automatically converting
+ * unsupported formats (like AVIF) to WebP for Gemini API compatibility
+ */
 export const fileToBase64 = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => {
-      resolve(reader.result as string);
+    reader.onloadend = async () => {
+      try {
+        const base64 = reader.result as string;
+        // Auto-convert unsupported formats (AVIF, BMP, TIFF) to WebP
+        const compatible = await ensureGeminiCompatibleFormat(base64);
+        resolve(compatible);
+      } catch (err) {
+        reject(err);
+      }
     };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-};
-
-/**
- * Extract base64 data and mime type from a data URL
- */
-const extractBase64Data = (
-  dataUrl: string
-): { data: string; mimeType: string } | null => {
-  const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-  if (match) {
-    return {
-      mimeType: match[1],
-      data: match[2],
-    };
-  }
-  return null;
 };
 
 // --- Conditional Imports ---
@@ -99,7 +98,7 @@ export const analyzeProductImage = async (
   locale?: Locale
 ): Promise<DirectorOutput> => {
   const base64 = await fileToBase64(file);
-  const extracted = extractBase64Data(base64);
+  const extracted = parseBase64Image(base64);
 
   if (!extracted) {
     throw new Error("無法讀取圖片");
