@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Build outputs (will be built in container)
+dist/
+.next/
+out/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test & Coverage
+coverage/
+.nyc_output/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+
+# Documentation (not needed in image)
+*.md
+!README.md
+
+# Claude config
+CLAUDE.md
+CLAUDE-*.md
+.claude/
