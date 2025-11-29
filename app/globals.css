@@ -54,15 +54,11 @@ h1, h2, h3, .serif {
   animation: grid-move 4s linear infinite;
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-  /* Maximum Anti-flickering optimizations */
-  will-change: background-position;
+  /* GPU-accelerated animation optimization */
+  will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   filter: blur(0.6px);
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: optimizeQuality;
   transform-origin: center center;
   pointer-events: none;
   isolation: isolate;
@@ -83,10 +79,10 @@ h1, h2, h3, .serif {
 
 @keyframes grid-move {
   0% {
-    background-position: 0 0;
+    transform: perspective(500px) rotateX(60deg) translate3d(0, 0, 0);
   }
   100% {
-    background-position: 0 40px;
+    transform: perspective(500px) rotateX(60deg) translate3d(0, 40px, 0);
   }
 }
 
