@@ -180,6 +180,7 @@
     "labelOptional": "Gemini API Key",
     "saveButton": "儲存設定",
     "useFreeMode": "改用免費模式",
+    "clearKey": "清除 Key",
     "getApiKey": "取得 API Key"
   },
   "guideModal": {

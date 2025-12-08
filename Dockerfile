@@ -41,6 +41,7 @@ RUN pnpm install --frozen-lockfile --prod
 # 從 builder 複製 build 產物
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
 # 設定環境變數
 ENV NODE_ENV=production

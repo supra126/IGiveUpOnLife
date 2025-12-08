@@ -98,21 +98,22 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
             >
               {serverHasKey ? t("common.close") : t("common.cancel")}
             </button>
-            {key.trim() ? (
+            {key.trim() && (
               <button
                 onClick={handleSave}
                 className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors text-sm"
               >
                 {t("apiKeyModal.saveButton")}
               </button>
-            ) : serverHasKey && getApiKey() ? (
+            )}
+            {getApiKey() && (
               <button
                 onClick={handleClearKey}
-                className="flex-1 px-4 py-2 rounded-lg bg-orange-600 text-white font-bold hover:bg-orange-500 transition-colors text-sm"
+                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-500 transition-colors text-sm"
               >
-                {t("apiKeyModal.useFreeMode")}
+                {t("apiKeyModal.clearKey")}
               </button>
-            ) : null}
+            )}
           </div>
 
           <div className="text-center pt-2">

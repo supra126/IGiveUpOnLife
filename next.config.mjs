@@ -1,5 +1,3 @@
-import type { NextConfig } from "next";
-
 /**
  * Build Mode Detection
  *
@@ -13,7 +11,8 @@ import type { NextConfig } from "next";
  */
 const isStaticBuild = process.env.NEXT_PUBLIC_BUILD_MODE === "static";
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Enable static export for static builds
   ...(isStaticBuild && {
     output: "export",
@@ -28,7 +27,7 @@ const nextConfig: NextConfig = {
   ...(!isStaticBuild && {
     experimental: {
       serverActions: {
-        bodySizeLimit: "20mb", // 增加 body size limit 以支援大圖片上傳
+        bodySizeLimit: process.env.SERVER_ACTIONS_BODY_SIZE_LIMIT || "10mb",
       },
     },
   }),

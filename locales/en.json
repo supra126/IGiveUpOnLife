@@ -180,6 +180,7 @@
     "labelOptional": "Gemini API Key",
     "saveButton": "Save Settings",
     "useFreeMode": "Use Free Mode",
+    "clearKey": "Clear Key",
     "getApiKey": "Get API Key"
   },
   "guideModal": {

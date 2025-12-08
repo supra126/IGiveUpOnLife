@@ -1,7 +1,7 @@
 import "@testing-library/dom";
 
-// Mock sessionStorage for tests
-const sessionStorageMock = (() => {
+// Mock localStorage for tests
+const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] || null,
@@ -17,8 +17,8 @@ const sessionStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, "sessionStorage", {
-  value: sessionStorageMock,
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
 });
 
 // Mock environment variables for tests

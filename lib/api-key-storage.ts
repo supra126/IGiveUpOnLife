@@ -1,20 +1,17 @@
 /**
- * Secure API key storage utilities
- * Uses sessionStorage for better security (cleared when browser closes)
- * Keys are only stored in memory during the session
+ * API key storage utilities
+ * Uses localStorage for persistent storage across sessions
  */
 
 const STORAGE_KEY = "gemini_api_key";
 
 /**
- * Store API key securely in sessionStorage
- * sessionStorage is preferred over localStorage because:
- * 1. Data is cleared when the browser tab is closed
- * 2. Less persistent, reducing exposure window for XSS attacks
+ * Store API key in localStorage
+ * localStorage persists across browser sessions
  */
 export function saveApiKey(key: string): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(STORAGE_KEY, key);
+  localStorage.setItem(STORAGE_KEY, key);
 }
 
 /**
@@ -22,7 +19,7 @@ export function saveApiKey(key: string): void {
  */
 export function getApiKey(): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(STORAGE_KEY);
+  return localStorage.getItem(STORAGE_KEY);
 }
 
 /**
@@ -30,7 +27,7 @@ export function getApiKey(): string | null {
  */
 export function clearApiKey(): void {
   if (typeof window === "undefined") return;
-  sessionStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY);
 }
 
 /**
