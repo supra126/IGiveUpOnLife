@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig, SizeLimit } from "next";
 
 /**
  * Build Mode Detection
@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
   ...(!isStaticBuild && {
     experimental: {
       serverActions: {
-        bodySizeLimit: "20mb", // 增加 body size limit 以支援大圖片上傳
+        bodySizeLimit: (process.env.SERVER_ACTIONS_BODY_SIZE_LIMIT || "10mb") as SizeLimit,
       },
     },
   }),
