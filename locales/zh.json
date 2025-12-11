@@ -26,7 +26,7 @@
     "heroDescription": "讓 小GG 幫你結合產品識別、品牌故事與競品策略，你只需要負責呼吸就好"
   },
   "input": {
-    "uploadProduct": "上傳產品圖片",
+    "uploadOrTakePhoto": "上傳 / 拍照",
     "supportedFormats": "支援 JPG, PNG",
     "changeImage": "更換圖片",
     "productName": "產品名稱",
@@ -37,7 +37,8 @@
     "productUrlPlaceholder": "https://example.com/product",
     "refCopy": "參考文案 / 競品參考（選填）",
     "refCopyPlaceholder": "貼上同類型商品的熱銷文案，或競品官網內容。AI 將拆解其「說服邏輯」...",
-    "startButton": "啟動努力"
+    "startButton": "啟動努力",
+    "clearImage": "清除圖片"
   },
   "analyzing": {
     "title": "小GG已上線，先讓他努力一下",

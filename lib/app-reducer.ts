@@ -96,7 +96,7 @@ export type AppAction =
   | { type: "SET_APP_STATE"; payload: AppState }
   | { type: "SET_ERROR"; payload: string }
   | { type: "CLEAR_ERROR" }
-  | { type: "SET_SELECTED_FILE"; payload: { file: File; preview: string } }
+  | { type: "SET_SELECTED_FILE"; payload: { file: File | null; preview: string | null } }
   | { type: "SET_INPUT"; payload: { field: "productName" | "productInfo" | "productUrl" | "refCopy"; value: string } }
   | { type: "SET_ANALYSIS_RESULT"; payload: DirectorOutput }
   | { type: "SET_ACTIVE_ROUTE"; payload: number }

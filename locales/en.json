@@ -26,7 +26,7 @@
     "heroDescription": "Let AI Director handle the boring stuff—product identity, brand story, competitor strategy. Your only job? Keep breathing."
   },
   "input": {
-    "uploadProduct": "Upload Product Image",
+    "uploadOrTakePhoto": "Upload / Take Photo",
     "supportedFormats": "Supports JPG, PNG",
     "changeImage": "Change Image",
     "productName": "Product Name",
@@ -37,7 +37,8 @@
     "productUrlPlaceholder": "https://example.com/product",
     "refCopy": "Reference Copy / Competitor Reference (Optional)",
     "refCopyPlaceholder": "Paste successful ad copy from similar products. AI will analyze its persuasion logic...",
-    "startButton": "Let's Hustle"
+    "startButton": "Let's Hustle",
+    "clearImage": "Clear Image"
   },
   "analyzing": {
     "title": "AI minion deployed. Let it grind.",

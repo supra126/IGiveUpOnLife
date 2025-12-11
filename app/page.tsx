@@ -87,6 +87,13 @@ export default function Home() {
     }
   }, []);
 
+  const handleClearImage = useCallback(() => {
+    dispatch({
+      type: "SET_SELECTED_FILE",
+      payload: { file: null, preview: null },
+    });
+  }, []);
+
   const handleAnalyze = useCallback(async () => {
     if (!selectedFile) return;
 
@@ -323,6 +330,7 @@ export default function Home() {
       refCopy={refCopy}
       showAnalyzeButton={!!selectedFile && appState === AppState.IDLE}
       onFileChange={handleFileChange}
+      onClearImage={handleClearImage}
       onProductNameChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productName", value } })}
       onProductInfoChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productInfo", value } })}
       onProductUrlChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productUrl", value } })}
@@ -452,7 +460,7 @@ export default function Home() {
       {/* Step Indicator */}
       {renderStepIndicator()}
 
-      <main className="container mx-auto px-4 py-8 flex-1 flex flex-col">
+      <main className="container mx-auto px-4 py-8 pb-16 flex-1 flex flex-col">
         {/* Global Error */}
         {errorMsg && (
           <div className="w-full max-w-2xl mx-auto mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-center flex items-center justify-between">
