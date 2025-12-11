@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ContentPlan, ContentSet, ArrangementStyle } from "@/types";
+import { ContentPlan, ContentSet, ArrangementStyle, MarketingRoute } from "@/types";
 import { fileToBase64, regenerateVisualPrompt } from "@/services/geminiService";
 import { useLocale } from "@/contexts/LocaleContext";
 import {
@@ -11,7 +11,12 @@ import {
   getRatioGridClass,
 } from "@/lib/arrangement-utils";
 import { ScriptEditorRow } from "./ScriptEditorRow";
-import { ProductionCard } from "./ProductionCard";
+import {
+  ProductionCard,
+  GlobalProductionSettings,
+  FontWeight,
+  SimilarityLevel,
+} from "./ProductionCard";
 import { ImageUploader } from "./ImageUploader";
 
 interface ContentSuiteProps {
@@ -24,6 +29,7 @@ interface ContentSuiteProps {
   onProductImageChange: (file: File | null) => void;
   onSecondaryProductChange: (file: File | null) => void;
   onBrandLogoChange: (file: File | null) => void;
+  marketingRoute: MarketingRoute;
 }
 
 // Custom hook for file to base64 conversion with cleanup
@@ -66,11 +72,20 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
   onProductImageChange,
   onSecondaryProductChange,
   onBrandLogoChange,
+  marketingRoute,
 }) => {
   const { t, locale } = useLocale();
   const [mode, setMode] = useState<"review" | "production">("review");
   const [contentSets, setContentSets] = useState<ContentSet[]>(plan.content_sets);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+
+  // Global production settings
+  const [globalSettings, setGlobalSettings] = useState<GlobalProductionSettings>({
+    showText: false,
+    titleWeight: "bold",
+    copyWeight: "regular",
+    similarityLevel: "medium",
+  });
 
   // Use custom hook for file previews
   const productImage = useFilePreview(productImageFile);
@@ -139,6 +154,13 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
     }
   };
 
+  const updateGlobalSetting = <K extends keyof GlobalProductionSettings>(
+    key: K,
+    value: GlobalProductionSettings[K]
+  ) => {
+    setGlobalSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
   // Group content sets by ratio
   const groupedSets = plan.selected_sizes.map((ratio) => ({
     ratio,
@@ -148,9 +170,14 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
-      {/* Upload Settings Section */}
-      <div className="mb-8 p-6 bg-linear-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/30 rounded-xl">
-        <h4 className="text-lg font-bold text-indigo-300 mb-4 flex items-center gap-2">
+      {/* Upload Settings Section - STEP 04 */}
+      <div className="mb-8 p-6 bg-white/5 border border-white/10 rounded-xl">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-md border border-white/20">
+            STEP 04
+          </span>
+        </div>
+        <h4 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -171,8 +198,8 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
             label={t("contentSuite.mainProduct")}
             emptyText={t("contentSuite.clickToUploadMain")}
             changeText={t("contentSuite.changeImage")}
-            borderColor="indigo"
-            iconColor="indigo"
+            borderColor="white"
+            iconColor="white"
           />
           <ImageUploader
             file={secondaryProductFile}
@@ -182,8 +209,8 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
             emptyText={t("contentSuite.clickToUploadSecondary")}
             changeText={t("contentSuite.changeImage")}
             hint={t("contentSuite.secondaryProductHint")}
-            borderColor="pink"
-            iconColor="pink"
+            borderColor="white"
+            iconColor="white"
           />
           <ImageUploader
             file={brandLogoFile}
@@ -192,8 +219,8 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
             label={t("contentSuite.brandLogo")}
             emptyText={t("contentSuite.clickToUploadLogo")}
             changeText={t("contentSuite.changeLogo")}
-            borderColor="indigo"
-            iconColor="indigo"
+            borderColor="white"
+            iconColor="white"
           />
         </div>
       </div>
@@ -213,13 +240,13 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
           </p>
         </div>
 
-        <div className="bg-[#1a1a1f] p-1 rounded-lg flex items-center border border-white/10">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setMode("review")}
             className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${
               mode === "review"
-                ? "bg-gray-700 text-white shadow"
-                : "text-gray-400 hover:text-white"
+                ? "bg-white/10 text-white border border-white"
+                : "bg-white/5 text-gray-400 border border-transparent hover:text-white hover:bg-white/10"
             }`}
           >
             {t("contentSuite.reviewMode")}
@@ -228,8 +255,8 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
             onClick={() => setMode("production")}
             className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${
               mode === "production"
-                ? "bg-blue-600 text-white shadow"
-                : "text-gray-400 hover:text-white"
+                ? "bg-white/10 text-white border border-white"
+                : "bg-white/5 text-gray-400 border border-transparent hover:text-white hover:bg-white/10"
             }`}
           >
             {t("contentSuite.productionMode")}
@@ -270,17 +297,19 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                 <span className={`w-2 h-6 rounded-full ${getRatioBackgroundColor(group.ratio)}`} />
                 {group.label} ({group.ratio}) - {group.sets.length} {t("contentSuite.sets")}
               </h3>
-              {group.sets.map((set) => (
-                <ScriptEditorRow
-                  key={set.id}
-                  contentSet={set}
-                  onChange={handleContentChange}
-                  onRegeneratePrompt={handleRegeneratePrompt}
-                  isRegenerating={regeneratingId === set.id}
-                  t={t}
-                  locale={locale}
-                />
-              ))}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {group.sets.map((set) => (
+                  <ScriptEditorRow
+                    key={set.id}
+                    contentSet={set}
+                    onChange={handleContentChange}
+                    onRegeneratePrompt={handleRegeneratePrompt}
+                    isRegenerating={regeneratingId === set.id}
+                    t={t}
+                    locale={locale}
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -289,6 +318,103 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
       {/* MODE: PRODUCTION */}
       {mode === "production" && (
         <div>
+          {/* Global Settings Panel - 只保留文字設定 */}
+          <div className="mb-8 p-4 bg-white/5 border border-white/10 rounded-xl">
+            <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              {t("production.globalSettings")}
+            </h4>
+
+            <div className="space-y-4">
+              {/* Row 1: Show Text + Font Weights */}
+              <div className="flex flex-wrap items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={globalSettings.showText}
+                    onChange={(e) => updateGlobalSetting("showText", e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-500 bg-black/50 text-white focus:ring-white focus:ring-offset-0"
+                  />
+                  <span className="text-xs text-gray-300">{t("production.showContent")}</span>
+                </label>
+
+                {globalSettings.showText && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-gray-400">{t("production.titleWeight")}</label>
+                      <select
+                        value={globalSettings.titleWeight}
+                        onChange={(e) => updateGlobalSetting("titleWeight", e.target.value as FontWeight)}
+                        className="px-2 py-1 text-xs bg-white/5 border border-white/10 rounded text-white focus:border-white focus:outline-none"
+                      >
+                        <option value="regular">Regular</option>
+                        <option value="medium">Medium</option>
+                        <option value="bold">Bold</option>
+                        <option value="black">Black</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-gray-400">{t("production.copyWeight")}</label>
+                      <select
+                        value={globalSettings.copyWeight}
+                        onChange={(e) => updateGlobalSetting("copyWeight", e.target.value as FontWeight)}
+                        className="px-2 py-1 text-xs bg-white/5 border border-white/10 rounded text-white focus:border-white focus:outline-none"
+                      >
+                        <option value="regular">Regular</option>
+                        <option value="medium">Medium</option>
+                        <option value="bold">Bold</option>
+                        <option value="black">Black</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Row 2: Similarity Level */}
+              <div>
+                <label className="text-xs text-gray-400 mb-2 block">{t("production.referenceSimilarity")}</label>
+                <div className="flex gap-2">
+                  {(["low", "medium", "high"] as SimilarityLevel[]).map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => updateGlobalSetting("similarityLevel", level)}
+                      className={`flex-1 max-w-[140px] py-2 px-3 text-xs rounded-md transition-colors ${
+                        globalSettings.similarityLevel === level
+                          ? "bg-white/10 text-white border border-white"
+                          : "bg-white/5 text-gray-400 border border-transparent hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="font-bold">
+                        {t(`production.similarity${level.charAt(0).toUpperCase() + level.slice(1)}`)}
+                      </div>
+                      <div className="text-[10px] opacity-70 mt-0.5">
+                        {t(`production.similarity${level.charAt(0).toUpperCase() + level.slice(1)}Desc`)}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-gray-500 mt-3">
+              {t("production.perCardModeHint")}
+            </p>
+          </div>
+
+          {/* Production Cards */}
           {groupedSets.map((group, idx) => (
             <div key={group.ratio} className={idx > 0 ? "mt-12" : ""}>
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -306,6 +432,8 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                     brandLogo={brandLogo.base64}
                     onContentChange={handleContentChange}
                     t={t}
+                    globalSettings={globalSettings}
+                    marketingRoute={marketingRoute}
                   />
                 ))}
               </div>

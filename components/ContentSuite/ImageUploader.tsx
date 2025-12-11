@@ -10,8 +10,8 @@ interface ImageUploaderProps {
   emptyText: string;
   changeText: string;
   hint?: string;
-  borderColor: "indigo" | "pink";
-  iconColor: "indigo" | "pink";
+  borderColor: "indigo" | "pink" | "white";
+  iconColor: "indigo" | "pink" | "white";
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = React.memo(({
@@ -26,23 +26,27 @@ export const ImageUploader: React.FC<ImageUploaderProps> = React.memo(({
   iconColor,
 }) => {
   const borderClasses =
-    borderColor === "indigo"
-      ? "border-indigo-500/30 hover:border-indigo-400 hover:bg-indigo-500/5"
-      : "border-pink-500/30 hover:border-pink-400 hover:bg-pink-500/5";
+    borderColor === "white"
+      ? "border-white/20 hover:border-white/40 hover:bg-white/5"
+      : borderColor === "indigo"
+        ? "border-indigo-500/30 hover:border-indigo-400 hover:bg-indigo-500/5"
+        : "border-pink-500/30 hover:border-pink-400 hover:bg-pink-500/5";
 
-  const iconClasses = iconColor === "indigo" ? "text-indigo-400" : "text-pink-400";
-  const textClasses = iconColor === "indigo" ? "text-indigo-300" : "text-pink-300";
+  const iconClasses =
+    iconColor === "white" ? "text-white/60" : iconColor === "indigo" ? "text-indigo-400" : "text-pink-400";
+  const textClasses =
+    iconColor === "white" ? "text-white/70" : iconColor === "indigo" ? "text-indigo-300" : "text-pink-300";
 
   return (
     <div className="relative">
-      <label className="block text-sm font-bold text-indigo-200 mb-2">{label}</label>
+      <label className={`block text-sm font-bold mb-2 ${iconColor === "white" ? "text-white/80" : "text-indigo-200"}`}>{label}</label>
       <label
         className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all relative overflow-hidden bg-black/20 ${borderClasses}`}
       >
         {file && previewUrl ? (
           <div className="w-full h-full relative group">
             <img src={previewUrl} alt={label} className="w-full h-full object-contain p-2" />
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <span className="text-white text-sm">{changeText}</span>
             </div>
           </div>

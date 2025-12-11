@@ -15,29 +15,39 @@ interface SizeCheckboxProps {
 
 const colorClasses = {
   blue: {
-    border: "border-blue-500",
-    bg: "bg-blue-500/10",
-    checkbox: "border-blue-500 bg-blue-500",
+    border: "border-white/30",
+    bg: "bg-white/10",
+    glow: "",
+    checkbox: "bg-white",
+    text: "text-white",
   },
   purple: {
-    border: "border-purple-500",
-    bg: "bg-purple-500/10",
-    checkbox: "border-purple-500 bg-purple-500",
+    border: "border-white/30",
+    bg: "bg-white/10",
+    glow: "",
+    checkbox: "bg-white",
+    text: "text-white",
   },
   pink: {
-    border: "border-pink-500",
-    bg: "bg-pink-500/10",
-    checkbox: "border-pink-500 bg-pink-500",
+    border: "border-white/30",
+    bg: "bg-white/10",
+    glow: "",
+    checkbox: "bg-white",
+    text: "text-white",
   },
   green: {
-    border: "border-green-500",
-    bg: "bg-green-500/10",
-    checkbox: "border-green-500 bg-green-500",
+    border: "border-white/30",
+    bg: "bg-white/10",
+    glow: "",
+    checkbox: "bg-white",
+    text: "text-white",
   },
   amber: {
-    border: "border-amber-500",
-    bg: "bg-amber-500/10",
-    checkbox: "border-amber-500 bg-amber-500",
+    border: "border-white/30",
+    bg: "bg-white/10",
+    glow: "",
+    checkbox: "bg-white",
+    text: "text-white",
   },
 };
 
@@ -53,11 +63,13 @@ export const SizeCheckbox: React.FC<SizeCheckboxProps> = React.memo(({
 
   return (
     <label
-      className={`cursor-pointer p-6 rounded-xl border-2 transition-all ${
-        checked
-          ? `${colors.border} ${colors.bg}`
-          : "border-white/10 bg-white/5 hover:border-white/20"
-      }`}
+      className={`
+        relative cursor-pointer p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center gap-2 sm:gap-3 group h-24 sm:h-32
+        ${checked
+          ? `${colors.bg} ${colors.border} ${colors.glow}`
+          : "bg-black/20 border-white/5 hover:border-white/20 hover:bg-white/5"
+        }
+      `}
     >
       <input
         type="checkbox"
@@ -65,32 +77,20 @@ export const SizeCheckbox: React.FC<SizeCheckboxProps> = React.memo(({
         onChange={(e) => onChange(e.target.checked)}
         className="sr-only"
       />
-      <div className="flex items-start gap-3">
-        <div
-          className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 ${
-            checked ? colors.checkbox : "border-gray-500"
-          }`}
-        >
-          {checked && (
-            <svg
-              className="w-3 h-3 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={3}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          )}
+
+      {/* Selected indicator */}
+      {checked && (
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+          <div className={`w-2 h-2 rounded-full ${colors.checkbox} shadow-lg animate-pulse`}></div>
         </div>
-        <div>
-          <div className="font-bold text-white mb-1">{name}</div>
-          <div className="text-xs text-gray-400">{ratioLabel}</div>
-          <div className="text-xs text-gray-500 mt-1">{description}</div>
+      )}
+
+      <div className="text-center">
+        <div className={`font-bold text-sm sm:text-base transition-colors ${checked ? colors.text : 'text-gray-300'}`}>
+          {name}
+        </div>
+        <div className="text-[10px] sm:text-xs opacity-60 font-mono mt-0.5">
+          {ratioLabel}
         </div>
       </div>
     </label>

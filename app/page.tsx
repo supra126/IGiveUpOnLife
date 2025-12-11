@@ -10,7 +10,6 @@ import {
   AppState,
   ImageRatio,
 } from "@/types";
-import { Spinner } from "@/components/Spinner";
 import { ProductCard } from "@/components/ProductCard";
 import { GuideModal } from "@/components/GuideModal";
 import { ContentSuite } from "@/components/ContentSuite";
@@ -20,6 +19,7 @@ import { ProductInputForm } from "@/components/ProductInputForm";
 import { RouteEditor } from "@/components/RouteEditor";
 import { SizeSelectionPanel } from "@/components/SizeSelectionPanel";
 import { AnalyzingLoader } from "@/components/AnalyzingLoader";
+import { PlanningLoader } from "@/components/PlanningLoader";
 import { getApiKey } from "@/lib/api-key-storage";
 import { useLocale } from "@/contexts/LocaleContext";
 import { appReducer, initialAppState } from "@/lib/app-reducer";
@@ -190,6 +190,128 @@ export default function Home() {
     }
   }, [analysisResult, sizeSelection, editedRoutes, activeRouteIndex, routeSupplements, refCopy, apiKey, locale, t]);
 
+  // --- Get Current Step ---
+  const getCurrentStep = (): number => {
+    switch (appState) {
+      case AppState.IDLE:
+      case AppState.ANALYZING:
+        return 0;
+      case AppState.RESULTS:
+      case AppState.SIZE_SELECTION:
+        return 1;
+      case AppState.PLANNING:
+      case AppState.SUITE_READY:
+        return 2;
+      default:
+        return 0;
+    }
+  };
+
+  const steps = [
+    { label: t("steps.analyze"), shortLabel: "01" },
+    { label: t("steps.strategyFormat"), shortLabel: "02" },
+    { label: t("steps.adjustGenerate"), shortLabel: "03" },
+  ];
+
+  const currentStep = getCurrentStep();
+
+  // --- Render Step Indicator ---
+  const renderStepIndicator = () => {
+    if (appState === AppState.IDLE) return null;
+
+    return (
+      <div className="w-full glass-panel border-b border-white/5 py-4 sticky top-[73px] z-40">
+        <div className="container mx-auto px-6">
+          {/* Desktop Step Indicator */}
+          <div className="hidden md:flex items-center justify-center gap-2">
+            {steps.map((step, idx) => {
+              const isCompleted = idx < currentStep;
+              const isCurrent = idx === currentStep;
+              const isPending = idx > currentStep;
+
+              return (
+                <React.Fragment key={idx}>
+                  {/* Step Item */}
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`
+                        w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500
+                        ${isCompleted
+                          ? "bg-white text-black"
+                          : isCurrent
+                            ? "bg-white text-black"
+                            : "bg-white/5 text-gray-500 border border-white/10"
+                        }
+                      `}
+                    >
+                      {isCompleted ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        step.shortLabel
+                      )}
+                    </div>
+                    <span
+                      className={`
+                        text-sm font-medium transition-colors duration-300
+                        ${isCurrent ? "text-white" : isCompleted ? "text-white" : "text-gray-500"}
+                      `}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+
+                  {/* Connector Line */}
+                  {idx < steps.length - 1 && (
+                    <div className="w-12 h-0.5 mx-2 relative overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className={`
+                          absolute inset-y-0 left-0 bg-white transition-all duration-700 ease-out rounded-full
+                          ${idx < currentStep ? "w-full" : "w-0"}
+                        `}
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {/* Mobile Step Indicator */}
+          <div className="flex md:hidden items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-sm">
+                {currentStep + 1}
+              </div>
+              <div>
+                <div className="text-white font-bold text-sm">{steps[currentStep]?.label}</div>
+                <div className="text-gray-500 text-xs">Step {currentStep + 1} of {steps.length}</div>
+              </div>
+            </div>
+            {/* Progress Dots */}
+            <div className="flex gap-1.5">
+              {steps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`
+                    w-2 h-2 rounded-full transition-all duration-300
+                    ${idx === currentStep
+                      ? "bg-white"
+                      : idx < currentStep
+                        ? "bg-white/50"
+                        : "bg-white/20"
+                    }
+                  `}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // --- Render Helpers ---
 
   const renderInputs = () => (
@@ -213,90 +335,55 @@ export default function Home() {
     if (!analysisResult || !imagePreview) return null;
     const activeRoute = analysisResult.marketing_routes[activeRouteIndex];
 
+    // Hide Phase 1/2 content during PLANNING and SUITE_READY
+    const showPhase1And2 = appState === AppState.RESULTS || appState === AppState.SIZE_SELECTION;
+
     return (
       <div className="w-full max-w-6xl mx-auto px-4 pb-20">
-        <ProductCard
-          analysis={analysisResult.product_analysis}
-          imageSrc={imagePreview}
-        />
-
-        {/* Route Selection */}
-        <RouteEditor
-          routes={editedRoutes}
-          activeRouteIndex={activeRouteIndex}
-          routeSupplements={routeSupplements}
-          onSelectRoute={(idx) => dispatch({ type: "SET_ACTIVE_ROUTE", payload: idx })}
-          onUpdateRoute={(idx, route) =>
-            dispatch({ type: "UPDATE_EDITED_ROUTE", payload: { index: idx, route } })
-          }
-          onUpdateSupplement={(idx, value) =>
-            dispatch({ type: "UPDATE_ROUTE_SUPPLEMENT", payload: { index: idx, value } })
-          }
-        />
-
-        {/* Continue Button */}
-        <div className="mb-10 flex justify-center">
-          <button
-            onClick={() => {
-              if (contentPlan) {
-                dispatch({ type: "RESET_PHASE2" });
-                setTimeout(() => {
-                  document
-                    .getElementById("phase2-section")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 300);
-              } else {
-                handleGeneratePlan();
-              }
-            }}
-            disabled={appState === AppState.PLANNING}
-            className="px-12 py-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {appState === AppState.PLANNING ? (
-              <>
-                <Spinner className="w-5 h-5" />
-                <span>{t("phase1.processing")}</span>
-              </>
-            ) : (
-              <span>{contentPlan ? t("phase1.retryButton") : t("phase1.continueButton")}</span>
-            )}
-          </button>
-        </div>
-
-        {/* Phase 2: Size Selection */}
-        <div className="border-t border-white/10 pt-12" id="phase2-section">
-          {appState === AppState.SIZE_SELECTION && (
-            <SizeSelectionPanel
-              sizeSelection={sizeSelection}
-              errorMsg={errorMsg}
-              onSizeChange={(ratio, checked) =>
-                dispatch({ type: "SET_SIZE_SELECTION", payload: { ratio, checked } })
-              }
-              onConfirm={handleSizeConfirm}
+        {/* Phase 1: Product Card & Route Selection - Hidden during PLANNING and SUITE_READY */}
+        {showPhase1And2 && (
+          <>
+            <ProductCard
+              analysis={analysisResult.product_analysis}
+              imageSrc={imagePreview}
             />
-          )}
 
-          {/* Phase 2: Planning Status */}
-          {appState === AppState.PLANNING && (
-            <div className="bg-[#1e1e24] rounded-2xl p-8 border border-blue-500/20 flex items-center justify-center gap-4 animate-in fade-in duration-300">
-              <Spinner className="w-6 h-6 text-blue-500" />
-              <div>
-                <div className="text-lg font-bold text-white mb-1">
-                  {t("phase2.planningTitle")}
-                </div>
-                <p className="text-sm text-gray-400">
-                  {t("phase2.planningDescription")}
-                  <strong>&quot;{activeRoute.route_name}&quot;</strong>{" "}
-                  {t("phase2.planningDescription2")}
-                </p>
-              </div>
+            {/* Route Selection */}
+            <RouteEditor
+              routes={editedRoutes}
+              activeRouteIndex={activeRouteIndex}
+              routeSupplements={routeSupplements}
+              onSelectRoute={(idx) => dispatch({ type: "SET_ACTIVE_ROUTE", payload: idx })}
+              onUpdateRoute={(idx, route) =>
+                dispatch({ type: "UPDATE_EDITED_ROUTE", payload: { index: idx, route } })
+              }
+              onUpdateSupplement={(idx, value) =>
+                dispatch({ type: "UPDATE_ROUTE_SUPPLEMENT", payload: { index: idx, value } })
+              }
+            />
+
+            {/* Phase 2: Size Selection */}
+            <div className="border-t border-white/10 pt-12" id="phase2-section">
+              <SizeSelectionPanel
+                sizeSelection={sizeSelection}
+                errorMsg={errorMsg}
+                onSizeChange={(ratio, checked) =>
+                  dispatch({ type: "SET_SIZE_SELECTION", payload: { ratio, checked } })
+                }
+                onConfirm={handleSizeConfirm}
+              />
             </div>
-          )}
-        </div>
+          </>
+        )}
 
-        {/* Phase 2 Results */}
-        {(appState === AppState.SUITE_READY || contentPlan) && contentPlan && (
-          <div className="mt-12 relative" id="content-section">
+        {/* Planning Loader - Full screen during PLANNING */}
+        {appState === AppState.PLANNING && (
+          <PlanningLoader routeName={activeRoute.route_name} />
+        )}
+
+        {/* Phase 4: Content Suite - Only shown in SUITE_READY */}
+        {appState === AppState.SUITE_READY && contentPlan && (
+          <div className="relative" id="content-section">
             <ContentSuite
               plan={contentPlan}
               onContentUpdate={(newSets) => dispatch({ type: "SET_EDITED_CONTENT_SETS", payload: newSets })}
@@ -307,6 +394,7 @@ export default function Home() {
               onProductImageChange={(file) => dispatch({ type: "SET_PRODUCT_IMAGE", payload: file })}
               onSecondaryProductChange={(file) => dispatch({ type: "SET_SECONDARY_PRODUCT", payload: file })}
               onBrandLogoChange={(file) => dispatch({ type: "SET_BRAND_LOGO", payload: file })}
+              marketingRoute={editedRoutes[activeRouteIndex]}
             />
           </div>
         )}
@@ -325,10 +413,10 @@ export default function Home() {
       />
 
       {/* Header */}
-      <header className="w-full py-6 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-6 flex items-center justify-between">
+      <header className="w-full py-4 sm:py-6 border-b border-white/5 glass-panel sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
             onClick={() => dispatch({ type: "SET_APP_STATE", payload: AppState.IDLE })}
           >
             <div className="w-8 h-8 flex items-center justify-center">
@@ -340,21 +428,14 @@ export default function Home() {
                 className="w-full h-full object-contain animate-float"
               />
             </div>
-            <h1 className="text-lg font-bold text-white hidden md:block">
+            <h1 className="text-base sm:text-lg font-bold text-white hidden sm:block group-hover:text-gray-300 transition-colors">
               {t("common.appName")}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <button
-              onClick={() => dispatch({ type: "SET_GUIDE_OPEN", payload: true })}
-              className="text-gray-400 hover:text-white text-sm font-bold transition-colors"
-            >
-              {t("header.guide")}
-            </button>
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => dispatch({ type: "SET_API_KEY_MODAL_OPEN", payload: true })}
-              className="text-blue-400 hover:text-blue-300 text-sm font-bold"
+              className="text-white hover:text-gray-300 text-xs sm:text-sm font-bold transition-colors"
             >
               {serverHasKey
                 ? apiKey
@@ -367,6 +448,9 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Step Indicator */}
+      {renderStepIndicator()}
 
       <main className="container mx-auto px-4 py-8 flex-1 flex flex-col">
         {/* Global Error */}
@@ -393,7 +477,7 @@ export default function Home() {
               <br />
               {t("home.heroTitle2")}
             </h2>
-            <p className="text-gray-400 max-w-xl mx-auto mb-8 text-lg mt-2">
+            <p className="text-gray-400 max-w-xl mx-auto mb-8 text-base mt-2">
               {t("home.heroDescription")}
             </p>
             {renderInputs()}
@@ -406,6 +490,20 @@ export default function Home() {
           appState === AppState.SUITE_READY) &&
           renderPhase1Results()}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-4 mt-auto">
+        <div className="container mx-auto px-4 flex items-center justify-end gap-4">
+          <button
+            onClick={() => dispatch({ type: "SET_GUIDE_OPEN", payload: true })}
+            className="text-gray-400 hover:text-white text-xs sm:text-sm font-bold transition-colors"
+          >
+            {t("header.guide")}
+          </button>
+          <span className="text-gray-600">|</span>
+          <LanguageToggle />
+        </div>
+      </footer>
     </div>
   );
 }

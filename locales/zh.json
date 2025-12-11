@@ -64,7 +64,7 @@
     "title": "努力步驟二：選擇圖片尺寸",
     "description": "請選擇您需要的圖片尺寸（可多選），每個尺寸將生成 3 組不同的內容方案",
     "selectAtLeastOne": "請至少選擇一個圖片尺寸",
-    "confirmButton": "確認尺寸，讓我努力一下",
+    "confirmButton": "讓我努力一下",
     "planningTitle": "不努力步驟二",
     "planningDescription": "小GG正在爆肝寫腳本中，正依照",
     "planningDescription2": "產出建議，先等著看看他的努力"
@@ -161,12 +161,22 @@
     "uploadReference": "上傳參考圖",
     "changeReference": "更換參考圖",
     "similarity": "相似度",
+    "referenceSimilarity": "參考圖相似度（參考版模式適用）",
     "similarityLow": "低相似度",
     "similarityLowDesc": "創意發揮",
     "similarityMedium": "中等相似度",
     "similarityMediumDesc": "適度參考",
     "similarityHigh": "高相似度",
-    "similarityHighDesc": "完全模仿"
+    "similarityHighDesc": "完全模仿",
+    "globalSettings": "全局產圖設定",
+    "referenceByRatio": "每個尺寸可以設定不同的參考圖",
+    "generationMode": "產圖模式",
+    "textSettings": "文字設定",
+    "titleWeight": "標題字重",
+    "copyWeight": "文案字重",
+    "expand": "展開",
+    "collapse": "收合",
+    "perCardModeHint": "點擊「展開」可針對每張圖片獨立設定產圖模式與參考圖"
   },
   "apiKeyModal": {
     "title": "API Key 設定",
@@ -253,5 +263,31 @@
   },
   "prompt": {
     "strategySupplement": "【策略補充說明】"
+  },
+  "steps": {
+    "analyze": "分析",
+    "strategy": "策略",
+    "format": "格式",
+    "strategyFormat": "策略與格式",
+    "adjust": "調整",
+    "generate": "產圖",
+    "adjustGenerate": "調整與產圖"
+  },
+  "extend": {
+    "title": "延伸至其他尺寸",
+    "sourceImage": "來源圖片",
+    "selectRatios": "選擇要延伸的尺寸",
+    "startExtend": "開始延伸",
+    "generating": "正在生成中...",
+    "generatedImages": "延伸圖片",
+    "socialCopy": "社群發文建議",
+    "headline": "主打標語",
+    "subhead": "副標題",
+    "copy": "複製",
+    "retry": "重試",
+    "addMore": "延伸更多尺寸",
+    "done": "完成",
+    "extendButton": "延伸",
+    "openInNewTab": "在新視窗開啟"
   }
 }

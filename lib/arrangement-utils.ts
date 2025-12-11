@@ -98,20 +98,8 @@ export const getRatioBackgroundColor = (ratio: string): string => {
   }
 };
 
-// 根據 ratio 取得 grid class
+// 根據 ratio 取得 grid class - 類似努力方案的排版
 export const getRatioGridClass = (ratio: string): string => {
-  switch (ratio) {
-    case "1:1":
-      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-4";
-    case "1:1-commercial":
-      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-4";
-    case "9:16":
-      return "grid-cols-1 sm:grid-cols-3 md:grid-cols-6";
-    case "4:5":
-      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
-    case "16:9":
-      return "grid-cols-1 sm:grid-cols-1 md:grid-cols-2";
-    default:
-      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
-  }
+  // 所有尺寸都用相同排版：手機 1 欄，大螢幕 3 欄
+  return "grid-cols-1 lg:grid-cols-3";
 };

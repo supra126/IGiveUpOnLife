@@ -64,7 +64,7 @@
     "title": "Step 2: Select Image Sizes",
     "description": "Select the image sizes you need (multiple selection). Each size will generate 3 different content sets.",
     "selectAtLeastOne": "Please select at least one image size",
-    "confirmButton": "Lock it in. Here we go.",
+    "confirmButton": "Let me grind",
     "planningTitle": "Step 2: Still Grinding",
     "planningDescription": "AI is burning the midnight oil on",
     "planningDescription2": "Please wait for the results"
@@ -161,12 +161,22 @@
     "uploadReference": "Upload reference",
     "changeReference": "Change reference",
     "similarity": "Similarity",
+    "referenceSimilarity": "Reference Similarity (for Reference mode)",
     "similarityLow": "Low",
     "similarityLowDesc": "Creative freedom",
     "similarityMedium": "Medium",
     "similarityMediumDesc": "Moderate reference",
     "similarityHigh": "High",
-    "similarityHighDesc": "Close match"
+    "similarityHighDesc": "Close match",
+    "globalSettings": "Global Settings",
+    "referenceByRatio": "Set different reference images for each size",
+    "generationMode": "Generation Mode",
+    "textSettings": "Text Settings",
+    "titleWeight": "Title Weight",
+    "copyWeight": "Copy Weight",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "perCardModeHint": "Click \"Expand\" to set generation mode and reference image for each card"
   },
   "apiKeyModal": {
     "title": "API Key Settings",
@@ -253,5 +263,31 @@
   },
   "prompt": {
     "strategySupplement": "[Strategy Notes]"
+  },
+  "steps": {
+    "analyze": "Analyze",
+    "strategy": "Strategy",
+    "format": "Format",
+    "strategyFormat": "Strategy & Format",
+    "adjust": "Adjust",
+    "generate": "Generate",
+    "adjustGenerate": "Adjust & Generate"
+  },
+  "extend": {
+    "title": "Extend to Other Sizes",
+    "sourceImage": "Source Image",
+    "selectRatios": "Select sizes to extend",
+    "startExtend": "Start Extend",
+    "generating": "Generating...",
+    "generatedImages": "Extended Images",
+    "socialCopy": "Social Post Suggestions",
+    "headline": "Headline",
+    "subhead": "Subhead",
+    "copy": "Copy",
+    "retry": "Retry",
+    "addMore": "Extend More Sizes",
+    "done": "Done",
+    "extendButton": "Extend",
+    "openInNewTab": "Open in new tab"
   }
 }

@@ -149,7 +149,7 @@ export function appReducer(state: AppPageState, action: AppAction): AppPageState
         ...state,
         analysisResult: action.payload,
         editedRoutes: action.payload.marketing_routes,
-        appState: AppState.RESULTS,
+        appState: AppState.SIZE_SELECTION,
       };
 
     case "SET_ACTIVE_ROUTE":
@@ -162,9 +162,8 @@ export function appReducer(state: AppPageState, action: AppAction): AppPageState
         sizeSelection: INITIAL_SIZE_SELECTION,
         appState:
           state.appState === AppState.SUITE_READY ||
-          state.appState === AppState.SIZE_SELECTION ||
           state.appState === AppState.PLANNING
-            ? AppState.RESULTS
+            ? AppState.SIZE_SELECTION
             : state.appState,
       };
 
@@ -196,6 +195,8 @@ export function appReducer(state: AppPageState, action: AppAction): AppPageState
         contentPlan: action.payload,
         editedContentSets: action.payload.content_sets,
         appState: AppState.SUITE_READY,
+        // Auto-set productImage from selectedFile if not already set
+        productImage: state.productImage || state.selectedFile,
       };
 
     case "SET_EDITED_CONTENT_SETS":
