@@ -25,6 +25,8 @@ const nextConfig = {
 
   // Server-side configuration (only for non-static builds)
   ...(!isStaticBuild && {
+    // Use standalone output for optimized Docker deployment
+    output: "standalone",
     experimental: {
       serverActions: {
         bodySizeLimit: process.env.SERVER_ACTIONS_BODY_SIZE_LIMIT || "10mb",

@@ -10,7 +10,7 @@ export const LanguageToggle: React.FC = () => {
     <button
       onClick={toggleLocale}
       className="text-gray-400 hover:text-white text-xs sm:text-sm font-bold transition-colors"
-      title={locale === "zh" ? "Switch to English" : "切換至繁體中文"}
+      title={locale === "zh" ? t("language.switchToEnglish") : t("language.switchToChinese")}
     >
       {t(`language.${locale}`)}
     </button>

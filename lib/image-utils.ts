@@ -154,3 +154,69 @@ export function normalizeAspectRatio(
       return "1:1";
   }
 }
+
+/**
+ * 在新窗口中安全地打開圖片（支援 data URL）
+ * 避免 "Not allowed to navigate top frame to data URL" 錯誤
+ * @param imageUrl - 圖片 URL（支援 data URL 或普通 URL）
+ * @param title - 圖片標題（選填）
+ */
+export function openImageInNewWindow(imageUrl: string, title?: string): void {
+  const win = window.open("", "_blank");
+  if (!win) {
+    console.error("無法打開新窗口，可能被瀏覽器阻擋");
+    return;
+  }
+
+  // 創建一個完整的 HTML 文件來顯示圖片
+  win.document.open();
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title || "圖片預覽"}</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+          }
+          img {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+          }
+        </style>
+      </head>
+      <body>
+        <img src="${imageUrl}" alt="${title || "預覽圖片"}" />
+      </body>
+    </html>
+  `);
+  win.document.close();
+}
+
+/**
+ * 下載圖片到本地
+ * @param imageUrl - 圖片 URL（支援 data URL 或普通 URL）
+ * @param filename - 檔案名稱
+ */
+export function downloadImage(imageUrl: string, filename: string): void {
+  const link = document.createElement("a");
+  link.href = imageUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

@@ -1,9 +1,10 @@
 import { ImageResponse } from "next/og";
+import { SEO_CONFIG } from "@/lib/seo-config";
 
 // Required for static export
 export const dynamic = "force-static";
 
-export const alt = "不想努力了 I Give Up - AI Marketing Content Generator";
+export const alt = SEO_CONFIG.ogImageAlt;
 export const size = {
   width: 1200,
   height: 630,

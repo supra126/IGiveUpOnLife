@@ -9,6 +9,7 @@ import {
 } from "@/services/geminiService";
 import { Spinner } from "@/components/Spinner";
 import { getRatioColor, getRatioClass } from "@/lib/ratio-utils";
+import { openImageInNewWindow } from "@/lib/image-utils";
 import { ExtendModal } from "./ExtendModal";
 
 export type FontWeight = "regular" | "medium" | "bold" | "black";
@@ -149,15 +150,19 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
           </div>
         ) : image ? (
           <div className="relative w-full h-full">
-            <a href={image} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-              <img src={image} alt={contentSet.title} className="w-full h-full object-cover" />
-            </a>
+            <img
+              src={image}
+              alt={contentSet.title}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={() => openImageInNewWindow(image, contentSet.title)}
+            />
             <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
               <a
                 href={image}
                 download={`${contentSet.id}.png`}
                 className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto"
                 title={t("production.download")}
+                onClick={(e) => e.stopPropagation()}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
+import { SEO_CONFIG } from "@/lib/seo-config";
 
 export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "不想努力了 I Give Up - AI Marketing Content Generator",
-    short_name: "I Give Up",
-    description:
-      "AI-powered product marketing content and image generator. Create professional marketing visuals with Google Gemini AI.",
+    name: SEO_CONFIG.manifest.name,
+    short_name: SEO_CONFIG.manifest.shortName,
+    description: SEO_CONFIG.manifest.description,
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0a",

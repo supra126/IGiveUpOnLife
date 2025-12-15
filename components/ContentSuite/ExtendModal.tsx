@@ -5,14 +5,15 @@ import { ImageRatio, MarketingRoute } from "@/types";
 import { generateImageFromReference } from "@/services/geminiService";
 import { Spinner } from "@/components/Spinner";
 import { getRatioClass, getRatioColor } from "@/lib/ratio-utils";
+import { openImageInNewWindow } from "@/lib/image-utils";
 
-// 所有可用尺寸
-const ALL_RATIOS: { ratio: ImageRatio; label: string; description: string }[] = [
-  { ratio: "1:1", label: "FB 貼文", description: "1:1 方形圖" },
-  { ratio: "9:16", label: "限時動態", description: "9:16 直式" },
-  { ratio: "4:5", label: "IG 貼文", description: "4:5 直式" },
-  { ratio: "16:9", label: "橫式貼文", description: "16:9 橫式" },
-  { ratio: "1:1-commercial", label: "商業攝影", description: "1:1 商品" },
+// 所有可用尺寸 - 使用 locale 鍵值
+const getAllRatios = (t: (key: string) => string): { ratio: ImageRatio; label: string; description: string }[] => [
+  { ratio: "1:1", label: t("extend.sizeLabels.fb"), description: t("extend.sizeDescriptions.square") },
+  { ratio: "9:16", label: t("extend.sizeLabels.story"), description: t("extend.sizeDescriptions.vertical") },
+  { ratio: "4:5", label: t("extend.sizeLabels.ig"), description: t("extend.sizeDescriptions.portrait") },
+  { ratio: "16:9", label: t("extend.sizeLabels.landscape"), description: t("extend.sizeDescriptions.horizontal") },
+  { ratio: "1:1-commercial", label: t("extend.sizeLabels.commercial"), description: t("extend.sizeDescriptions.commercial") },
 ];
 
 // 社群文案結果
@@ -61,6 +62,9 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
   apiKey,
   t,
 }) => {
+  // 獲取所有尺寸選項
+  const ALL_RATIOS = getAllRatios(t);
+
   // 可選尺寸（排除當前尺寸）
   const availableRatios = ALL_RATIOS.filter((r) => r.ratio !== sourceRatio);
 
@@ -126,7 +130,7 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
         updatedResults[i] = {
           ...updatedResults[i],
           loading: false,
-          error: err instanceof Error ? err.message : "生成失敗",
+          error: err instanceof Error ? err.message : t("extend.generationFailed"),
         };
       }
       setResults([...updatedResults]);
@@ -149,27 +153,27 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
     const routeName = route.route_name.replace(/\s/g, "");
     const hashtags = [
       `#${routeName}`,
-      "#新品上市",
-      "#好物推薦",
-      "#必買清單",
-      "#品質保證",
+      t("extend.hashtags.newProduct"),
+      t("extend.hashtags.recommended"),
+      t("extend.hashtags.mustBuy"),
+      t("extend.hashtags.quality"),
     ];
 
     return [
       {
-        platform: "Instagram",
+        platform: t("extend.socialTemplates.instagram"),
         title: route.headline,
-        content: `${route.headline}\n\n${copy}\n\n───\n\n${route.subhead}\n\n${route.style_description ? `風格：${route.style_description}\n` : ""}${route.target_audience ? `適合：${route.target_audience}\n` : ""}\n點擊連結了解更多\n私訊小編享專屬優惠\n\n${hashtags.join(" ")}`,
+        content: `${route.headline}\n\n${copy}\n\n───\n\n${route.subhead}\n\n${route.style_brief ? `風格：${route.style_brief}\n` : ""}${route.target_audience ? `適合：${route.target_audience}\n` : ""}\n點擊連結了解更多\n私訊小編享專屬優惠\n\n${hashtags.join(" ")}`,
         hashtags,
       },
       {
-        platform: "Facebook",
+        platform: t("extend.socialTemplates.facebook"),
         title: route.headline,
-        content: `【${title}】\n${route.headline}\n\n${copy}\n\n━━━━━━━━━━\n\n${route.subhead}\n\n${route.style_description ? `▸ 風格特色：${route.style_description}\n` : ""}${route.target_audience ? `▸ 適合對象：${route.target_audience}\n` : ""}\n▸ 限時優惠進行中\n▸ 全館滿額免運\n\n留言 +1 小編私訊您\n立即了解更多：[連結]\n\n${hashtags.slice(0, 4).join(" ")}`,
+        content: `【${title}】\n${route.headline}\n\n${copy}\n\n━━━━━━━━━━\n\n${route.subhead}\n\n${route.style_brief ? `▸ 風格特色：${route.style_brief}\n` : ""}${route.target_audience ? `▸ 適合對象：${route.target_audience}\n` : ""}\n▸ 限時優惠進行中\n▸ 全館滿額免運\n\n留言 +1 小編私訊您\n立即了解更多：[連結]\n\n${hashtags.slice(0, 4).join(" ")}`,
         hashtags: hashtags.slice(0, 4),
       },
       {
-        platform: "限時動態",
+        platform: t("extend.socialTemplates.story"),
         title: title,
         content: `${route.headline}\n\n上滑了解更多\n\n${route.subhead}`,
         hashtags: hashtags.slice(0, 2),
@@ -220,7 +224,7 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
           updated[index] = {
             ...updated[index],
             loading: false,
-            error: err instanceof Error ? err.message : "生成失敗",
+            error: err instanceof Error ? err.message : t("extend.generationFailed"),
           };
           return updated;
         });
@@ -384,19 +388,19 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
                           </div>
                         ) : result.image ? (
                           <div className="relative w-full h-full group/card">
-                            <a href={result.image} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-                              <img
-                                src={result.image}
-                                alt={result.label}
-                                className="w-full h-full object-cover"
-                              />
-                            </a>
+                            <img
+                              src={result.image}
+                              alt={result.label}
+                              className="w-full h-full object-cover cursor-pointer"
+                              onClick={() => openImageInNewWindow(result.image!, result.label)}
+                            />
                             <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                               <a
                                 href={result.image}
                                 download={`${result.ratio.replace(":", "x")}.png`}
                                 className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white pointer-events-auto"
                                 title={t("production.download")}
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

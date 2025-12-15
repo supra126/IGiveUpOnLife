@@ -217,7 +217,9 @@
   },
   "language": {
     "zh": "繁中",
-    "en": "EN"
+    "en": "EN",
+    "switchToEnglish": "Switch to English",
+    "switchToChinese": "切換至繁體中文"
   },
   "productCard": {
     "originalImage": "原始圖片",
@@ -289,6 +291,135 @@
     "addMore": "延伸更多尺寸",
     "done": "完成",
     "extendButton": "延伸",
-    "openInNewTab": "在新視窗開啟"
+    "openInNewTab": "在新視窗開啟",
+    "sizeLabels": {
+      "fb": "FB 貼文",
+      "story": "限時動態",
+      "ig": "IG 貼文",
+      "landscape": "橫式貼文",
+      "commercial": "商業攝影"
+    },
+    "sizeDescriptions": {
+      "square": "1:1 方形圖",
+      "vertical": "9:16 直式",
+      "portrait": "4:5 直式",
+      "horizontal": "16:9 橫式",
+      "commercial": "1:1 商品"
+    },
+    "hashtags": {
+      "newProduct": "#新品上市",
+      "recommended": "#好物推薦",
+      "mustBuy": "#必買清單",
+      "quality": "#品質保證"
+    },
+    "socialTemplates": {
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "story": "限時動態"
+    },
+    "generationFailed": "生成失敗"
+  },
+  "errorPage": {
+    "title": "發生錯誤",
+    "description": "抱歉，應用程式發生了一些問題。請嘗試重新載入頁面。",
+    "errorCode": "錯誤代碼",
+    "retry": "重試",
+    "backToHome": "返回首頁",
+    "globalErrorTitle": "應用程式錯誤",
+    "globalErrorDescription": "抱歉，發生了嚴重的錯誤。請重新整理頁面或稍後再試。",
+    "reload": "重新載入"
+  },
+  "seo": {
+    "appName": "不想努力了 I Give Up",
+    "fullTitle": "不想努力了 I Give Up - AI Marketing Content Generator",
+    "titleTemplate": "%s | 不想努力了 I Give Up",
+    "description": "使用 AI 快速生成產品行銷素材。",
+    "keywords": {
+      "marketing": "產品行銷",
+      "ai": "AI 生成"
+    },
+    "ogImageAlt": "不想努力了 I Give Up - AI Marketing Content Generator"
+  },
+  "guide": {
+    "step1": {
+      "title": "上傳與資訊輸入｜一次填完所有資訊",
+      "description": "上傳產品圖後，可以選填以下資訊（填越多，AI 越懂你）：",
+      "items": {
+        "productName": "產品名稱（必填）",
+        "productInfo": "產品資訊（選填）：品牌故事、核心價值、產品特色等",
+        "productUrl": "產品網址（選填）：AI 可能會參考該網站內容",
+        "refCopy": "參考文案（選填）：貼上競品或同類型商品的熱銷文案，AI 將拆解其說服邏輯"
+      },
+      "tip": "💡 小提示：所有資訊一次填完，就不用在流程中重複輸入了"
+    },
+    "step2": {
+      "title": "Phase 1：策略選擇｜秒速決定視覺方向",
+      "description": "AI 會分析產品後，立即提供三條截然不同的視覺策略，每條路線包含：",
+      "items": {
+        "routeName": "路線名稱：策略取向的一句話概括",
+        "headline": "主打標語：適合做標題、廣告文案的句子",
+        "subhead": "副標題：補充說明或進一步引導",
+        "styleDescription": "視覺風格：描述整體畫面氛圍、構圖方向",
+        "targetAudience": "目標受眾：推測適合的消費族群"
+      }
+    },
+    "step3": {
+      "title": "選擇圖片尺寸｜多平台支援",
+      "description": "選擇策略路線後，系統會自動進入尺寸選擇畫面，勾選你需要的尺寸：",
+      "items": {
+        "square": "1:1 方形圖（FB 貼文、IG 輪播、電商主圖）",
+        "story": "9:16 直式長圖（IG Stories、Reels、手機全螢幕）",
+        "portrait": "4:5 直式圖（IG Feed 主頁、優化手機瀏覽）",
+        "landscape": "16:9 橫式長圖（封面、廣告圖片）",
+        "commercial": "1:1 商業攝影（電商主圖、輪播圖、專業商品攝影）"
+      }
+    },
+    "step4": {
+      "title": "上傳產品圖與 Logo｜產圖前置準備",
+      "description": "在「爆肝產圖設定」區域，上傳以下素材（這些設定會在所有方案間共用）：",
+      "items": {
+        "mainProduct": "主產品圖片：主要的產品照片",
+        "secondaryProduct": "副產品圖片（選填）：與主產品融合展示的第二個產品",
+        "brandLogo": "品牌 Logo（選填）：AI 會自動將 Logo 放置在圖片四角之一"
+      }
+    },
+    "step5": {
+      "title": "腳本審閱模式｜內容來嘴看看",
+      "description": "切換至「內容來嘴看看」模式，可以：",
+      "items": {
+        "editContent": "編輯標題、文案、構圖摘要等內容",
+        "arrangement": "選擇產品排列方式（商業攝影模式）",
+        "regeneratePrompt": "修改後點擊「重新生成 Prompt」按鈕更新視覺提示詞"
+      }
+    },
+    "step6": {
+      "title": "圖片製作模式｜爆肝產圖",
+      "description": "切換至「爆肝產圖」模式，針對每個方案可以：",
+      "items": {
+        "generateImage": "點擊卡片生成圖片",
+        "modes": "選擇產圖模式：",
+        "promptMode": "• 提詞版：根據 AI 生成的 Prompt 創作",
+        "referenceMode": "• 參考版：上傳參考圖，設定相似度等級",
+        "textSettings": "文字設定：調整標題與文案的字重",
+        "actions": "產圖後可以：下載圖片、重繪、延伸至其他尺寸"
+      }
+    }
+  },
+  "imageUtils": {
+    "windowBlocked": "無法打開新窗口，可能被瀏覽器阻擋",
+    "imagePreview": "圖片預覽",
+    "previewImage": "預覽圖片"
+  },
+  "arrangement": {
+    "single": "單品特寫",
+    "singleDesc": "單一產品置中展示",
+    "fan": "扇形展開",
+    "fanDesc": "多產品呈扇形排列",
+    "grid": "整齊並排",
+    "gridDesc": "產品整齊排列成行",
+    "stack": "自然堆疊",
+    "stackDesc": "產品自然層疊擺放",
+    "custom": "自訂",
+    "customDesc": "使用構圖摘要描述"
   }
 }

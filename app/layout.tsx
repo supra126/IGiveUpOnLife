@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/contexts/LocaleContext";
+import { SEO_CONFIG } from "@/lib/seo-config";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://igiveup.simoko.com";
 
@@ -9,10 +10,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://igiveup.simoko.com"
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "不想努力了 I Give Up",
+  name: SEO_CONFIG.brandName,
   alternateName: "I Give Up On Life",
-  description:
-    "AI-powered product marketing content and image generator using Google Gemini AI",
+  description: SEO_CONFIG.description,
   url: siteUrl,
   applicationCategory: "DesignApplication",
   operatingSystem: "Web Browser",
@@ -23,8 +23,8 @@ const jsonLd = {
   },
   author: {
     "@type": "Person",
-    name: "MagMa",
-    url: "https://github.com/mag477",
+    name: SEO_CONFIG.author.name,
+    url: SEO_CONFIG.author.url,
   },
   featureList: [
     "AI-powered marketing content generation",
@@ -47,27 +47,12 @@ const notoSansTC = Noto_Sans_TC({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: {
-    default: "不想努力了 I Give Up - AI Marketing Content Generator",
-    template: "%s | 不想努力了 I Give Up",
-  },
-  description:
-    "AI-powered product marketing content and image generator. Create professional marketing visuals, social media posts, and ad creatives with Google Gemini AI. 使用 AI 快速生成產品行銷素材。",
-  keywords: [
-    "AI",
-    "marketing",
-    "content generator",
-    "image generation",
-    "Gemini",
-    "social media",
-    "advertising",
-    "產品行銷",
-    "AI 生成",
-    "行銷素材",
-  ],
-  authors: [{ name: "MagMa", url: "https://github.com/mag477" }],
-  creator: "MagMa",
-  publisher: "MagMa",
+  title: SEO_CONFIG.title,
+  description: SEO_CONFIG.description,
+  keywords: SEO_CONFIG.keywords,
+  authors: [{ name: SEO_CONFIG.author.name, url: SEO_CONFIG.author.url }],
+  creator: SEO_CONFIG.author.name,
+  publisher: SEO_CONFIG.author.name,
   robots: {
     index: true,
     follow: true,
@@ -84,24 +69,22 @@ export const metadata: Metadata = {
     locale: "zh_TW",
     alternateLocale: "en_US",
     url: siteUrl,
-    siteName: "不想努力了 I Give Up",
-    title: "不想努力了 I Give Up - AI Marketing Content Generator",
-    description:
-      "AI-powered product marketing content and image generator. Create professional marketing visuals with Google Gemini AI.",
+    siteName: SEO_CONFIG.brandName,
+    title: SEO_CONFIG.title.default,
+    description: SEO_CONFIG.description,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "不想努力了 I Give Up - AI Marketing Content Generator",
+        alt: SEO_CONFIG.ogImageAlt,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "不想努力了 I Give Up - AI Marketing Content Generator",
-    description:
-      "AI-powered product marketing content and image generator. Create professional marketing visuals with Google Gemini AI.",
+    title: SEO_CONFIG.title.default,
+    description: SEO_CONFIG.description,
     images: ["/og-image.png"],
   },
   alternates: {

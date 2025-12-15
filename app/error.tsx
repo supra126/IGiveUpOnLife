@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function Error({
   error,
@@ -9,6 +10,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLocale();
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Application error:", error);
@@ -33,14 +36,14 @@ export default function Error({
           </svg>
         </div>
 
-        <h2 className="text-xl font-bold text-white mb-2">發生錯誤</h2>
+        <h2 className="text-xl font-bold text-white mb-2">{t("errorPage.title")}</h2>
         <p className="text-gray-400 mb-6 text-sm">
-          抱歉，應用程式發生了一些問題。請嘗試重新載入頁面。
+          {t("errorPage.description")}
         </p>
 
         {error.digest && (
           <p className="text-xs text-gray-600 mb-4 font-mono">
-            錯誤代碼: {error.digest}
+            {t("errorPage.errorCode")}: {error.digest}
           </p>
         )}
 
@@ -49,13 +52,13 @@ export default function Error({
             onClick={reset}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
           >
-            重試
+            {t("errorPage.retry")}
           </button>
           <button
             onClick={() => (window.location.href = "/")}
             className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-colors"
           >
-            返回首頁
+            {t("errorPage.backToHome")}
           </button>
         </div>
       </div>

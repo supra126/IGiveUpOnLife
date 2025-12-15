@@ -1,6 +1,6 @@
 {
   "name": "igiveup",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "I Give Up On Life (不想努力了) - AI-powered marketing content generator",
   "keywords": [
     "ai",
@@ -40,7 +40,7 @@
   "dependencies": {
     "@google/genai": "^1.30.0",
     "jose": "^6.1.2",
-    "next": "^16.0.7",
+    "next": "^16.0.10",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "zod": "^4.1.13"
@@ -61,7 +61,12 @@
     "typescript": "~5.8.2",
     "vitest": "^4.0.14"
   },
-  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
+  "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402",
+  "pnpm": {
+    "overrides": {
+      "jws": ">=4.0.1"
+    }
+  },
   "browserslist": [
     "Chrome >= 100",
     "Firefox >= 100",

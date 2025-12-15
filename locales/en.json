@@ -217,7 +217,9 @@
   },
   "language": {
     "zh": "繁中",
-    "en": "EN"
+    "en": "EN",
+    "switchToEnglish": "Switch to English",
+    "switchToChinese": "切換至繁體中文"
   },
   "productCard": {
     "originalImage": "Original Image",
@@ -289,6 +291,135 @@
     "addMore": "Extend More Sizes",
     "done": "Done",
     "extendButton": "Extend",
-    "openInNewTab": "Open in new tab"
+    "openInNewTab": "Open in new tab",
+    "sizeLabels": {
+      "fb": "FB Post",
+      "story": "Stories",
+      "ig": "IG Post",
+      "landscape": "Landscape",
+      "commercial": "Commercial"
+    },
+    "sizeDescriptions": {
+      "square": "1:1 Square",
+      "vertical": "9:16 Vertical",
+      "portrait": "4:5 Portrait",
+      "horizontal": "16:9 Horizontal",
+      "commercial": "1:1 Product"
+    },
+    "hashtags": {
+      "newProduct": "#NewProduct",
+      "recommended": "#Recommended",
+      "mustBuy": "#MustHave",
+      "quality": "#QualityAssured"
+    },
+    "socialTemplates": {
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "story": "Story"
+    },
+    "generationFailed": "Generation failed"
+  },
+  "errorPage": {
+    "title": "An Error Occurred",
+    "description": "Sorry, something went wrong with the application. Please try reloading the page.",
+    "errorCode": "Error Code",
+    "retry": "Retry",
+    "backToHome": "Back to Home",
+    "globalErrorTitle": "Application Error",
+    "globalErrorDescription": "Sorry, a critical error occurred. Please refresh the page or try again later.",
+    "reload": "Reload"
+  },
+  "seo": {
+    "appName": "I Give Up",
+    "fullTitle": "I Give Up - AI Marketing Content Generator",
+    "titleTemplate": "%s | I Give Up",
+    "description": "Generate product marketing materials quickly with AI.",
+    "keywords": {
+      "marketing": "Product Marketing",
+      "ai": "AI Generation"
+    },
+    "ogImageAlt": "I Give Up - AI Marketing Content Generator"
+  },
+  "guide": {
+    "step1": {
+      "title": "Upload & Input | Fill in all info at once",
+      "description": "After uploading product image, you can fill in the following (the more you fill, the better AI understands):",
+      "items": {
+        "productName": "Product Name (Required)",
+        "productInfo": "Product Info (Optional): Brand story, core values, product features, etc.",
+        "productUrl": "Product URL (Optional): AI may reference the website content",
+        "refCopy": "Reference Copy (Optional): Paste successful ad copy from competitors, AI will analyze its persuasion logic"
+      },
+      "tip": "💡 Tip: Fill in all info at once to avoid repeating input during the process"
+    },
+    "step2": {
+      "title": "Phase 1: Strategy Selection | Instant visual direction",
+      "description": "After analyzing your product, AI provides three different visual strategies, each including:",
+      "items": {
+        "routeName": "Route Name: One-sentence strategy summary",
+        "headline": "Headline: Suitable for titles and ad copy",
+        "subhead": "Subhead: Additional explanation or guidance",
+        "styleDescription": "Visual Style: Overall atmosphere and composition direction",
+        "targetAudience": "Target Audience: Predicted consumer demographic"
+      }
+    },
+    "step3": {
+      "title": "Select Image Sizes | Multi-platform support",
+      "description": "After selecting a strategy, choose the sizes you need:",
+      "items": {
+        "square": "1:1 Square (FB posts, IG carousel, e-commerce main)",
+        "story": "9:16 Vertical (IG Stories, Reels, full-screen mobile)",
+        "portrait": "4:5 Portrait (IG Feed, optimized for mobile)",
+        "landscape": "16:9 Horizontal (Covers, ad banners)",
+        "commercial": "1:1 Commercial (E-commerce main, carousel, professional product photography)"
+      }
+    },
+    "step4": {
+      "title": "Upload Product & Logo | Pre-generation setup",
+      "description": "In the \"Image Generation Settings\" area, upload these assets (shared across all plans):",
+      "items": {
+        "mainProduct": "Main Product: Primary product photo",
+        "secondaryProduct": "Secondary Product (Optional): Second product to display with main product",
+        "brandLogo": "Brand Logo (Optional): AI will automatically place logo in one of four corners"
+      }
+    },
+    "step5": {
+      "title": "Review Mode | Check the content",
+      "description": "Switch to \"Review Content\" mode to:",
+      "items": {
+        "editContent": "Edit title, copy, visual summary, etc.",
+        "arrangement": "Select product arrangement (Commercial mode)",
+        "regeneratePrompt": "Click \"Regenerate Prompt\" button after editing to update visual prompt"
+      }
+    },
+    "step6": {
+      "title": "Production Mode | Generate images",
+      "description": "Switch to \"Generate Images\" mode to:",
+      "items": {
+        "generateImage": "Click card to generate image",
+        "modes": "Select generation mode:",
+        "promptMode": "• Prompt Mode: Create based on AI-generated prompt",
+        "referenceMode": "• Reference Mode: Upload reference image, set similarity level",
+        "textSettings": "Text Settings: Adjust title and copy font weight",
+        "actions": "After generation: Download image, regenerate, extend to other sizes"
+      }
+    }
+  },
+  "imageUtils": {
+    "windowBlocked": "Unable to open new window, possibly blocked by browser",
+    "imagePreview": "Image Preview",
+    "previewImage": "Preview Image"
+  },
+  "arrangement": {
+    "single": "Single",
+    "singleDesc": "Single product centered",
+    "fan": "Fan",
+    "fanDesc": "Fan-shaped arrangement",
+    "grid": "Grid",
+    "gridDesc": "Organized grid layout",
+    "stack": "Stack",
+    "stackDesc": "Natural stacking",
+    "custom": "Custom",
+    "customDesc": "Use visual summary"
   }
 }

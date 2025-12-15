@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
+import { LocaleProvider, useLocale } from "@/contexts/LocaleContext";
 
-export default function GlobalError({
+function GlobalErrorContent({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLocale();
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Global application error:", error);
@@ -35,14 +38,14 @@ export default function GlobalError({
               </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-white mb-2">應用程式錯誤</h2>
+            <h2 className="text-xl font-bold text-white mb-2">{t("errorPage.globalErrorTitle")}</h2>
             <p className="text-gray-400 mb-6 text-sm">
-              抱歉，發生了嚴重的錯誤。請重新整理頁面或稍後再試。
+              {t("errorPage.globalErrorDescription")}
             </p>
 
             {error.digest && (
               <p className="text-xs text-gray-600 mb-4 font-mono">
-                錯誤代碼: {error.digest}
+                {t("errorPage.errorCode")}: {error.digest}
               </p>
             )}
 
@@ -51,18 +54,32 @@ export default function GlobalError({
                 onClick={reset}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
               >
-                重試
+                {t("errorPage.retry")}
               </button>
               <button
                 onClick={() => (window.location.href = "/")}
                 className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-colors"
               >
-                重新載入
+                {t("errorPage.reload")}
               </button>
             </div>
           </div>
         </div>
       </body>
     </html>
+  );
+}
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <LocaleProvider>
+      <GlobalErrorContent error={error} reset={reset} />
+    </LocaleProvider>
   );
 }
