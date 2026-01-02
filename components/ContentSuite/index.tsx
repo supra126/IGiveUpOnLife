@@ -321,7 +321,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
       {mode === "production" && (
         <div>
           {/* Global Settings Panel - 只保留文字設定 */}
-          <div className="mb-8 p-4 bg-white/5 border border-white/10 rounded-xl">
+          <div className="mb-8 p-4 sm:p-6 bg-white/5 border border-white/10 rounded-xl">
             <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -388,12 +388,12 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
               {/* Row 2: Similarity Level */}
               <div>
                 <label className="text-xs text-gray-400 mb-2 block">{t("production.referenceSimilarity")}</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {(["low", "medium", "high"] as SimilarityLevel[]).map((level) => (
                     <button
                       key={level}
                       onClick={() => updateGlobalSetting("similarityLevel", level)}
-                      className={`flex-1 max-w-[140px] py-2 px-3 text-xs rounded-md transition-colors ${
+                      className={`flex-1 min-w-[100px] max-w-[140px] min-h-[44px] py-2 px-3 text-xs rounded-lg transition-colors ${
                         globalSettings.similarityLevel === level
                           ? "bg-white/10 text-white border border-white"
                           : "bg-white/5 text-gray-400 border border-transparent hover:bg-white/10 hover:text-white"
@@ -413,12 +413,12 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
               {/* Row 3: Resolution */}
               <div>
                 <label className="text-xs text-gray-400 mb-2 block">{t("production.resolution")}</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {(["1k", "2k", "4k"] as ResolutionLevel[]).map((level) => (
                     <button
                       key={level}
                       onClick={() => updateGlobalSetting("resolution", level)}
-                      className={`flex-1 max-w-[140px] py-2 px-3 text-xs rounded-md transition-colors ${
+                      className={`flex-1 min-w-[100px] max-w-[140px] min-h-[44px] py-2 px-3 text-xs rounded-lg transition-colors ${
                         globalSettings.resolution === level
                           ? "bg-white/10 text-white border border-white"
                           : "bg-white/5 text-gray-400 border border-transparent hover:bg-white/10 hover:text-white"

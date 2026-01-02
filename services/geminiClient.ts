@@ -763,7 +763,18 @@ export async function generateImageFromReferenceClient(
       ? weightMap[input.copyWeight]
       : "Regular (400)";
 
-    prompt += `\n\nIMPORTANT: Overlay the following text on the image using Noto Sans TC (Noto Sans Traditional Chinese) font:\nTitle: "${input.titleText}" (Font: Noto Sans TC ${titleWeightStr})\nCopy: "${input.copyText}" (Font: Noto Sans TC ${copyWeightStr})\nUse appropriate positioning, size, and styling that complements the visual design. Make sure the font is Noto Sans TC (思源黑體).`;
+    prompt += `\n\n【TEXT OVERLAY - CRITICAL INSTRUCTIONS】
+Overlay the following Traditional Chinese text on the image:
+- Title: "${input.titleText}" (Font: Noto Sans TC ${titleWeightStr})
+- Copy: "${input.copyText}" (Font: Noto Sans TC ${copyWeightStr})
+
+CRITICAL TEXT RENDERING RULES:
+1. Render EXACT characters as provided - do NOT approximate, substitute, or hallucinate any characters
+2. Each Chinese character must be pixel-perfect with correct strokes
+3. Use proper Traditional Chinese (繁體中文) character forms, NOT Simplified Chinese
+4. Typography must be clean, sharp, and legible at 4K resolution
+5. Position text with appropriate contrast against background
+6. Maintain consistent character spacing and line height`;
   }
 
   // Get image config for resolution

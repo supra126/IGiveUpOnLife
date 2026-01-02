@@ -168,7 +168,7 @@ export function openImageInNewWindow(imageUrl: string, title?: string): void {
     return;
   }
 
-  // 創建一個完整的 HTML 文件來顯示圖片
+  // 創建一個完整的 HTML 文件來顯示圖片（符合螢幕高度，可用瀏覽器放大鏡查看細節）
   win.document.open();
   win.document.write(`
     <!DOCTYPE html>
@@ -184,18 +184,17 @@ export function openImageInNewWindow(imageUrl: string, title?: string): void {
             box-sizing: border-box;
           }
           body {
-            background: #000;
+            background: #0a0a0f;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
           }
           img {
-            max-width: 100%;
+            display: block;
             max-height: 100vh;
+            width: auto;
             object-fit: contain;
-            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
           }
         </style>
       </head>

@@ -24,6 +24,44 @@ interface SocialCopyResult {
   hashtags: string[];
 }
 
+// 靜態社群文案生成函數（可在初始化時使用）
+const generateSocialCopiesStatic = (
+  route: MarketingRoute,
+  title: string,
+  copy: string,
+  t: (key: string) => string
+): SocialCopyResult[] => {
+  const routeName = route.route_name.replace(/\s/g, "");
+  const hashtags = [
+    `#${routeName}`,
+    t("extend.hashtags.newProduct"),
+    t("extend.hashtags.recommended"),
+    t("extend.hashtags.mustBuy"),
+    t("extend.hashtags.quality"),
+  ];
+
+  return [
+    {
+      platform: t("extend.socialTemplates.instagram"),
+      title: route.headline,
+      content: `${route.headline}\n\n${copy}\n\n───\n\n${route.subhead}\n\n${route.style_brief ? `風格：${route.style_brief}\n` : ""}${route.target_audience ? `適合：${route.target_audience}\n` : ""}\n點擊連結了解更多\n私訊小編享專屬優惠\n\n${hashtags.join(" ")}`,
+      hashtags,
+    },
+    {
+      platform: t("extend.socialTemplates.facebook"),
+      title: route.headline,
+      content: `【${title}】\n${route.headline}\n\n${copy}\n\n━━━━━━━━━━\n\n${route.subhead}\n\n${route.style_brief ? `▸ 風格特色：${route.style_brief}\n` : ""}${route.target_audience ? `▸ 適合對象：${route.target_audience}\n` : ""}\n▸ 限時優惠進行中\n▸ 全館滿額免運\n\n留言 +1 小編私訊您\n立即了解更多：[連結]\n\n${hashtags.slice(0, 4).join(" ")}`,
+      hashtags: hashtags.slice(0, 4),
+    },
+    {
+      platform: t("extend.socialTemplates.story"),
+      title: title,
+      content: `${route.headline}\n\n上滑了解更多\n\n${route.subhead}`,
+      hashtags: hashtags.slice(0, 2),
+    },
+  ];
+};
+
 // 延伸產出結果
 interface ExtendedResult {
   ratio: ImageRatio;
@@ -74,12 +112,24 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
   // 產圖結果
   const [results, setResults] = useState<ExtendedResult[]>([]);
 
-  // 社群文案
-  const [socialCopies, setSocialCopies] = useState<SocialCopyResult[]>([]);
+  // 社群文案 - 初始化時就生成
+  const [socialCopies, setSocialCopies] = useState<SocialCopyResult[]>(() =>
+    generateSocialCopiesStatic(marketingRoute, contentTitle, contentCopy, t)
+  );
+
+  // 複製提示
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // 整體狀態
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState<"select" | "generating" | "results">("select");
+
+  // 複製並顯示提示
+  const handleCopy = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
 
   const toggleRatio = (ratio: ImageRatio) => {
     setSelectedRatios((prev) =>
@@ -313,6 +363,47 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
               >
                 {t("extend.startExtend")} ({selectedRatios.length})
               </button>
+
+              {/* Social Copy - 一開始就顯示 */}
+              <div className="pt-6 border-t border-white/10">
+                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  {t("extend.socialCopy")}
+                </h3>
+
+                {/* Headline & Subhead */}
+                <div className="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-xs text-gray-500 mb-1">{t("extend.headline")}</p>
+                  <p className="text-white font-bold text-lg mb-3">{marketingRoute.headline}</p>
+                  <p className="text-xs text-gray-500 mb-1">{t("extend.subhead")}</p>
+                  <p className="text-gray-300">{marketingRoute.subhead}</p>
+                </div>
+
+                {/* Platform-specific copies */}
+                <div className="space-y-3">
+                  {socialCopies.map((copy, idx) => (
+                    <div key={idx} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-white">{copy.platform}</span>
+                        <button
+                          onClick={() => handleCopy(`${copy.title}\n\n${copy.content}`, idx)}
+                          className={`text-xs transition-colors ${
+                            copiedIndex === idx
+                              ? "text-green-400"
+                              : "text-gray-400 hover:text-white"
+                          }`}
+                        >
+                          {copiedIndex === idx ? t("extend.copied") : t("extend.copy")}
+                        </button>
+                      </div>
+                      <p className="text-sm text-white font-medium mb-1">{copy.title}</p>
+                      <p className="text-xs text-gray-300 whitespace-pre-wrap">{copy.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -442,10 +533,14 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-bold text-white">{copy.platform}</span>
                         <button
-                          onClick={() => navigator.clipboard.writeText(`${copy.title}\n\n${copy.content}`)}
-                          className="text-xs text-gray-400 hover:text-white transition-colors"
+                          onClick={() => handleCopy(`${copy.title}\n\n${copy.content}`, idx)}
+                          className={`text-xs transition-colors ${
+                            copiedIndex === idx
+                              ? "text-green-400"
+                              : "text-gray-400 hover:text-white"
+                          }`}
                         >
-                          {t("extend.copy")}
+                          {copiedIndex === idx ? t("extend.copied") : t("extend.copy")}
                         </button>
                       </div>
                       <p className="text-sm text-white font-medium mb-1">{copy.title}</p>

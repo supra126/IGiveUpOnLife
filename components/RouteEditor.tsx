@@ -53,7 +53,7 @@ export function RouteEditor({
             <div
               key={idx}
               onClick={() => onSelectRoute(idx)}
-              className="card-hover glass-panel p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer flex flex-col group relative"
+              className="card-hover glass-panel p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer flex flex-col group relative"
               style={{
                 border: isSelected
                   ? "1px solid rgba(255, 255, 255, 0.3)"
@@ -104,7 +104,7 @@ export function RouteEditor({
               </div>
 
               {/* Editable Fields */}
-              <div className="space-y-3 sm:space-y-4 flex-grow">
+              <div className="space-y-4 sm:space-y-5 flex-grow">
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 block">
                     {t("phase1.routeName")}
@@ -117,7 +117,7 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, route_name: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className={`w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 sm:py-2.5 text-base sm:text-lg font-bold text-white focus:border-[var(--brand-accent)]/50 focus:outline-none transition-colors ${isSelected ? accentColors[idx % 3] : ""}`}
+                    className={`w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-base sm:text-lg font-bold text-white focus:border-[var(--accent-primary)]/50 focus:outline-none transition-colors ${isSelected ? accentColors[idx % 3] : ""}`}
                   />
                 </div>
 
@@ -132,7 +132,7 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, headline: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className={`w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 sm:py-2.5 text-sm sm:text-base focus:border-[var(--brand-accent)]/50 focus:outline-none font-medium resize-none h-14 sm:h-16 ${isSelected ? "text-white" : "text-gray-300"}`}
+                    className={`w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm sm:text-base focus:border-[var(--accent-primary)]/50 focus:outline-none font-medium resize-none h-16 sm:h-20 ${isSelected ? "text-white" : "text-gray-300"}`}
                   />
                 </div>
 
@@ -147,7 +147,7 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, subhead: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 sm:py-2.5 text-sm text-gray-300 focus:border-[var(--brand-accent)]/50 focus:outline-none resize-none h-14 sm:h-16"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm text-gray-300 focus:border-[var(--accent-primary)]/50 focus:outline-none resize-none h-16 sm:h-20"
                   />
                 </div>
 
@@ -162,7 +162,7 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, style_brief: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 sm:py-2.5 text-sm text-gray-300 focus:border-[var(--brand-accent)]/50 focus:outline-none resize-none h-20 sm:h-24"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm text-gray-300 focus:border-[var(--accent-primary)]/50 focus:outline-none resize-none h-24 sm:h-28"
                   />
                 </div>
 
@@ -177,7 +177,7 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, target_audience: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 sm:py-2.5 text-sm text-gray-300 focus:border-[var(--brand-accent)]/50 focus:outline-none resize-none h-16 sm:h-20"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm text-gray-300 focus:border-[var(--accent-primary)]/50 focus:outline-none resize-none h-20 sm:h-24"
                   />
                 </div>
 
@@ -196,7 +196,7 @@ export function RouteEditor({
                     }}
                     onClick={(e) => e.stopPropagation()}
                     placeholder={t("phase1.supplementPlaceholder")}
-                    className={`w-full bg-gradient-to-br ${gradients[idx % 3]} border ${borderColors[idx % 3]} rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs text-gray-300 placeholder-gray-600 focus:outline-none resize-none h-14 sm:h-16`}
+                    className={`w-full bg-gradient-to-br ${gradients[idx % 3]} border ${borderColors[idx % 3]} rounded-lg px-3 py-2 sm:py-2.5 text-xs text-gray-300 placeholder-gray-600 focus:outline-none resize-none h-16 sm:h-20`}
                   />
                 </div>
               </div>

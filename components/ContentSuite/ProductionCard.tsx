@@ -119,7 +119,18 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
             black: "Black (900)",
           };
 
-          enhancedPrompt += `\n\nIMPORTANT: Overlay the following text on the image using Noto Sans TC (Noto Sans Traditional Chinese) font:\nTitle: "${contentSet.title}" (Font: Noto Sans TC ${weightMap[titleWeight]})\nCopy: "${contentSet.copy}" (Font: Noto Sans TC ${weightMap[copyWeight]})\nUse appropriate positioning, size, and styling that complements the visual design. Make sure the font is Noto Sans TC (思源黑體).`;
+          enhancedPrompt += `\n\n【TEXT OVERLAY - CRITICAL INSTRUCTIONS】
+Overlay the following Traditional Chinese text on the image:
+- Title: "${contentSet.title}" (Font: Noto Sans TC ${weightMap[titleWeight]})
+- Copy: "${contentSet.copy}" (Font: Noto Sans TC ${weightMap[copyWeight]})
+
+CRITICAL TEXT RENDERING RULES:
+1. Render EXACT characters as provided - do NOT approximate, substitute, or hallucinate any characters
+2. Each Chinese character must be pixel-perfect with correct strokes
+3. Use proper Traditional Chinese (繁體中文) character forms, NOT Simplified Chinese
+4. Typography must be clean, sharp, and legible at 4K resolution
+5. Position text with appropriate contrast against background
+6. Maintain consistent character spacing and line height`;
         }
 
         result = await generateMarketingImage(
@@ -142,7 +153,7 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 group relative">
+    <div className={`flex flex-col gap-2 group relative ${error ? 'ring-2 ring-red-500/30 rounded-xl' : ''}`}>
       {/* Image Display Area */}
       <div
         className={`relative rounded-xl overflow-hidden bg-[#15151a] border border-white/10 shadow-lg w-full ${getRatioClass(contentSet.ratio)}`}
@@ -161,67 +172,89 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
               className="w-full h-full object-cover cursor-pointer"
               onClick={() => openImageInNewWindow(image, contentSet.title)}
             />
-            <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
-              <a
-                href={image}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto"
+            {/* Desktop: Hover overlay */}
+            <div className="absolute inset-0 bg-black/50 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openImageInNewWindow(image, contentSet.title);
+                }}
+                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm"
                 title={t("extend.openInNewTab")}
-                onClick={(e) => e.stopPropagation()}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
-              </a>
+              </button>
               <a
                 href={image}
                 download={`${contentSet.id}.png`}
-                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto"
+                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm"
                 title={t("production.download")}
                 onClick={(e) => e.stopPropagation()}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               </a>
               <button
                 onClick={handleGenerate}
                 disabled={loading}
-                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 title={t("production.redraw")}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
               <button
                 onClick={() => setIsExtendModalOpen(true)}
-                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto"
+                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm"
                 title={t("extend.extendButton")}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+            {/* Mobile: Action bar below image */}
+            <div className="absolute bottom-0 left-0 right-0 md:hidden flex justify-center gap-3 p-2 bg-gradient-to-t from-black/80 to-transparent">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openImageInNewWindow(image, contentSet.title);
+                }}
+                className="p-2.5 bg-white/20 active:bg-white/40 rounded-full text-white backdrop-blur-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </button>
+              <a
+                href={image}
+                download={`${contentSet.id}.png`}
+                className="p-2.5 bg-white/20 active:bg-white/40 rounded-full text-white backdrop-blur-sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </a>
+              <button
+                onClick={handleGenerate}
+                disabled={loading}
+                className="p-2.5 bg-white/20 active:bg-white/40 rounded-full text-white backdrop-blur-sm disabled:opacity-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setIsExtendModalOpen(true)}
+                className="p-2.5 bg-white/20 active:bg-white/40 rounded-full text-white backdrop-blur-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                 </svg>
               </button>
             </div>
@@ -289,7 +322,7 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
 
       {/* Expandable Controls Area */}
       {isExpanded && (
-        <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="space-y-4 p-4 sm:p-5 bg-white/5 rounded-xl border border-white/10 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Generation Mode Toggle */}
           <div>
             <label className="text-[10px] text-gray-500 mb-1.5 block">{t("production.generationMode")}</label>
@@ -393,12 +426,26 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
             </>
           )}
 
-          {error && <p className="text-[10px] text-red-400">{error}</p>}
+          {error && (
+            <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs text-red-400">{error}</p>
+            </div>
+          )}
         </div>
       )}
 
       {/* Error display when collapsed */}
-      {!isExpanded && error && <p className="text-[10px] text-red-400">{error}</p>}
+      {!isExpanded && error && (
+        <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-xs text-red-400">{error}</p>
+        </div>
+      )}
 
       {/* Extend Modal */}
       {image && (

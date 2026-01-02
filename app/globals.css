@@ -1,9 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --brand-accent: #FFFFFF;
-  --brand-purple: #A0A0A0;
-  --brand-pink: #707070;
+  /* 主色調 - 紫羅蘭 */
+  --accent-primary: #8B5CF6;
+  --accent-primary-muted: #7C3AED;
+
+  /* 次要色調 - 琥珀 */
+  --accent-secondary: #F59E0B;
+
+  /* 語義顏色 */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+
+  /* 表面顏色 */
+  --surface-base: #0a0a0f;
+  --surface-elevated: #14141e;
+  --surface-overlay: #1e1e28;
+
+  /* 標準化邊框 (3 級) */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-prominent: rgba(255, 255, 255, 0.25);
+
+  /* 文字層級 */
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
 }
 
 body {
@@ -35,19 +59,28 @@ h1, h2, h3, .serif {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Glass Panel Effect */
+/* Glass Panel Effect - Enhanced */
 .glass-panel {
-  background: linear-gradient(135deg, rgba(20, 20, 30, 0.8) 0%, rgba(10, 10, 20, 0.6) 100%);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    135deg,
+    rgba(20, 20, 35, 0.85) 0%,
+    rgba(10, 10, 25, 0.7) 100%
+  );
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--border-subtle);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-default);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* Gradient Text Effect */

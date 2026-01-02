@@ -109,7 +109,18 @@ export function getTextOverlayPrompt(
   const titleWeightStr = FONT_WEIGHT_MAP[titleWeight] || "Bold (700)";
   const copyWeightStr = FONT_WEIGHT_MAP[copyWeight] || "Regular (400)";
 
-  return `\n\nIMPORTANT: Overlay the following text on the image using Noto Sans TC (Noto Sans Traditional Chinese) font:\nTitle: "${titleText}" (Font: Noto Sans TC ${titleWeightStr})\nCopy: "${copyText}" (Font: Noto Sans TC ${copyWeightStr})\nUse appropriate positioning, size, and styling that complements the visual design. Make sure the font is Noto Sans TC (思源黑體).`;
+  return `\n\n【TEXT OVERLAY - CRITICAL INSTRUCTIONS】
+Overlay the following Traditional Chinese text on the image:
+- Title: "${titleText}" (Font: Noto Sans TC ${titleWeightStr})
+- Copy: "${copyText}" (Font: Noto Sans TC ${copyWeightStr})
+
+CRITICAL TEXT RENDERING RULES:
+1. Render EXACT characters as provided - do NOT approximate, substitute, or hallucinate any characters
+2. Each Chinese character must be pixel-perfect with correct strokes
+3. Use proper Traditional Chinese (繁體中文) character forms, NOT Simplified Chinese
+4. Typography must be clean, sharp, and legible at 4K resolution
+5. Position text with appropriate contrast against background
+6. Maintain consistent character spacing and line height`;
 }
 
 /**

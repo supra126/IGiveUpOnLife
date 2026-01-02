@@ -29,7 +29,7 @@ const nextConfig = {
     output: "standalone",
     experimental: {
       serverActions: {
-        bodySizeLimit: process.env.SERVER_ACTIONS_BODY_SIZE_LIMIT || "10mb",
+        bodySizeLimit: process.env.SERVER_ACTIONS_BODY_SIZE_LIMIT || "50mb",
       },
     },
   }),
