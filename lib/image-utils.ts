@@ -157,53 +157,44 @@ export function normalizeAspectRatio(
 
 /**
  * 在新窗口中安全地打開圖片（支援 data URL）
- * 避免 "Not allowed to navigate top frame to data URL" 錯誤
+ * 將 data URL 轉換為 Blob URL，讓 Chrome 使用內建圖片檢視器（有放大鏡功能）
  * @param imageUrl - 圖片 URL（支援 data URL 或普通 URL）
- * @param title - 圖片標題（選填）
+ * @param title - 圖片標題（選填，用於普通 URL 時的 fallback）
  */
 export function openImageInNewWindow(imageUrl: string, title?: string): void {
-  const win = window.open("", "_blank");
-  if (!win) {
-    console.error("無法打開新窗口，可能被瀏覽器阻擋");
+  // 如果是普通 URL，直接開啟
+  if (!imageUrl.startsWith("data:")) {
+    window.open(imageUrl, "_blank");
     return;
   }
 
-  // 創建一個完整的 HTML 文件來顯示圖片（符合螢幕高度，可用瀏覽器放大鏡查看細節）
-  win.document.open();
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${title || "圖片預覽"}</title>
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            background: #0a0a0f;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          img {
-            display: block;
-            max-height: 100vh;
-            width: auto;
-            object-fit: contain;
-          }
-        </style>
-      </head>
-      <body>
-        <img src="${imageUrl}" alt="${title || "預覽圖片"}" />
-      </body>
-    </html>
-  `);
-  win.document.close();
+  // 將 data URL 轉換為 Blob URL
+  try {
+    const parsed = parseBase64Image(imageUrl);
+    if (!parsed) {
+      console.error("無法解析圖片格式");
+      return;
+    }
+
+    // base64 轉 binary
+    const byteString = atob(parsed.data);
+    const byteArray = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+      byteArray[i] = byteString.charCodeAt(i);
+    }
+
+    // 建立 Blob 和 Blob URL
+    const blob = new Blob([byteArray], { type: parsed.mimeType });
+    const blobUrl = URL.createObjectURL(blob);
+
+    // 開啟 Blob URL - Chrome 會使用內建圖片檢視器
+    window.open(blobUrl, "_blank");
+
+    // 延遲釋放 Blob URL（給瀏覽器足夠時間載入）
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  } catch (err) {
+    console.error("開啟圖片失敗:", err);
+  }
 }
 
 /**
