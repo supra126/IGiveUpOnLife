@@ -28,11 +28,27 @@ import {
 
 // --- Generate Marketing Image ---
 
+export type ResolutionLevel = "1k" | "2k" | "4k";
+
+// Resolution to API format mapping (must be uppercase)
+const RESOLUTION_API_MAP: Record<ResolutionLevel, string> = {
+  "1k": "1K",
+  "2k": "2K",
+  "4k": "4K",
+};
+
+function getImageConfig(resolution: ResolutionLevel = "4k") {
+  return {
+    imageSize: RESOLUTION_API_MAP[resolution],
+  };
+}
+
 export interface GenerateImageInput {
   prompt: string;
   referenceImageBase64?: string;
   aspectRatio?: ImageRatio;
   secondaryImageBase64?: string | null;
+  resolution?: ResolutionLevel;
   userApiKey?: string;
   locale?: Locale;
 }
@@ -57,6 +73,9 @@ export async function generateMarketingImageAction(
     enhancedPrompt += getMultiProductPrompt();
   }
 
+  // Get image config for resolution
+  const imageConfig = getImageConfig(validatedInput.resolution || "4k");
+
   const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [
     { text: enhancedPrompt },
   ];
@@ -78,6 +97,7 @@ export async function generateMarketingImageAction(
         contents: { parts },
         config: {
           responseModalities: ["image", "text"],
+          imageConfig,
         },
       })
     );
@@ -174,6 +194,7 @@ export interface GenerateFromReferenceInput {
   titleWeight?: "regular" | "medium" | "bold" | "black";
   copyWeight?: "regular" | "medium" | "bold" | "black";
   secondaryProductBase64?: string | null;
+  resolution?: ResolutionLevel;
   userApiKey?: string;
   locale?: Locale;
 }
@@ -215,6 +236,9 @@ export async function generateImageFromReferenceAction(
     );
   }
 
+  // Get image config for resolution
+  const imageConfig = getImageConfig(validatedInput.resolution || "4k");
+
   const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [
     { text: prompt },
   ];
@@ -250,6 +274,7 @@ export async function generateImageFromReferenceAction(
         contents: { parts },
         config: {
           responseModalities: ["image", "text"],
+          imageConfig,
         },
       })
     );

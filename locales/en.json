@@ -177,7 +177,14 @@
     "copyWeight": "Copy Weight",
     "expand": "Expand",
     "collapse": "Collapse",
-    "perCardModeHint": "Click \"Expand\" to set generation mode and reference image for each card"
+    "perCardModeHint": "Click \"Expand\" to set generation mode and reference image for each card",
+    "resolution": "Output Resolution",
+    "resolution1K": "1K",
+    "resolution1KDesc": "1024px",
+    "resolution2K": "2K",
+    "resolution2KDesc": "2048px",
+    "resolution4K": "4K",
+    "resolution4KDesc": "4096px"
   },
   "apiKeyModal": {
     "title": "API Key Settings",

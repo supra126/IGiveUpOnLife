@@ -15,6 +15,7 @@ import { ExtendModal } from "./ExtendModal";
 export type FontWeight = "regular" | "medium" | "bold" | "black";
 export type GenerationMode = "prompt" | "reference";
 export type SimilarityLevel = "low" | "medium" | "high";
+export type ResolutionLevel = "1k" | "2k" | "4k";
 
 // 全局設定
 export interface GlobalProductionSettings {
@@ -22,6 +23,7 @@ export interface GlobalProductionSettings {
   titleWeight: FontWeight;
   copyWeight: FontWeight;
   similarityLevel: SimilarityLevel;
+  resolution: ResolutionLevel;
 }
 
 interface ProductionCardProps {
@@ -62,6 +64,7 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
     titleWeight,
     copyWeight,
     similarityLevel,
+    resolution,
   } = globalSettings;
 
   const handleGenerate = async () => {
@@ -97,7 +100,8 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
           showText,
           titleWeight,
           copyWeight,
-          secondaryProduct
+          secondaryProduct,
+          resolution
         );
       } else {
         let enhancedPrompt = contentSet.visual_prompt_en;
@@ -123,7 +127,8 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
           apiKey,
           productImage,
           contentSet.ratio,
-          secondaryProduct
+          secondaryProduct,
+          resolution
         );
       }
 
@@ -157,6 +162,23 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
               onClick={() => openImageInNewWindow(image, contentSet.title)}
             />
             <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+              <a
+                href={image}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm pointer-events-auto"
+                title={t("extend.openInNewTab")}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
               <a
                 href={image}
                 download={`${contentSet.id}.png`}

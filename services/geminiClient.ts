@@ -68,6 +68,22 @@ const TEXT_MODEL = "gemini-2.5-flash";
 const IMAGE_MODEL = "gemini-3-pro-image-preview";
 const THINKING_BUDGET = 2048;
 
+// Resolution types and helpers
+export type ResolutionLevel = "1k" | "2k" | "4k";
+
+// Resolution to API format mapping (must be uppercase)
+const RESOLUTION_API_MAP: Record<ResolutionLevel, string> = {
+  "1k": "1K",
+  "2k": "2K",
+  "4k": "4K",
+};
+
+function getImageConfig(resolution: ResolutionLevel = "4k") {
+  return {
+    imageSize: RESOLUTION_API_MAP[resolution],
+  };
+}
+
 // --- Helpers ---
 
 const cleanJson = (text: string): string => {
@@ -476,6 +492,7 @@ export interface GenerateImageInput {
   referenceImageBase64?: string;
   aspectRatio?: ImageRatio;
   secondaryImageBase64?: string | null;
+  resolution?: ResolutionLevel;
   apiKey: string;
   locale?: Locale;
 }
@@ -511,6 +528,9 @@ export async function generateMarketingImageClient(
 - Both products should maintain their original appearance and details
 - The scene should tell a story of how these products relate to each other`;
   }
+
+  // Get image config for resolution
+  const imageConfig = getImageConfig(input.resolution || "4k");
 
   const parts: Array<
     { text: string } | { inlineData: { data: string; mimeType: string } }
@@ -551,6 +571,7 @@ export async function generateMarketingImageClient(
         contents: { parts },
         config: {
           responseModalities: ["image", "text"],
+          imageConfig,
         },
       })
     );
@@ -669,6 +690,7 @@ export interface GenerateFromReferenceInput {
   titleWeight?: "regular" | "medium" | "bold" | "black";
   copyWeight?: "regular" | "medium" | "bold" | "black";
   secondaryProductBase64?: string | null;
+  resolution?: ResolutionLevel;
   apiKey: string;
   locale?: Locale;
 }
@@ -744,6 +766,9 @@ export async function generateImageFromReferenceClient(
     prompt += `\n\nIMPORTANT: Overlay the following text on the image using Noto Sans TC (Noto Sans Traditional Chinese) font:\nTitle: "${input.titleText}" (Font: Noto Sans TC ${titleWeightStr})\nCopy: "${input.copyText}" (Font: Noto Sans TC ${copyWeightStr})\nUse appropriate positioning, size, and styling that complements the visual design. Make sure the font is Noto Sans TC (思源黑體).`;
   }
 
+  // Get image config for resolution
+  const imageConfig = getImageConfig(input.resolution || "4k");
+
   const parts: Array<
     { text: string } | { inlineData: { data: string; mimeType: string } }
   > = [{ text: prompt }];
@@ -811,6 +836,7 @@ export async function generateImageFromReferenceClient(
         contents: { parts },
         config: {
           responseModalities: ["image", "text"],
+          imageConfig,
         },
       })
     );

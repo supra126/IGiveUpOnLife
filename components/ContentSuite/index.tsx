@@ -16,6 +16,7 @@ import {
   GlobalProductionSettings,
   FontWeight,
   SimilarityLevel,
+  ResolutionLevel,
 } from "./ProductionCard";
 import { ImageUploader } from "./ImageUploader";
 
@@ -85,6 +86,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
     titleWeight: "bold",
     copyWeight: "regular",
     similarityLevel: "medium",
+    resolution: "4k",
   });
 
   // Use custom hook for file previews
@@ -402,6 +404,31 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                       </div>
                       <div className="text-[10px] opacity-70 mt-0.5">
                         {t(`production.similarity${level.charAt(0).toUpperCase() + level.slice(1)}Desc`)}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Row 3: Resolution */}
+              <div>
+                <label className="text-xs text-gray-400 mb-2 block">{t("production.resolution")}</label>
+                <div className="flex gap-2">
+                  {(["1k", "2k", "4k"] as ResolutionLevel[]).map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => updateGlobalSetting("resolution", level)}
+                      className={`flex-1 max-w-[140px] py-2 px-3 text-xs rounded-md transition-colors ${
+                        globalSettings.resolution === level
+                          ? "bg-white/10 text-white border border-white"
+                          : "bg-white/5 text-gray-400 border border-transparent hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="font-bold">
+                        {t(`production.resolution${level.toUpperCase()}`)}
+                      </div>
+                      <div className="text-[10px] opacity-70 mt-0.5">
+                        {t(`production.resolution${level.toUpperCase()}Desc`)}
                       </div>
                     </button>
                   ))}

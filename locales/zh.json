@@ -177,7 +177,14 @@
     "copyWeight": "文案字重",
     "expand": "展開",
     "collapse": "收合",
-    "perCardModeHint": "點擊「展開」可針對每張圖片獨立設定產圖模式與參考圖"
+    "perCardModeHint": "點擊「展開」可針對每張圖片獨立設定產圖模式與參考圖",
+    "resolution": "輸出解析度",
+    "resolution1K": "1K",
+    "resolution1KDesc": "1024px",
+    "resolution2K": "2K",
+    "resolution2KDesc": "2048px",
+    "resolution4K": "4K",
+    "resolution4KDesc": "4096px"
   },
   "apiKeyModal": {
     "title": "API Key 設定",

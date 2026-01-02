@@ -51,12 +51,16 @@ export const GenerateContentPlanInputSchema = z.object({
   locale: LocaleSchema,
 });
 
+// Resolution Level Schema
+export const ResolutionLevelSchema = z.enum(["1k", "2k", "4k"]);
+
 // Generate Image Input Schema
 export const GenerateImageInputSchema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
   referenceImageBase64: Base64ImageSchema.optional(),
   aspectRatio: ImageRatioSchema.optional(),
   secondaryImageBase64: Base64ImageSchema.nullable().optional(),
+  resolution: ResolutionLevelSchema.optional(),
   userApiKey: z.string().optional(),
   locale: LocaleSchema,
 });
@@ -88,6 +92,7 @@ export const GenerateFromReferenceInputSchema = z.object({
   titleWeight: FontWeightSchema.optional(),
   copyWeight: FontWeightSchema.optional(),
   secondaryProductBase64: Base64ImageSchema.nullable().optional(),
+  resolution: ResolutionLevelSchema.optional(),
   userApiKey: z.string().optional(),
   locale: LocaleSchema,
 });

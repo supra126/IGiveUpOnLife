@@ -169,6 +169,8 @@ export const generateContentPlan = async (
   });
 };
 
+export type ResolutionLevel = "1k" | "2k" | "4k";
+
 /**
  * Generate marketing image
  */
@@ -177,7 +179,8 @@ export const generateMarketingImage = async (
   apiKey?: string,
   referenceImageBase64?: string,
   aspectRatio: ImageRatio = "1:1",
-  secondaryImageBase64?: string | null
+  secondaryImageBase64?: string | null,
+  resolution: ResolutionLevel = "4k"
 ): Promise<string> => {
   await initModule();
 
@@ -190,6 +193,7 @@ export const generateMarketingImage = async (
       referenceImageBase64,
       aspectRatio,
       secondaryImageBase64,
+      resolution,
       apiKey,
     });
   }
@@ -199,6 +203,7 @@ export const generateMarketingImage = async (
     referenceImageBase64,
     aspectRatio,
     secondaryImageBase64,
+    resolution,
     userApiKey: apiKey || undefined,
   });
 };
@@ -255,7 +260,8 @@ export const generateImageFromReference = async (
   showText?: boolean,
   titleWeight?: "regular" | "medium" | "bold" | "black",
   copyWeight?: "regular" | "medium" | "bold" | "black",
-  secondaryProductBase64?: string | null
+  secondaryProductBase64?: string | null,
+  resolution: ResolutionLevel = "4k"
 ): Promise<string> => {
   await initModule();
 
@@ -275,6 +281,7 @@ export const generateImageFromReference = async (
       titleWeight,
       copyWeight,
       secondaryProductBase64,
+      resolution,
       apiKey,
     });
   }
@@ -291,6 +298,7 @@ export const generateImageFromReference = async (
     titleWeight,
     copyWeight,
     secondaryProductBase64,
+    resolution,
     userApiKey: apiKey || undefined,
   });
 };
