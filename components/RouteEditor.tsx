@@ -37,7 +37,7 @@ export function RouteEditor({
         <div>
           <div className="flex items-center gap-3 mb-2">
             <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-md border border-white/20">
-              STEP 01
+              {t("stepIndicator.step01")}
             </span>
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-white">{t("phase1.title")}</h3>

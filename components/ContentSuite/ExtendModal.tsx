@@ -44,19 +44,19 @@ const generateSocialCopiesStatic = (
     {
       platform: t("extend.socialTemplates.instagram"),
       title: route.headline,
-      content: `${route.headline}\n\n${copy}\n\n───\n\n${route.subhead}\n\n${route.style_brief ? `風格：${route.style_brief}\n` : ""}${route.target_audience ? `適合：${route.target_audience}\n` : ""}\n點擊連結了解更多\n私訊小編享專屬優惠\n\n${hashtags.join(" ")}`,
+      content: `${route.headline}\n\n${copy}\n\n───\n\n${route.subhead}\n\n${route.style_brief ? `${t("extendTemplates.styleLabel")}${route.style_brief}\n` : ""}${route.target_audience ? `${t("extendTemplates.suitableFor")}${route.target_audience}\n` : ""}\n${t("extendTemplates.clickToLearnMore")}\n${t("extendTemplates.dmForDiscount")}\n\n${hashtags.join(" ")}`,
       hashtags,
     },
     {
       platform: t("extend.socialTemplates.facebook"),
       title: route.headline,
-      content: `【${title}】\n${route.headline}\n\n${copy}\n\n━━━━━━━━━━\n\n${route.subhead}\n\n${route.style_brief ? `▸ 風格特色：${route.style_brief}\n` : ""}${route.target_audience ? `▸ 適合對象：${route.target_audience}\n` : ""}\n▸ 限時優惠進行中\n▸ 全館滿額免運\n\n留言 +1 小編私訊您\n立即了解更多：[連結]\n\n${hashtags.slice(0, 4).join(" ")}`,
+      content: `【${title}】\n${route.headline}\n\n${copy}\n\n━━━━━━━━━━\n\n${route.subhead}\n\n${route.style_brief ? `${t("extendTemplates.styleFeature")}${route.style_brief}\n` : ""}${route.target_audience ? `${t("extendTemplates.targetAudience")}${route.target_audience}\n` : ""}\n${t("extendTemplates.limitedOffer")}\n${t("extendTemplates.freeShipping")}\n\n${t("extendTemplates.comment1ForDm")}\n${t("extendTemplates.learnMoreLink")}\n\n${hashtags.slice(0, 4).join(" ")}`,
       hashtags: hashtags.slice(0, 4),
     },
     {
       platform: t("extend.socialTemplates.story"),
       title: title,
-      content: `${route.headline}\n\n上滑了解更多\n\n${route.subhead}`,
+      content: `${route.headline}\n\n${t("extendTemplates.swipeUpToLearnMore")}\n\n${route.subhead}`,
       hashtags: hashtags.slice(0, 2),
     },
   ];
@@ -323,7 +323,7 @@ export const ExtendModal: React.FC<ExtendModalProps> = ({
               {/* Source Preview */}
               <div className="flex items-start gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden border border-white/20 shrink-0">
-                  <img src={sourceImage} alt="Source" className="w-full h-full object-cover" />
+                  <img src={sourceImage} alt={t("alt.source")} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">{t("extend.sourceImage")}</p>

@@ -11,6 +11,11 @@ import { Spinner } from "@/components/Spinner";
 import { getRatioColor, getRatioClass } from "@/lib/ratio-utils";
 import { openImageInNewWindow } from "@/lib/image-utils";
 import { ExtendModal } from "./ExtendModal";
+import {
+  PRODUCT_PROTECTION_PROMPT,
+  NEGATIVE_PROMPT,
+  getTextOverlayPrompt,
+} from "@/lib/prompt-templates";
 
 export type FontWeight = "regular" | "medium" | "bold" | "black";
 export type GenerationMode = "prompt" | "reference";
@@ -104,34 +109,25 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
           resolution
         );
       } else {
-        let enhancedPrompt = contentSet.visual_prompt_en;
+        // Build prompt with product protection at the start
+        let enhancedPrompt = `${PRODUCT_PROTECTION_PROMPT} ${contentSet.visual_prompt_en}`;
 
         if (brandLogo) {
           enhancedPrompt +=
-            "\n\nIMPORTANT: Place the uploaded brand logo in one of the four corners (top-left, top-right, bottom-left, or bottom-right) in a subtle, non-intrusive way. The logo should be clearly visible but not dominate the composition.";
+            " Place brand logo in corner subtly.";
         }
 
         if (showText) {
-          const weightMap = {
-            regular: "Regular (400)",
-            medium: "Medium (500)",
-            bold: "Bold (700)",
-            black: "Black (900)",
-          };
-
-          enhancedPrompt += `\n\n【TEXT OVERLAY - CRITICAL INSTRUCTIONS】
-Overlay the following Traditional Chinese text on the image:
-- Title: "${contentSet.title}" (Font: Noto Sans TC ${weightMap[titleWeight]})
-- Copy: "${contentSet.copy}" (Font: Noto Sans TC ${weightMap[copyWeight]})
-
-CRITICAL TEXT RENDERING RULES:
-1. Render EXACT characters as provided - do NOT approximate, substitute, or hallucinate any characters
-2. Each Chinese character must be pixel-perfect with correct strokes
-3. Use proper Traditional Chinese (繁體中文) character forms, NOT Simplified Chinese
-4. Typography must be clean, sharp, and legible at 4K resolution
-5. Position text with appropriate contrast against background
-6. Maintain consistent character spacing and line height`;
+          enhancedPrompt += getTextOverlayPrompt(
+            contentSet.title,
+            contentSet.copy,
+            titleWeight,
+            copyWeight
+          );
         }
+
+        // Add negative prompt at the end
+        enhancedPrompt += ` ${NEGATIVE_PROMPT}`;
 
         result = await generateMarketingImage(
           enhancedPrompt,
@@ -266,7 +262,8 @@ CRITICAL TEXT RENDERING RULES:
                 <img
                   src={productImage}
                   className="w-full h-full object-cover blur-sm"
-                  alt="product-bg"
+                  alt={t("alt.productBackground")}
+                  loading="lazy"
                 />
               </div>
             )}
@@ -359,8 +356,9 @@ CRITICAL TEXT RENDERING RULES:
                   <div className="w-full h-full relative group">
                     <img
                       src={referenceImage}
-                      alt="Reference"
+                      alt={t("alt.reference")}
                       className="w-full h-full object-contain"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <span className="text-white text-[10px]">{t("production.changeReference")}</span>

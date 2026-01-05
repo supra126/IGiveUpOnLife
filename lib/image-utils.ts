@@ -172,7 +172,7 @@ export function openImageInNewWindow(imageUrl: string, title?: string): void {
   try {
     const parsed = parseBase64Image(imageUrl);
     if (!parsed) {
-      console.error("無法解析圖片格式");
+      console.error("Failed to parse image format");
       return;
     }
 
@@ -193,7 +193,7 @@ export function openImageInNewWindow(imageUrl: string, title?: string): void {
     // 延遲釋放 Blob URL（給瀏覽器足夠時間載入）
     setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
   } catch (err) {
-    console.error("開啟圖片失敗:", err);
+    console.error("Failed to open image:", err);
   }
 }
 

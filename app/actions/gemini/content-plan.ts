@@ -8,6 +8,7 @@ import {
   createGeminiClient,
   getTextModel,
   getThinkingBudget,
+  getMaxOutputTokens,
   withRetry,
   getErrorMessage,
   enhanceErrorMessage,
@@ -26,16 +27,17 @@ export interface GenerateContentPlanInput {
 export async function generateContentPlanAction(
   input: GenerateContentPlanInput
 ): Promise<ContentPlan> {
-  // Validate input
+  // Validate input first
   const validationResult = GenerateContentPlanInputSchema.safeParse(input);
   if (!validationResult.success) {
-    throw new Error(`Invalid input: ${validationResult.error.message}`);
+    // Safe access to locale for error message
+    const errorLocale = ((input as { locale?: Locale })?.locale || "en") as Locale;
+    throw new Error(`${getErrorMessage("invalidInput", errorLocale)}: ${validationResult.error.message}`);
   }
   const validatedInput = validationResult.data;
+  const locale = validatedInput.locale || "en";
 
   await applyRateLimit();
-
-  const locale = validatedInput.locale || "en";
   const ai = createGeminiClient(validatedInput.userApiKey, locale);
 
   const sizeLabelsZh: Record<ImageRatio, string> = {
@@ -104,22 +106,23 @@ export async function generateContentPlanAction(
           responseMimeType: "application/json",
           temperature: 1.0,
           topP: 0.95,
+          maxOutputTokens: getMaxOutputTokens(),
           thinkingConfig: { thinkingBudget: getThinkingBudget() },
         },
       })
     );
 
-    if (!response.text) throw new Error("Gemini Planning failed");
+    if (!response.text) throw new Error(getErrorMessage("planningFailed", locale));
 
     // Parse with automatic repair
     const parsed = parseJsonSafe<ContentPlan>(response.text, locale);
 
     if (!parsed.content_sets || !Array.isArray(parsed.content_sets)) {
-      throw new Error("API 返回格式錯誤：缺少 content_sets 陣列");
+      throw new Error(getErrorMessage("missingContentSets", locale));
     }
 
     if (!parsed.selected_sizes || !Array.isArray(parsed.selected_sizes)) {
-      throw new Error("API 返回格式錯誤：缺少 selected_sizes 陣列");
+      throw new Error(getErrorMessage("missingSelectedSizes", locale));
     }
 
     const missingFields = parsed.content_sets.filter(

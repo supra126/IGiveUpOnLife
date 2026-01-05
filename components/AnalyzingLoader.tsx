@@ -32,7 +32,7 @@ export function AnalyzingLoader() {
         >
           <Image
             src="/images/logo.svg"
-            alt="Loading"
+            alt={t("alt.loading")}
             width={48}
             height={48}
             className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]"

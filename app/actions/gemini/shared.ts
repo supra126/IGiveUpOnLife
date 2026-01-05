@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { headers } from "next/headers";
 import { Locale } from "@/prompts";
-import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIdentifier, isLocalhost } from "@/lib/rate-limit";
 
 // --- Server-side i18n for error messages ---
 
@@ -19,6 +19,12 @@ export const errorMessages = {
     invalidFormat: "AI 返回了無效的格式，且自動修復失敗。請再試一次。",
     missingFields: "部分內容方案缺少必要欄位",
     noImageGenerated: "未生成圖片。",
+    planningFailed: "規劃失敗",
+    missingContentSets: "API 返回格式錯誤：缺少 content_sets 陣列",
+    missingSelectedSizes: "API 返回格式錯誤：缺少 selected_sizes 陣列",
+    promptRegenerateFailed: "重新生成視覺提示詞失敗",
+    invalidInput: "輸入無效",
+    responseTruncated: "AI 回應被截斷，請減少選擇的尺寸數量後再試。",
   },
   en: {
     apiKeyInvalid: "API key is invalid or expired. Please check your key settings.",
@@ -33,6 +39,12 @@ export const errorMessages = {
     invalidFormat: "AI returned invalid format and auto-repair failed. Please try again.",
     missingFields: "Some content sets are missing required fields",
     noImageGenerated: "No image was generated.",
+    planningFailed: "Planning failed",
+    missingContentSets: "API returned invalid format: missing content_sets array",
+    missingSelectedSizes: "API returned invalid format: missing selected_sizes array",
+    promptRegenerateFailed: "Failed to regenerate visual prompt",
+    invalidInput: "Invalid input",
+    responseTruncated: "AI response was truncated. Please try selecting fewer sizes.",
   },
 };
 
@@ -100,6 +112,34 @@ export const repairJson = (text: string): string => {
 };
 
 /**
+ * Check if a JSON string appears to be truncated
+ */
+const isTruncatedJson = (text: string): boolean => {
+  const trimmed = text.trim();
+  // Check if it ends with incomplete patterns
+  const incompletePatterns = [
+    /"\s*$/, // ends with just a quote
+    /:\s*$/, // ends with colon
+    /,\s*$/, // ends with comma
+    /\[\s*$/, // ends with open bracket
+    /{\s*$/, // ends with open brace
+    /"\w+$/, // ends mid-word in a string
+  ];
+
+  // Check bracket/brace balance
+  const openBraces = (trimmed.match(/{/g) || []).length;
+  const closeBraces = (trimmed.match(/}/g) || []).length;
+  const openBrackets = (trimmed.match(/\[/g) || []).length;
+  const closeBrackets = (trimmed.match(/]/g) || []).length;
+
+  if (openBraces > closeBraces || openBrackets > closeBrackets) {
+    return true;
+  }
+
+  return incompletePatterns.some(pattern => pattern.test(trimmed));
+};
+
+/**
  * Parse JSON with automatic repair attempts
  */
 export const parseJsonSafe = <T>(text: string, locale: Locale = "en"): T => {
@@ -109,6 +149,12 @@ export const parseJsonSafe = <T>(text: string, locale: Locale = "en"): T => {
   try {
     return JSON.parse(cleaned) as T;
   } catch {
+    // Check if response appears truncated
+    if (isTruncatedJson(cleaned)) {
+      console.error("JSON appears truncated. Text ends with:", cleaned.slice(-100));
+      throw new Error(getErrorMessage("responseTruncated", locale));
+    }
+
     // Second attempt: repair and parse
     try {
       const repaired = repairJson(cleaned);
@@ -170,12 +216,28 @@ export function getThinkingBudget(): number {
 }
 
 /**
+ * Get max output tokens from environment variable
+ * Defaults to 16384 for content planning (needs more tokens for multiple content sets)
+ */
+export function getMaxOutputTokens(): number {
+  const tokens = process.env.GEMINI_MAX_OUTPUT_TOKENS;
+  if (tokens) {
+    const parsed = parseInt(tokens, 10);
+    if (!isNaN(parsed) && parsed >= 1024 && parsed <= 65536) {
+      return parsed;
+    }
+  }
+  return 16384; // default - sufficient for 3 content sets per size
+}
+
+/**
  * Retry wrapper for API calls with exponential backoff
+ * Note: Gemini Image API free tier has 2 RPM limit, so we use 30s base delay
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelayMs: number = 1000
+  baseDelayMs: number = 30000
 ): Promise<T> {
   let lastError: Error | undefined;
 
@@ -278,6 +340,7 @@ export function hasServerApiKey(): boolean {
 /**
  * Apply rate limiting for server API key usage
  * Trusted users (authenticated via Cloudflare Access) bypass rate limiting
+ * Localhost requests bypass rate limiting for development
  */
 export async function applyRateLimit(): Promise<void> {
   // Only apply rate limit when using server API key
@@ -287,6 +350,11 @@ export async function applyRateLimit(): Promise<void> {
 
   const headersList = await headers();
   const clientId = getClientIdentifier(headersList);
+
+  // Skip rate limiting for localhost (development)
+  if (isLocalhost(clientId)) {
+    return;
+  }
 
   // Pass headers to checkRateLimit for Cloudflare Access verification
   const result = await checkRateLimit(clientId, headersList);

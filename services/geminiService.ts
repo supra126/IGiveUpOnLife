@@ -25,6 +25,22 @@ import {
 // Detect build mode at compile time
 const IS_STATIC_BUILD = process.env.NEXT_PUBLIC_BUILD_MODE === "static";
 
+// --- Error Messages ---
+const serviceErrorMessages = {
+  zh: {
+    cannotReadImage: "無法讀取圖片",
+    staticModeApiKeyRequired: "靜態版本需要提供 API 金鑰",
+  },
+  en: {
+    cannotReadImage: "Cannot read image",
+    staticModeApiKeyRequired: "Static mode requires API key",
+  },
+};
+
+function getServiceErrorMessage(key: keyof typeof serviceErrorMessages.en, locale: Locale = "en"): string {
+  return serviceErrorMessages[locale][key];
+}
+
 // --- Client-side Helpers (always available) ---
 
 /**
@@ -101,14 +117,14 @@ export const analyzeProductImage = async (
   const extracted = parseBase64Image(base64);
 
   if (!extracted) {
-    throw new Error("無法讀取圖片");
+    throw new Error(getServiceErrorMessage("cannotReadImage", locale));
   }
 
   await initModule();
 
   if (IS_STATIC_BUILD) {
     if (!apiKey) {
-      throw new Error("靜態版本需要提供 API 金鑰");
+      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
     }
     return clientFunctions!.analyzeProductImageClient({
       imageBase64: extracted.data,
@@ -147,7 +163,7 @@ export const generateContentPlan = async (
 
   if (IS_STATIC_BUILD) {
     if (!apiKey) {
-      throw new Error("靜態版本需要提供 API 金鑰");
+      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
     }
     return clientFunctions!.generateContentPlanClient({
       route,
@@ -180,13 +196,14 @@ export const generateMarketingImage = async (
   referenceImageBase64?: string,
   aspectRatio: ImageRatio = "1:1",
   secondaryImageBase64?: string | null,
-  resolution: ResolutionLevel = "4k"
+  resolution: ResolutionLevel = "2k",
+  locale?: Locale
 ): Promise<string> => {
   await initModule();
 
   if (IS_STATIC_BUILD) {
     if (!apiKey) {
-      throw new Error("靜態版本需要提供 API 金鑰");
+      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
     }
     return clientFunctions!.generateMarketingImageClient({
       prompt,
@@ -205,6 +222,7 @@ export const generateMarketingImage = async (
     secondaryImageBase64,
     resolution,
     userApiKey: apiKey || undefined,
+    locale,
   });
 };
 
@@ -217,13 +235,14 @@ export const regenerateVisualPrompt = async (
   ratio: ImageRatio,
   sizeLabel: string,
   apiKey?: string,
-  visualSummaryZh?: string
+  visualSummaryZh?: string,
+  locale?: Locale
 ): Promise<string> => {
   await initModule();
 
   if (IS_STATIC_BUILD) {
     if (!apiKey) {
-      throw new Error("靜態版本需要提供 API 金鑰");
+      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
     }
     return clientFunctions!.regenerateVisualPromptClient({
       titleZh,
@@ -242,6 +261,7 @@ export const regenerateVisualPrompt = async (
     sizeLabel,
     visualSummaryZh,
     userApiKey: apiKey || undefined,
+    locale,
   });
 };
 
@@ -261,13 +281,14 @@ export const generateImageFromReference = async (
   titleWeight?: "regular" | "medium" | "bold" | "black",
   copyWeight?: "regular" | "medium" | "bold" | "black",
   secondaryProductBase64?: string | null,
-  resolution: ResolutionLevel = "4k"
+  resolution: ResolutionLevel = "4k",
+  locale?: Locale
 ): Promise<string> => {
   await initModule();
 
   if (IS_STATIC_BUILD) {
     if (!apiKey) {
-      throw new Error("靜態版本需要提供 API 金鑰");
+      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
     }
     return clientFunctions!.generateImageFromReferenceClient({
       productImageBase64,
@@ -300,6 +321,7 @@ export const generateImageFromReference = async (
     secondaryProductBase64,
     resolution,
     userApiKey: apiKey || undefined,
+    locale,
   });
 };
 

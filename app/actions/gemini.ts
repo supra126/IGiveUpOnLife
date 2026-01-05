@@ -16,14 +16,11 @@ import type {
 } from "./gemini/image-generate";
 import { DirectorOutput, ContentPlan } from "@/types";
 
-// Re-export types for consumers
-export type {
-  AnalyzeProductInput,
-  GenerateContentPlanInput,
-  GenerateImageInput,
-  RegeneratePromptInput,
-  GenerateFromReferenceInput,
-};
+// Note: Types are not re-exported from "use server" files (Next.js limitation)
+// Import types directly from:
+// - ./gemini/analyze (AnalyzeProductInput)
+// - ./gemini/content-plan (GenerateContentPlanInput)
+// - ./gemini/image-generate (GenerateImageInput, RegeneratePromptInput, GenerateFromReferenceInput)
 
 // Wrapper functions to satisfy "use server" requirements
 // Each exported function must be async

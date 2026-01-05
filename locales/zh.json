@@ -269,7 +269,18 @@
     "rateLimitWarning": "請求過於頻繁，請稍後再試",
     "noResponse": "Gemini 沒有回應文字",
     "invalidFormat": "AI 返回了無效的格式，且自動修復失敗。請再試一次。",
-    "rateLimitRetry": "請求過於頻繁，請在 {seconds} 秒後再試"
+    "rateLimitRetry": "請求過於頻繁，請在 {seconds} 秒後再試",
+    "cannotReadImage": "無法讀取圖片",
+    "staticModeApiKeyRequired": "靜態版本需要提供 API 金鑰",
+    "invalidImageFormat": "無效的圖片格式",
+    "failedToGetCanvas": "無法取得 Canvas 上下文",
+    "failedToLoadImage": "載入圖片失敗",
+    "planningFailed": "規劃失敗",
+    "missingContentSets": "API 返回格式錯誤：缺少 content_sets 陣列",
+    "missingSelectedSizes": "API 返回格式錯誤：缺少 selected_sizes 陣列",
+    "noImageGenerated": "未生成圖片",
+    "promptRegenerateFailed": "重新生成視覺提示詞失敗",
+    "invalidInput": "輸入無效"
   },
   "prompt": {
     "strategySupplement": "【策略補充說明】"
@@ -281,7 +292,8 @@
     "strategyFormat": "策略與格式",
     "adjust": "調整",
     "generate": "產圖",
-    "adjustGenerate": "調整與產圖"
+    "adjustGenerate": "調整與產圖",
+    "stepOf": "第 {current} 步，共 {total} 步"
   },
   "extend": {
     "title": "延伸至其他尺寸",
@@ -429,5 +441,116 @@
     "stackDesc": "產品自然層疊擺放",
     "custom": "自訂",
     "customDesc": "使用構圖摘要描述"
+  },
+  "fontWeights": {
+    "regular": "Regular",
+    "medium": "Medium",
+    "bold": "Bold",
+    "black": "Black",
+    "regular400": "Regular (400)",
+    "medium500": "Medium (500)",
+    "bold700": "Bold (700)",
+    "black900": "Black (900)"
+  },
+  "stepIndicator": {
+    "step01": "步驟 01",
+    "step02": "步驟 02",
+    "step03": "步驟 03",
+    "step04": "步驟 04"
+  },
+  "alt": {
+    "preview": "預覽",
+    "loading": "載入中",
+    "source": "來源",
+    "productBackground": "產品背景",
+    "reference": "參考圖"
+  },
+  "guideV2": {
+    "step1": {
+      "title": "上傳與資訊輸入｜一次填完所有資訊",
+      "desc": "上傳產品圖後，可以選填以下資訊（填越多，AI 越懂你）：",
+      "items": [
+        { "label": "產品名稱", "desc": "讓 AI 認得你的產品" },
+        { "label": "產品資訊", "desc": "品牌故事、核心價值、產品特色" },
+        { "label": "產品網址", "desc": "AI 會自動抓取官網內容進行分析" },
+        { "label": "參考文案 / 競品參考", "desc": "貼上同類商品的熱銷文案，AI 會拆解其說服邏輯" }
+      ],
+      "tip": "💡 小提示：所有資訊一次填完，就不用在流程中重複輸入了"
+    },
+    "step2": {
+      "title": "Phase 1：策略選擇｜秒速決定視覺方向",
+      "desc": "AI 會分析產品後，立即提供",
+      "descHighlight": "三條截然不同的視覺策略",
+      "descSuffix": "，每條路線包含：",
+      "items": ["主打標語與副標題", "視覺風格描述（色調、氛圍、設計元素）", "目標受眾定位"],
+      "tip": "👉 點選一個你喜歡的路線，系統會自動進入 Phase 2 開始規劃完整內容"
+    },
+    "step3": {
+      "title": "選擇圖片尺寸｜多平台支援",
+      "desc": "選擇策略路線後，系統會自動進入尺寸選擇畫面，勾選你需要的尺寸：",
+      "items": [
+        { "label": "1:1 方形圖", "desc": "適合 FB 貼文、IG 輪播、電商主圖" },
+        { "label": "9:16 直式長圖", "desc": "適合限時動態、Instagram Stories、Reels" },
+        { "label": "4:5 直式圖", "desc": "適合 IG Feed 主頁、優化手機瀏覽" },
+        { "label": "16:9 橫式長圖", "desc": "適合封面、廣告圖片、橫幅設計" },
+        { "label": "1:1 商業攝影", "desc": "專業商品攝影風格（工作室燈光、高端相機質感）" }
+      ],
+      "tip": "AI 會為每個選定的尺寸生成 3 組不同的內容方案（功能導向、情感導向、數據導向）"
+    },
+    "step4": {
+      "title": "上傳產品圖與 Logo｜產圖前置準備",
+      "desc": "在「爆肝產圖設定」區域，上傳以下素材（這些設定會在所有方案間共用）：",
+      "items": [
+        { "label": "📸 產品圖片", "desc": "必要，用於圖片生成的主要素材" },
+        { "label": "🏷️ 品牌 Logo", "desc": "選填，會自動放置在圖片角落" }
+      ]
+    },
+    "step5": {
+      "title": "腳本審閱模式｜內容來嘴看看",
+      "desc": "切換至「內容來嘴看看」模式，可以：",
+      "items": ["查看所有方案的標題、文案、視覺摘要", "編輯任何不滿意的文案", "調整 AI Prompt（進階功能）", "為每個方案重新生成 Prompt"]
+    },
+    "step6": {
+      "title": "圖片製作模式｜爆肝產圖",
+      "desc": "切換至「爆肝產圖」模式，針對每個方案可以：",
+      "sections": [
+        {
+          "title": "✅ 文字與字體控制",
+          "items": [
+            "勾選「顯示內容（標題 + 文案）」決定是否在圖片上疊加文字",
+            "直接在產圖模式修改標題和文案",
+            "選擇字體粗細（Regular、Medium、Bold、Black）",
+            "所有文字使用開源字體思源黑體（Noto Sans TC），無版權問題"
+          ]
+        },
+        {
+          "title": "🎨 雙模式生成",
+          "items": [
+            "提詞版（預設）：使用 AI 自動生成的視覺 Prompt 創作",
+            "參考版：上傳參考圖片，選擇相似度（低 / 中 / 高）"
+          ]
+        },
+        {
+          "title": "📥 生成與下載",
+          "items": ["點擊播放按鈕開始生成（約 10-20 秒）", "滑鼠移至圖片上方可下載或重繪"]
+        }
+      ]
+    }
+  },
+  "contentSuiteV2": {
+    "arrangementPriorityNote": "【產品排列方式 - 最高優先級】"
+  },
+  "extendTemplates": {
+    "styleLabel": "風格：",
+    "suitableFor": "適合：",
+    "clickToLearnMore": "點擊連結了解更多",
+    "dmForDiscount": "私訊小編享專屬優惠",
+    "styleFeature": "▸ 風格特色：",
+    "targetAudience": "▸ 適合對象：",
+    "limitedOffer": "▸ 限時優惠進行中",
+    "freeShipping": "▸ 全館滿額免運",
+    "comment1ForDm": "留言 +1 小編私訊您",
+    "learnMoreLink": "立即了解更多：[連結]",
+    "swipeUpToLearnMore": "上滑了解更多"
   }
 }

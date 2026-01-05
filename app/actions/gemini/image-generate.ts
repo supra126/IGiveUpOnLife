@@ -56,16 +56,17 @@ export interface GenerateImageInput {
 export async function generateMarketingImageAction(
   input: GenerateImageInput
 ): Promise<string> {
-  // Validate input
+  // Validate input first
   const validationResult = GenerateImageInputSchema.safeParse(input);
   if (!validationResult.success) {
-    throw new Error(`Invalid input: ${validationResult.error.message}`);
+    // Safe access to locale for error message
+    const errorLocale = ((input as { locale?: Locale })?.locale || "en") as Locale;
+    throw new Error(`${getErrorMessage("invalidInput", errorLocale)}: ${validationResult.error.message}`);
   }
   const validatedInput = validationResult.data;
+  const locale = validatedInput.locale || "en";
 
   await applyRateLimit();
-
-  const locale = validatedInput.locale || "en";
   const ai = createGeminiClient(validatedInput.userApiKey, locale);
 
   let enhancedPrompt = validatedInput.prompt;
@@ -135,16 +136,17 @@ export interface RegeneratePromptInput {
 export async function regenerateVisualPromptAction(
   input: RegeneratePromptInput
 ): Promise<string> {
-  // Validate input
+  // Validate input first
   const validationResult = RegeneratePromptInputSchema.safeParse(input);
   if (!validationResult.success) {
-    throw new Error(`Invalid input: ${validationResult.error.message}`);
+    // Safe access to locale for error message
+    const errorLocale = ((input as { locale?: Locale })?.locale || "en") as Locale;
+    throw new Error(`${getErrorMessage("invalidInput", errorLocale)}: ${validationResult.error.message}`);
   }
   const validatedInput = validationResult.data;
+  const locale = validatedInput.locale || "en";
 
   await applyRateLimit();
-
-  const locale = validatedInput.locale || "en";
   const ai = createGeminiClient(validatedInput.userApiKey, locale);
 
   const systemPrompt = getVisualPromptSystemPrompt(
@@ -160,7 +162,7 @@ export async function regenerateVisualPromptAction(
       ai.models.generateContent({
         model: getTextModel(),
         contents: {
-          parts: [{ text: "請根據上述資訊生成視覺提示詞。" }],
+          parts: [{ text: locale === "zh" ? "請根據上述資訊生成視覺提示詞。" : "Please generate a visual prompt based on the information above." }],
         },
         config: {
           systemInstruction: systemPrompt,
@@ -171,7 +173,7 @@ export async function regenerateVisualPromptAction(
     );
 
     if (!response.text) {
-      throw new Error("Failed to regenerate visual prompt");
+      throw new Error(getErrorMessage("promptRegenerateFailed", locale));
     }
 
     return response.text.trim();
@@ -202,16 +204,17 @@ export interface GenerateFromReferenceInput {
 export async function generateImageFromReferenceAction(
   input: GenerateFromReferenceInput
 ): Promise<string> {
-  // Validate input
+  // Validate input first
   const validationResult = GenerateFromReferenceInputSchema.safeParse(input);
   if (!validationResult.success) {
-    throw new Error(`Invalid input: ${validationResult.error.message}`);
+    // Safe access to locale for error message
+    const errorLocale = ((input as { locale?: Locale })?.locale || "en") as Locale;
+    throw new Error(`${getErrorMessage("invalidInput", errorLocale)}: ${validationResult.error.message}`);
   }
   const validatedInput = validationResult.data;
+  const locale = validatedInput.locale || "en";
 
   await applyRateLimit();
-
-  const locale = validatedInput.locale || "en";
   const ai = createGeminiClient(validatedInput.userApiKey, locale);
 
   const apiAspectRatio = normalizeAspectRatio(validatedInput.aspectRatio);

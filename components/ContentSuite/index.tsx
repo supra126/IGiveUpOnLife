@@ -176,7 +176,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
       <div className="mb-8 p-6 bg-white/5 border border-white/10 rounded-xl">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-md border border-white/20">
-            STEP 04
+            {t("stepIndicator.step04")}
           </span>
         </div>
         <h4 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
@@ -362,10 +362,10 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                         onChange={(e) => updateGlobalSetting("titleWeight", e.target.value as FontWeight)}
                         className="px-2 py-1 text-xs bg-white/5 border border-white/10 rounded text-white focus:border-white focus:outline-none"
                       >
-                        <option value="regular">Regular</option>
-                        <option value="medium">Medium</option>
-                        <option value="bold">Bold</option>
-                        <option value="black">Black</option>
+                        <option value="regular">{t("fontWeights.regular")}</option>
+                        <option value="medium">{t("fontWeights.medium")}</option>
+                        <option value="bold">{t("fontWeights.bold")}</option>
+                        <option value="black">{t("fontWeights.black")}</option>
                       </select>
                     </div>
                     <div className="flex items-center gap-2">
@@ -375,10 +375,10 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
                         onChange={(e) => updateGlobalSetting("copyWeight", e.target.value as FontWeight)}
                         className="px-2 py-1 text-xs bg-white/5 border border-white/10 rounded text-white focus:border-white focus:outline-none"
                       >
-                        <option value="regular">Regular</option>
-                        <option value="medium">Medium</option>
-                        <option value="bold">Bold</option>
-                        <option value="black">Black</option>
+                        <option value="regular">{t("fontWeights.regular")}</option>
+                        <option value="medium">{t("fontWeights.medium")}</option>
+                        <option value="bold">{t("fontWeights.bold")}</option>
+                        <option value="black">{t("fontWeights.black")}</option>
                       </select>
                     </div>
                   </>

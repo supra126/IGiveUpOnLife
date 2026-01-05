@@ -3,7 +3,7 @@
  *
  * Environment variables:
  * - RATE_LIMIT_WINDOW_MS: Time window in milliseconds (default: 60000 = 1 minute)
- * - RATE_LIMIT_MAX_REQUESTS: Max requests per window (default: 10)
+ * - RATE_LIMIT_MAX_REQUESTS: Max requests per window (default: 2, matches Gemini Image API free tier)
  * - RATE_LIMIT_ENABLED: Enable/disable rate limiting (default: true)
  *
  * Cloudflare Zero Trust:
@@ -41,7 +41,8 @@ export interface RateLimitConfig {
 export function getRateLimitConfig(): RateLimitConfig {
   return {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "60000", 10),
-    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "10", 10),
+    // Default to 2 RPM to match Gemini Image API free tier limit
+    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "2", 10),
     enabled: process.env.RATE_LIMIT_ENABLED !== "false",
   };
 }
@@ -173,6 +174,20 @@ export function checkRateLimitSync(identifier: string): RateLimitResult {
     remaining: config.maxRequests - entry.count,
     resetIn: entry.resetTime - now,
   };
+}
+
+/**
+ * Check if the client is from localhost (for development)
+ */
+export function isLocalhost(identifier: string): boolean {
+  const localhostIdentifiers = [
+    "127.0.0.1",
+    "::1",
+    "::ffff:127.0.0.1",
+    "localhost",
+    "anonymous", // fallback identifier in dev mode
+  ];
+  return localhostIdentifiers.includes(identifier);
 }
 
 /**

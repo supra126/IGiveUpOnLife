@@ -138,20 +138,23 @@ const CONTENT_PLANNER_SYSTEM_PROMPT_ZH = `你是一位資深的社群內容規�
 
 ## 視覺 Prompt 規範
 
-**開頭固定句**：
-"KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF. "
+**開頭固定句（產品保護指令）**：
+"CRITICAL: The product in the reference image is SACRED and MUST NOT be altered. Preserve EXACT packaging, colors, labels, text, shape. ONLY modify: background, lighting, props AROUND the product."
 
-**尺寸規範**：
-- 1:1："Square composition, 1:1 aspect ratio, product placement in center"
-- 9:16："Vertical composition, 9:16 aspect ratio, mobile screen layout, product placement in center"
-- 4:5："Vertical composition, 4:5 aspect ratio, Instagram feed optimized, product placement in center"
-- 16:9："Horizontal composition, 16:9 aspect ratio, widescreen layout, banner format, product placement in center"
-- 1:1-commercial："Professional commercial photography, square composition, 1:1 aspect ratio, CLEAN SOLID COLOR BACKGROUND (light gray #f6f6f6 or pure white #ffffff), NO props NO decorations NO distracting elements, studio lighting setup with soft diffused light, high-end DSLR camera quality, product as the ABSOLUTE focal point centered in frame, sharp focus on product details and texture, minimal harsh shadows, commercial e-commerce product photography aesthetic"
+**尺寸規範**（簡化版）：
+- 1:1："Square 1:1, product centered"
+- 9:16："Vertical 9:16 mobile layout, product centered"
+- 4:5："Vertical 4:5 IG optimized, product centered"
+- 16:9："Horizontal 16:9 banner, product centered"
+- 1:1-commercial："Square 1:1, clean solid background (#f6f6f6 or white), studio lighting, sharp focus, commercial photography"
+
+**負面提示詞（結尾加入）**：
+"AVOID: distorted product, modified packaging, wrong text/labels, simplified Chinese, blurry details, unnatural proportions, extra watermarks, low quality."
 
 **寫作原則**：
+- Prompt 控制在 100-150 英文字內
 - 產品必須保持原貌，不可改變包裝、顏色、形狀、文字
 - 只描述背景、光線、氛圍、道具等周圍元素
-- 使用 "around the product" 或 "in the background" 明確區分
 
 ## 輸出格式
 僅輸出 JSON：
@@ -209,20 +212,23 @@ Each set includes (ALL CONTENT IN ENGLISH):
 
 ## Visual Prompt Guidelines
 
-**Fixed Opening Sentence**:
-"KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF. "
+**Fixed Opening Sentence (Product Protection)**:
+"CRITICAL: The product in the reference image is SACRED and MUST NOT be altered. Preserve EXACT packaging, colors, labels, text, shape. ONLY modify: background, lighting, props AROUND the product."
 
-**Size Specifications**:
-- 1:1: "Square composition, 1:1 aspect ratio, product placement in center"
-- 9:16: "Vertical composition, 9:16 aspect ratio, mobile screen layout, product placement in center"
-- 4:5: "Vertical composition, 4:5 aspect ratio, Instagram feed optimized, product placement in center"
-- 16:9: "Horizontal composition, 16:9 aspect ratio, widescreen layout, banner format, product placement in center"
-- 1:1-commercial: "Professional commercial photography, square composition, 1:1 aspect ratio, CLEAN SOLID COLOR BACKGROUND (light gray #f6f6f6 or pure white #ffffff), NO props NO decorations NO distracting elements, studio lighting setup with soft diffused light, high-end DSLR camera quality, product as the ABSOLUTE focal point centered in frame, sharp focus on product details and texture, minimal harsh shadows, commercial e-commerce product photography aesthetic"
+**Size Specifications (Simplified)**:
+- 1:1: "Square 1:1, product centered"
+- 9:16: "Vertical 9:16 mobile layout, product centered"
+- 4:5: "Vertical 4:5 IG optimized, product centered"
+- 16:9: "Horizontal 16:9 banner, product centered"
+- 1:1-commercial: "Square 1:1, clean solid background (#f6f6f6 or white), studio lighting, sharp focus, commercial photography"
+
+**Negative Prompt (Add at end)**:
+"AVOID: distorted product, modified packaging, wrong text/labels, simplified Chinese, blurry details, unnatural proportions, extra watermarks, low quality."
 
 **Writing Principles**:
+- Keep prompt within 100-150 English words
 - Product must remain unchanged, do not alter packaging, color, shape, text
 - Only describe background, lighting, atmosphere, props and surrounding elements
-- Use "around the product" or "in the background" to clearly differentiate
 
 ## Output Format
 Output JSON only:

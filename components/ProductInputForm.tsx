@@ -65,7 +65,7 @@ export function ProductInputForm({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imagePreview}
-                  alt="Preview"
+                  alt={t("alt.preview")}
                   className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 backdrop-blur-[2px]">

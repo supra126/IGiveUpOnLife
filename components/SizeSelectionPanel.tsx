@@ -35,7 +35,7 @@ export function SizeSelectionPanel({
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-xs font-mono px-2 py-1 rounded-md border text-white bg-white/10 border-white/20">
-                STEP 02
+                {t("stepIndicator.step02")}
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 text-white">

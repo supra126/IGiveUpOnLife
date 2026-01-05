@@ -269,7 +269,18 @@
     "rateLimitWarning": "Too many requests, please try again later",
     "noResponse": "Gemini returned no response",
     "invalidFormat": "AI returned invalid format and auto-repair failed. Please try again.",
-    "rateLimitRetry": "Too many requests, please try again in {seconds} seconds"
+    "rateLimitRetry": "Too many requests, please try again in {seconds} seconds",
+    "cannotReadImage": "Cannot read image",
+    "staticModeApiKeyRequired": "Static mode requires API key",
+    "invalidImageFormat": "Invalid image format",
+    "failedToGetCanvas": "Failed to get canvas context",
+    "failedToLoadImage": "Failed to load image for conversion",
+    "planningFailed": "Planning failed",
+    "missingContentSets": "API returned invalid format: missing content_sets array",
+    "missingSelectedSizes": "API returned invalid format: missing selected_sizes array",
+    "noImageGenerated": "No image was generated",
+    "promptRegenerateFailed": "Failed to regenerate visual prompt",
+    "invalidInput": "Invalid input"
   },
   "prompt": {
     "strategySupplement": "[Strategy Notes]"
@@ -281,7 +292,8 @@
     "strategyFormat": "Strategy & Format",
     "adjust": "Adjust",
     "generate": "Generate",
-    "adjustGenerate": "Adjust & Generate"
+    "adjustGenerate": "Adjust & Generate",
+    "stepOf": "Step {current} of {total}"
   },
   "extend": {
     "title": "Extend to Other Sizes",
@@ -429,5 +441,116 @@
     "stackDesc": "Natural stacking",
     "custom": "Custom",
     "customDesc": "Use visual summary"
+  },
+  "fontWeights": {
+    "regular": "Regular",
+    "medium": "Medium",
+    "bold": "Bold",
+    "black": "Black",
+    "regular400": "Regular (400)",
+    "medium500": "Medium (500)",
+    "bold700": "Bold (700)",
+    "black900": "Black (900)"
+  },
+  "stepIndicator": {
+    "step01": "STEP 01",
+    "step02": "STEP 02",
+    "step03": "STEP 03",
+    "step04": "STEP 04"
+  },
+  "alt": {
+    "preview": "Preview",
+    "loading": "Loading",
+    "source": "Source",
+    "productBackground": "Product background",
+    "reference": "Reference"
+  },
+  "guideV2": {
+    "step1": {
+      "title": "Upload & Input | Fill in all info at once",
+      "desc": "After uploading product image, you can fill in the following (the more you fill, the better AI understands):",
+      "items": [
+        { "label": "Product Name", "desc": "Help AI recognize your product" },
+        { "label": "Product Info", "desc": "Brand story, core values, product features" },
+        { "label": "Product URL", "desc": "AI will automatically fetch and analyze the website content" },
+        { "label": "Reference Copy / Competitor Reference", "desc": "Paste successful ad copy from similar products, AI will analyze its persuasion logic" }
+      ],
+      "tip": "💡 Tip: Fill in all info at once, so you don't need to repeat it later"
+    },
+    "step2": {
+      "title": "Phase 1: Strategy Selection | Instant visual direction",
+      "desc": "After analyzing your product, AI provides",
+      "descHighlight": "three different visual strategies",
+      "descSuffix": ", each including:",
+      "items": ["Headline and subheadline", "Visual style description (colors, mood, design elements)", "Target audience positioning"],
+      "tip": "👉 Select a route you like, system will automatically enter Phase 2 to plan complete content"
+    },
+    "step3": {
+      "title": "Select Image Sizes | Multi-platform support",
+      "desc": "After selecting a strategy, system will enter size selection screen. Check the sizes you need:",
+      "items": [
+        { "label": "1:1 Square", "desc": "For FB posts, IG carousel, e-commerce main image" },
+        { "label": "9:16 Vertical", "desc": "For Stories, Instagram Reels, full-screen mobile" },
+        { "label": "4:5 Portrait", "desc": "For IG Feed, optimized for mobile" },
+        { "label": "16:9 Landscape", "desc": "For covers, ad banners" },
+        { "label": "1:1 Commercial", "desc": "Professional product photography style (studio lighting, premium camera quality)" }
+      ],
+      "tip": "AI will generate 3 different content sets for each selected size (functional, emotional, data-driven)"
+    },
+    "step4": {
+      "title": "Upload Product & Logo | Pre-generation setup",
+      "desc": "In the 'Image Generation Settings' area, upload the following assets (shared across all plans):",
+      "items": [
+        { "label": "📸 Product Image", "desc": "Required, main asset for image generation" },
+        { "label": "🏷️ Brand Logo", "desc": "Optional, will be placed in corner automatically" }
+      ]
+    },
+    "step5": {
+      "title": "Review Mode | Check the content",
+      "desc": "Switch to 'Review Content' mode to:",
+      "items": ["View all plans' titles, copy, visual summary", "Edit any unsatisfactory copy", "Adjust AI Prompt (advanced)", "Regenerate Prompt for each plan"]
+    },
+    "step6": {
+      "title": "Production Mode | Generate images",
+      "desc": "Switch to 'Generate Images' mode, for each plan you can:",
+      "sections": [
+        {
+          "title": "✅ Text & Font Control",
+          "items": [
+            "Toggle 'Show content (Title + Copy)' to decide whether to overlay text",
+            "Edit title and copy directly in production mode",
+            "Choose font weight (Regular, Medium, Bold, Black)",
+            "All text uses open source Noto Sans TC font, no copyright issues"
+          ]
+        },
+        {
+          "title": "🎨 Dual Generation Modes",
+          "items": [
+            "Prompt Mode (default): Use AI-generated visual prompt",
+            "Reference Mode: Upload reference image, select similarity (Low / Medium / High)"
+          ]
+        },
+        {
+          "title": "📥 Generate & Download",
+          "items": ["Click play button to generate (about 10-20 seconds)", "Hover over image to download or regenerate"]
+        }
+      ]
+    }
+  },
+  "contentSuiteV2": {
+    "arrangementPriorityNote": "【Product Arrangement - Highest Priority】"
+  },
+  "extendTemplates": {
+    "styleLabel": "Style:",
+    "suitableFor": "Suitable for:",
+    "clickToLearnMore": "Click link to learn more",
+    "dmForDiscount": "DM for exclusive offer",
+    "styleFeature": "▸ Style Feature:",
+    "targetAudience": "▸ Target Audience:",
+    "limitedOffer": "▸ Limited time offer",
+    "freeShipping": "▸ Free shipping on orders",
+    "comment1ForDm": "Comment +1 for DM",
+    "learnMoreLink": "Learn more: [Link]",
+    "swipeUpToLearnMore": "Swipe up to learn more"
   }
 }

@@ -1,20 +1,32 @@
 /**
  * Prompt templates for AI generation
+ * Consolidated prompt components for visual generation
  */
 
 import { ImageRatio } from "@/types";
 
 /**
- * Ratio requirements for visual prompts
+ * Product protection instruction (强化版)
+ */
+export const PRODUCT_PROTECTION_PROMPT =
+  "CRITICAL: The product in the reference image is SACRED and MUST NOT be altered. Preserve EXACT packaging, colors, labels, text, shape. ONLY modify: background, lighting, props AROUND the product.";
+
+/**
+ * Negative prompt to avoid common issues
+ */
+export const NEGATIVE_PROMPT =
+  "AVOID: distorted product, modified packaging, wrong text/labels, simplified Chinese, blurry details, unnatural proportions, extra watermarks, low quality.";
+
+/**
+ * Ratio requirements for visual prompts (simplified for token efficiency)
  */
 export const RATIO_REQUIREMENTS: Record<ImageRatio, string> = {
-  "1:1": "Square composition, 1:1 aspect ratio",
-  "9:16": "Vertical composition, 9:16 aspect ratio, mobile screen layout",
-  "4:5": "Vertical composition, 4:5 aspect ratio, Instagram feed optimized",
-  "16:9":
-    "Horizontal composition, 16:9 aspect ratio, widescreen layout, banner format",
+  "1:1": "Square 1:1, product centered",
+  "9:16": "Vertical 9:16 mobile layout, product centered",
+  "4:5": "Vertical 4:5 IG optimized, product centered",
+  "16:9": "Horizontal 16:9 banner, product centered",
   "1:1-commercial":
-    "Professional commercial photography, square composition, 1:1 aspect ratio, CLEAN SOLID COLOR BACKGROUND (light gray #f6f6f6 or pure white #ffffff), NO props NO decorations NO distracting elements, studio lighting setup with soft diffused light, high-end DSLR camera quality (Canon EOS R5 or Sony A7R IV style), product as the ABSOLUTE focal point centered in frame, sharp focus on product details and texture, minimal harsh shadows, commercial e-commerce product photography aesthetic, high resolution, professional color grading, simple minimalist composition",
+    "Square 1:1, clean solid background (#f6f6f6 or white), studio lighting, sharp focus, commercial photography, product centered",
 };
 
 /**
@@ -62,39 +74,34 @@ export function getVisualPromptSystemPrompt(
 - 圖片尺寸: ${ratio} (${sizeLabel})${visualSummarySection}
 
 **核心要求：**
-1. **必須保持產品原貌**：使用者會提供產品參考圖，生成的圖片必須「保留產品的完整外觀、包裝設計、顏色、形狀」，不可改變產品本身
-2. **只調整背景和氛圍**：根據標題、文案和構圖摘要調整「背景、光線、道具、氛圍」，但產品本身必須維持原樣
+1. **產品保護（最重要）**：${PRODUCT_PROTECTION_PROMPT}
+2. **只調整背景和氛圍**：根據標題、文案和構圖摘要調整「背景、光線、道具、氛圍」
 3. 必須包含尺寸規範：${ratioRequirement}
-4. ${visualSummaryZh ? "**最重要：構圖摘要中的指示優先級最高，必須完全遵循**" : ""}
+4. ${visualSummaryZh ? "**構圖摘要優先級最高，必須完全遵循**" : ""}
 
 **Prompt 寫作指南：**
-- 在 Prompt 開頭加上：KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF
-- 使用 "product placement in center" 確保產品位置正確
-- 描述背景、光線、氛圍時，明確說明「around the product」或「in the background」
-- 使用專業的攝影和設計術語（英文）
+- 開頭：${PRODUCT_PROTECTION_PROMPT}
+- 尺寸：${ratioRequirement}
+- 結尾：${NEGATIVE_PROMPT}
+- Prompt 總長度控制在 100-150 英文字內
 - 只輸出英文 Prompt 文字，不要包含任何其他說明
 
 **範例格式：**
-"KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF. ${ratioRequirement}, product placement in center, [background description], [lighting description around the product], [mood and atmosphere], [additional props or elements in the background]"`;
+"${PRODUCT_PROTECTION_PROMPT} ${ratioRequirement}, [background], [lighting], [mood]. ${NEGATIVE_PROMPT}"`;
 }
 
 /**
- * Generate multi-product composition prompt addition
+ * Generate multi-product composition prompt addition (simplified)
  */
 export function getMultiProductPrompt(): string {
-  return `\n\nIMPORTANT - MULTI-PRODUCT COMPOSITION: This image features TWO products that must appear together naturally in the same scene.
-- PRIMARY PRODUCT (first image): Main focus, placed prominently in center or foreground
-- SECONDARY PRODUCT (second image): Supporting element, placed naturally alongside, emerging from, or complementing the primary product
-- Create a cohesive lifestyle/gift composition where both products appear together harmoniously
-- Both products should maintain their original appearance and details
-- The scene should tell a story of how these products relate to each other`;
+  return " MULTI-PRODUCT: Place both products together naturally - primary centered, secondary complementing. Both maintain original appearance.";
 }
 
 /**
- * Generate brand logo placement prompt addition
+ * Generate brand logo placement prompt addition (simplified)
  */
 export function getBrandLogoPrompt(): string {
-  return "\n\nIMPORTANT: Place the uploaded brand logo in one of the four corners (top-left, top-right, bottom-left, or bottom-right) in a subtle, non-intrusive way. The logo should be clearly visible but not dominate the composition.";
+  return " Place brand logo in corner subtly.";
 }
 
 /**
@@ -125,16 +132,22 @@ CRITICAL TEXT RENDERING RULES:
 
 /**
  * Generate reference-based image prompt based on similarity level
+ * Includes product protection and negative prompts
  */
 export function getReferenceBasedPrompt(
   similarity: number,
   aspectRatioDesc: string
 ): string {
+  const basePrompt = PRODUCT_PROTECTION_PROMPT;
+
+  let stylePrompt: string;
   if (similarity >= 70) {
-    return `Create a professional product photography image very closely following the reference image. Match the composition, object placement, layout, lighting setup, color palette, background style, and overall aesthetic. Place the product from the product image as the main subject, maintaining its original appearance. Professional commercial photography quality, ${aspectRatioDesc}.`;
+    stylePrompt = `Match reference: composition, lighting, colors, background. ${aspectRatioDesc}.`;
   } else if (similarity >= 40) {
-    return `Create a professional product photography image moderately following the reference image. Match the lighting style, color palette, and overall mood, but feel free to create a different composition and object arrangement. Place the product from the product image as the main subject, maintaining its original appearance. Professional commercial photography quality, ${aspectRatioDesc}.`;
+    stylePrompt = `Follow reference mood and colors, but create new composition. ${aspectRatioDesc}.`;
   } else {
-    return `Create a professional product photography image loosely inspired by the reference image. ONLY take inspiration from the color tone and atmospheric feeling. DO NOT copy the composition, layout, or object placement. Create a completely new and creative composition with the product as the main subject. The product should maintain its original appearance. Professional commercial photography quality, ${aspectRatioDesc}.`;
+    stylePrompt = `Loosely inspired by reference colors/atmosphere only. New creative composition. ${aspectRatioDesc}.`;
   }
+
+  return `${basePrompt} ${stylePrompt} ${NEGATIVE_PROMPT}`;
 }

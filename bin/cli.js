@@ -252,7 +252,7 @@ ${colors.yellow}📝 ${t.instructions}:${colors.reset}
    3. ${t.step3}
 
 ${colors.yellow}🔑 ${t.getApiKey}:${colors.reset}
-   ${colors.dim}https://aistudio.google.com/app/apikey${colors.reset}
+   ${colors.dim}https://aistudio.google.com/app/api-keys${colors.reset}
 
 ${colors.dim}${separator}${colors.reset}
 ${colors.dim}${t.pressCtrlC}${colors.reset}
