@@ -63,30 +63,34 @@ export function ProductInputForm({
     }
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
 
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type.startsWith("image/")) {
-        onFileDrop(file);
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith("image/")) {
+          onFileDrop(file);
+        }
       }
-    }
-  }, [onFileDrop]);
+    },
+    [onFileDrop]
+  );
 
   return (
     <div
       className={`
         w-full max-w-5xl mx-auto mt-6 sm:mt-8 animate-fade-in-up
         rounded-2xl sm:rounded-3xl border-2 transition-all duration-500 overflow-hidden
-        ${isDragging
-          ? "border-white/60 bg-white/10 scale-[1.01]"
-          : hasImage
-            ? "border-white/40 bg-white/5"
-            : "border-gray-600/50 bg-black/20"
+        ${
+          isDragging
+            ? "border-white/60 bg-white/10 scale-[1.01]"
+            : hasImage
+              ? "border-white/40 bg-white/5"
+              : "border-gray-600/50 bg-black/20"
         }
       `}
       onDragOver={handleDragOver}
@@ -109,8 +113,18 @@ export function ProductInputForm({
             {/* Drag overlay */}
             {isDragging && !hasImage && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/5 backdrop-blur-[2px]">
-                <svg className="w-12 h-12 text-white/70 mb-3 animate-pulse-ring" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <svg
+                  className="w-12 h-12 text-white/70 mb-3 animate-pulse-ring"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
                 </svg>
                 <p className="text-white/80 font-bold text-sm">{t("input.dropToUpload")}</p>
               </div>
@@ -125,7 +139,9 @@ export function ProductInputForm({
                   className="w-full h-full object-contain p-6 sm:p-8 transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
-                  <span className="text-white font-bold text-sm px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">{t("input.changeImage")}</span>
+                  <span className="text-white font-bold text-sm px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                    {t("input.changeImage")}
+                  </span>
                 </div>
                 {/* Clear Image Button */}
                 <button
@@ -139,7 +155,12 @@ export function ProductInputForm({
                   title={t("input.clearImage")}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -166,23 +187,22 @@ export function ProductInputForm({
                     />
                   </svg>
                 </div>
-                <p className="mb-2 text-base sm:text-lg font-medium text-gray-400 group-hover:text-gray-300 transition-colors">{t("input.uploadOrTakePhoto")}</p>
+                <p className="mb-2 text-base sm:text-lg font-medium text-gray-400 group-hover:text-gray-300 transition-colors">
+                  {t("input.uploadOrTakePhoto")}
+                </p>
                 <p className="text-xs text-gray-600">{t("input.supportedFormats")}</p>
               </div>
             )}
-            <input
-              type="file"
-              className="hidden"
-              onChange={onFileChange}
-              accept="image/*"
-            />
+            <input type="file" className="hidden" onChange={onFileChange} accept="image/*" />
           </label>
         </div>
 
         {/* Right: Text Inputs — 45% on desktop, stacked on mobile */}
         <div className="md:w-[45%] order-1 md:order-2 p-5 sm:p-7 lg:p-8 flex flex-col gap-4 sm:gap-5 md:border-l border-white/10">
           <div>
-            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-white" : "text-gray-500"}`}>
+            <label
+              className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-white" : "text-gray-500"}`}
+            >
               {t("input.productName")}
             </label>
             <input
@@ -194,7 +214,9 @@ export function ProductInputForm({
             />
           </div>
           <div>
-            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
+            <label
+              className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}
+            >
               {t("input.productInfo")}
             </label>
             <textarea
@@ -205,7 +227,9 @@ export function ProductInputForm({
             />
           </div>
           <div>
-            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
+            <label
+              className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}
+            >
               {t("input.productUrl")}
             </label>
             <input
@@ -217,7 +241,9 @@ export function ProductInputForm({
             />
           </div>
           <div>
-            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
+            <label
+              className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}
+            >
               {t("input.refCopy")}
             </label>
             <textarea
@@ -239,12 +265,7 @@ export function ProductInputForm({
               disabled={!hasImage}
             >
               <span>{t("input.startButton")}</span>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

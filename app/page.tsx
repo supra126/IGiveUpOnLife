@@ -6,10 +6,7 @@ import {
   generateContentPlan,
   hasServerApiKey,
 } from "@/services/geminiService";
-import {
-  AppState,
-  ImageRatio,
-} from "@/types";
+import { AppState, ImageRatio } from "@/types";
 import { ProductCard } from "@/components/ProductCard";
 import { GuideModal } from "@/components/GuideModal";
 import { ContentSuite } from "@/components/ContentSuite";
@@ -84,15 +81,21 @@ export default function Home() {
     reader.readAsDataURL(file);
   }, []);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  }, [handleFile]);
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    },
+    [handleFile]
+  );
 
-  const handleFileDrop = useCallback((file: File) => {
-    handleFile(file);
-  }, [handleFile]);
+  const handleFileDrop = useCallback(
+    (file: File) => {
+      handleFile(file);
+    },
+    [handleFile]
+  );
 
   const handleClearImage = useCallback(() => {
     dispatch({
@@ -202,7 +205,17 @@ export default function Home() {
       });
       dispatch({ type: "SET_APP_STATE", payload: AppState.SIZE_SELECTION });
     }
-  }, [analysisResult, sizeSelection, editedRoutes, activeRouteIndex, routeSupplements, refCopy, apiKey, locale, t]);
+  }, [
+    analysisResult,
+    sizeSelection,
+    editedRoutes,
+    activeRouteIndex,
+    routeSupplements,
+    refCopy,
+    apiKey,
+    locale,
+    t,
+  ]);
 
   // --- Step Navigation ---
   const getCurrentStep = (): number => {
@@ -257,17 +270,28 @@ export default function Home() {
                     <div
                       className={`
                         w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500
-                        ${isCompleted
-                          ? "bg-blue-500 text-white group-hover/step:bg-blue-400 group-hover/step:scale-110"
-                          : isCurrent
-                            ? "bg-blue-500 text-white"
-                            : "bg-white/5 text-gray-500 border border-white/10"
+                        ${
+                          isCompleted
+                            ? "bg-blue-500 text-white group-hover/step:bg-blue-400 group-hover/step:scale-110"
+                            : isCurrent
+                              ? "bg-blue-500 text-white"
+                              : "bg-white/5 text-gray-500 border border-white/10"
                         }
                       `}
                     >
                       {isCompleted ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       ) : (
                         step.shortLabel
@@ -307,7 +331,11 @@ export default function Home() {
               </div>
               <div>
                 <div className="text-white font-bold text-sm">{steps[currentStep]?.label}</div>
-                <div className="text-gray-500 text-xs">{t("steps.stepOf").replace("{current}", String(currentStep + 1)).replace("{total}", String(steps.length))}</div>
+                <div className="text-gray-500 text-xs">
+                  {t("steps.stepOf")
+                    .replace("{current}", String(currentStep + 1))
+                    .replace("{total}", String(steps.length))}
+                </div>
               </div>
             </div>
             {/* Progress Dots */}
@@ -318,11 +346,12 @@ export default function Home() {
                   onClick={() => idx < currentStep && handleGoToStep(idx)}
                   className={`
                     w-2.5 h-2.5 rounded-full transition-all duration-300
-                    ${idx === currentStep
-                      ? "bg-blue-500 scale-110"
-                      : idx < currentStep
-                        ? "bg-blue-500/50 cursor-pointer hover:bg-blue-400/70"
-                        : "bg-white/20"
+                    ${
+                      idx === currentStep
+                        ? "bg-blue-500 scale-110"
+                        : idx < currentStep
+                          ? "bg-blue-500/50 cursor-pointer hover:bg-blue-400/70"
+                          : "bg-white/20"
                     }
                   `}
                 />
@@ -340,7 +369,12 @@ export default function Home() {
       onClick={onClick}
       className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors group/back"
     >
-      <svg className="w-4 h-4 transition-transform group-hover/back:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        className="w-4 h-4 transition-transform group-hover/back:-translate-x-0.5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
       </svg>
       <span>{label || t("common.back")}</span>
@@ -360,10 +394,18 @@ export default function Home() {
       onFileChange={handleFileChange}
       onFileDrop={handleFileDrop}
       onClearImage={handleClearImage}
-      onProductNameChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productName", value } })}
-      onProductInfoChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productInfo", value } })}
-      onProductUrlChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productUrl", value } })}
-      onRefCopyChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "refCopy", value } })}
+      onProductNameChange={(value) =>
+        dispatch({ type: "SET_INPUT", payload: { field: "productName", value } })
+      }
+      onProductInfoChange={(value) =>
+        dispatch({ type: "SET_INPUT", payload: { field: "productInfo", value } })
+      }
+      onProductUrlChange={(value) =>
+        dispatch({ type: "SET_INPUT", payload: { field: "productUrl", value } })
+      }
+      onRefCopyChange={(value) =>
+        dispatch({ type: "SET_INPUT", payload: { field: "refCopy", value } })
+      }
       onAnalyze={handleAnalyze}
     />
   );
@@ -385,10 +427,7 @@ export default function Home() {
               <BackButton onClick={() => handleGoToStep(0)} />
             </div>
 
-            <ProductCard
-              analysis={analysisResult.product_analysis}
-              imageSrc={imagePreview}
-            />
+            <ProductCard analysis={analysisResult.product_analysis} imageSrc={imagePreview} />
 
             {/* Route Selection — separated by generous spacing */}
             <div className="mt-12 sm:mt-16">
@@ -407,7 +446,10 @@ export default function Home() {
             </div>
 
             {/* Phase 2: Size Selection — clear section break */}
-            <div className="mt-16 sm:mt-20 pt-12 sm:pt-16 border-t border-white/5" id="phase2-section">
+            <div
+              className="mt-16 sm:mt-20 pt-12 sm:pt-16 border-t border-white/5"
+              id="phase2-section"
+            >
               <SizeSelectionPanel
                 sizeSelection={sizeSelection}
                 errorMsg={errorMsg}
@@ -422,9 +464,7 @@ export default function Home() {
         )}
 
         {/* Planning Loader - Full screen during PLANNING */}
-        {appState === AppState.PLANNING && (
-          <PlanningLoader routeName={activeRoute.route_name} />
-        )}
+        {appState === AppState.PLANNING && <PlanningLoader routeName={activeRoute.route_name} />}
 
         {/* Phase 4: Content Suite - Only shown in SUITE_READY */}
         {appState === AppState.SUITE_READY && contentPlan && (
@@ -436,13 +476,19 @@ export default function Home() {
 
             <ContentSuite
               plan={contentPlan}
-              onContentUpdate={(newSets) => dispatch({ type: "SET_EDITED_CONTENT_SETS", payload: newSets })}
+              onContentUpdate={(newSets) =>
+                dispatch({ type: "SET_EDITED_CONTENT_SETS", payload: newSets })
+              }
               apiKey={apiKey}
               productImage={productImage}
               secondaryProduct={secondaryProduct}
               brandLogo={brandLogo}
-              onProductImageChange={(file) => dispatch({ type: "SET_PRODUCT_IMAGE", payload: file })}
-              onSecondaryProductChange={(file) => dispatch({ type: "SET_SECONDARY_PRODUCT", payload: file })}
+              onProductImageChange={(file) =>
+                dispatch({ type: "SET_PRODUCT_IMAGE", payload: file })
+              }
+              onSecondaryProductChange={(file) =>
+                dispatch({ type: "SET_SECONDARY_PRODUCT", payload: file })
+              }
               onBrandLogoChange={(file) => dispatch({ type: "SET_BRAND_LOGO", payload: file })}
               marketingRoute={editedRoutes[activeRouteIndex]}
             />
@@ -454,7 +500,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen text-slate-200 selection:bg-blue-500 selection:text-white font-sans flex flex-col">
-      <GuideModal isOpen={isGuideOpen} onClose={() => dispatch({ type: "SET_GUIDE_OPEN", payload: false })} />
+      <GuideModal
+        isOpen={isGuideOpen}
+        onClose={() => dispatch({ type: "SET_GUIDE_OPEN", payload: false })}
+      />
       <ApiKeyModal
         isOpen={isApiKeyModalOpen}
         onClose={() => dispatch({ type: "SET_API_KEY_MODAL_OPEN", payload: false })}
@@ -536,14 +585,14 @@ export default function Home() {
 
         {/* Main Views */}
         {appState === AppState.IDLE && (
-          <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in-up">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] md:text-center animate-fade-in-up">
             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gradient-hero serif mb-4 leading-[1.1] tracking-tight">
               {t("home.heroTitle")}
             </h2>
             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white serif mb-8 leading-[1.1] tracking-tight">
               {t("home.heroTitle2")}
             </h2>
-            <p className="text-gray-400 max-w-lg mx-auto mb-12 sm:mb-16 text-base sm:text-lg leading-relaxed">
+            <p className="text-gray-400 max-w-lg mx-auto mb-6 sm:mb-10 text-base sm:text-lg leading-relaxed">
               {t("home.heroDescription")}
             </p>
             {renderInputs()}
