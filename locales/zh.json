@@ -59,6 +59,7 @@
     "targetAudience": "目標受眾",
     "supplement": "補充說明（選填）",
     "supplementPlaceholder": "可以補充任何想法、特殊需求或調整方向...",
+    "editingRoute": "編輯詳細內容",
     "continueButton": "繼續努力",
     "retryButton": "再重新努力一次",
     "processing": "哭勒..."
@@ -146,6 +147,7 @@
     "regeneratePromptFailed": "重新生成 Prompt 失敗："
   },
   "production": {
+    "generateButton": "生成圖片",
     "generating": "生成中...",
     "pleaseWait": "請稍候片刻",
     "uploadProductFirst": "請先上傳產品圖",

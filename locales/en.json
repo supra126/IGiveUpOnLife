@@ -59,6 +59,7 @@
     "targetAudience": "Target Audience",
     "supplement": "Additional Notes (Optional)",
     "supplementPlaceholder": "Add any ideas, special requirements, or adjustments...",
+    "editingRoute": "Editing details",
     "continueButton": "Keep Grinding",
     "retryButton": "Ugh, Again",
     "processing": "Sweating..."
@@ -146,6 +147,7 @@
     "regeneratePromptFailed": "Failed to regenerate prompt: "
   },
   "production": {
+    "generateButton": "Generate Image",
     "generating": "Generating...",
     "pleaseWait": "Please wait",
     "uploadProductFirst": "Please upload product image first",

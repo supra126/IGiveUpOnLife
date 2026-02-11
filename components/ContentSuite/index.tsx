@@ -79,6 +79,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
   const [mode, setMode] = useState<"review" | "production">("review");
   const [contentSets, setContentSets] = useState<ContentSet[]>(plan.content_sets);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [activeSetIndexByRatio, setActiveSetIndexByRatio] = useState<Record<string, number>>({});
 
   // Global production settings
   const [globalSettings, setGlobalSettings] = useState<GlobalProductionSettings>({
@@ -297,27 +298,52 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
             </div>
           </div>
 
-          {groupedSets.map((group) => (
-            <div key={group.ratio}>
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span className={`w-2 h-6 rounded-full ${getRatioBackgroundColor(group.ratio)}`} />
-                {group.label} ({group.ratio}) - {group.sets.length} {t("contentSuite.sets")}
-              </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {group.sets.map((set) => (
-                  <ScriptEditorRow
-                    key={set.id}
-                    contentSet={set}
-                    onChange={handleContentChange}
-                    onRegeneratePrompt={handleRegeneratePrompt}
-                    isRegenerating={regeneratingId === set.id}
-                    t={t}
-                    locale={locale}
-                  />
-                ))}
+          {groupedSets.map((group) => {
+            const activeIdx = activeSetIndexByRatio[group.ratio] ?? 0;
+            const activeSet = group.sets[activeIdx];
+
+            return (
+              <div key={group.ratio}>
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <span className={`w-2 h-6 rounded-full ${getRatioBackgroundColor(group.ratio)}`} />
+                  {group.label} ({group.ratio}) - {group.sets.length} {t("contentSuite.sets")}
+                </h3>
+
+                {/* Tab pill strip */}
+                <div className="flex items-center gap-2 mb-4">
+                  {group.sets.map((set, setIdx) => (
+                    <button
+                      key={set.id}
+                      onClick={() =>
+                        setActiveSetIndexByRatio((prev) => ({ ...prev, [group.ratio]: setIdx }))
+                      }
+                      className={`px-4 py-1.5 text-sm font-bold rounded-full transition-all duration-200 ${
+                        setIdx === activeIdx
+                          ? "bg-white/15 text-white border border-white/30"
+                          : "bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent"
+                      }`}
+                    >
+                      {t("contentSuite.plan")} {set.set_number}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Single content card (full width) */}
+                {activeSet && (
+                  <div key={activeSet.id} className="animate-scale-in">
+                    <ScriptEditorRow
+                      contentSet={activeSet}
+                      onChange={handleContentChange}
+                      onRegeneratePrompt={handleRegeneratePrompt}
+                      isRegenerating={regeneratingId === activeSet.id}
+                      t={t}
+                      locale={locale}
+                    />
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

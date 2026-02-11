@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { ContentSet, ArrangementStyle } from "@/types";
 import { Spinner } from "@/components/Spinner";
 import { getRatioColor } from "@/lib/ratio-utils";
@@ -27,9 +27,10 @@ export const ScriptEditorRow: React.FC<ScriptEditorRowProps> = React.memo(({
   locale,
 }) => {
   const ARRANGEMENT_OPTIONS = getArrangementOptions(locale);
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
 
   return (
-    <div className="glass-panel rounded-xl p-4 sm:p-5 lg:p-6">
+    <div className="glass-panel rounded-xl p-5 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span
@@ -59,28 +60,28 @@ export const ScriptEditorRow: React.FC<ScriptEditorRowProps> = React.memo(({
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {/* Title */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1">
+          <label className="field-label">
             {t("contentSuite.titleLabel")}
           </label>
           <textarea
             value={contentSet.title}
             onChange={(e) => onChange(contentSet.id, "title", e.target.value)}
-            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-16 sm:h-20"
+            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-20 sm:h-24"
           />
         </div>
 
         {/* Copy */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1">
+          <label className="field-label">
             {t("contentSuite.copyLabel")}
           </label>
           <textarea
             value={contentSet.copy}
             onChange={(e) => onChange(contentSet.id, "copy", e.target.value)}
-            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-20 sm:h-24"
+            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none h-24 sm:h-28"
           />
         </div>
 
@@ -112,7 +113,7 @@ export const ScriptEditorRow: React.FC<ScriptEditorRowProps> = React.memo(({
 
         {/* 構圖摘要 */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1">
+          <label className="field-label">
             {t("contentSuite.visualSummary")}
           </label>
           <textarea
@@ -123,7 +124,7 @@ export const ScriptEditorRow: React.FC<ScriptEditorRowProps> = React.memo(({
                 ? getCommercialPlaceholder(contentSet.arrangement_style || "single", locale)
                 : t("contentSuite.visualSummaryPlaceholder")
             }
-            className={`w-full bg-black/30 border rounded-lg px-3 py-2 text-xs focus:outline-none resize-none h-20 sm:h-24 ${
+            className={`w-full bg-black/30 border rounded-lg px-3 py-2 text-xs focus:outline-none resize-none h-24 sm:h-28 ${
               contentSet.ratio === "1:1-commercial"
                 ? "border-amber-500/30 text-amber-200 focus:border-amber-500 placeholder:text-amber-500/50"
                 : "border-white/10 text-gray-300 focus:border-blue-500 placeholder:text-gray-600"
@@ -131,16 +132,41 @@ export const ScriptEditorRow: React.FC<ScriptEditorRowProps> = React.memo(({
           />
         </div>
 
-        {/* Visual Prompt */}
+        {/* Visual Prompt — Collapsible */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1">
-            {t("contentSuite.visualPrompt")}
-          </label>
-          <textarea
-            value={contentSet.visual_prompt_en}
-            onChange={(e) => onChange(contentSet.id, "visual_prompt_en", e.target.value)}
-            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-gray-300 focus:border-blue-500 focus:outline-none font-mono resize-none h-36 sm:h-44"
-          />
+          <button
+            onClick={() => setIsPromptExpanded(!isPromptExpanded)}
+            className="flex items-center gap-2 w-full text-left mb-1 group/prompt"
+          >
+            <label className="text-xs font-semibold tracking-wide text-gray-400 cursor-pointer">
+              {t("contentSuite.visualPrompt")}
+            </label>
+            <svg
+              className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${
+                isPromptExpanded ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {isPromptExpanded ? (
+            <textarea
+              value={contentSet.visual_prompt_en}
+              onChange={(e) => onChange(contentSet.id, "visual_prompt_en", e.target.value)}
+              className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-gray-300 focus:border-blue-500 focus:outline-none font-mono resize-none h-36 sm:h-44 animate-in fade-in slide-in-from-top-2 duration-200"
+            />
+          ) : (
+            <div
+              onClick={() => setIsPromptExpanded(true)}
+              className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-gray-500 font-mono line-clamp-2 h-12 cursor-pointer hover:border-white/20 transition-colors"
+            >
+              {contentSet.visual_prompt_en || "..."}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -258,35 +258,62 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
           </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center relative">
+            {/* Ghost background from product image */}
             {productImage && (
-              <div className="absolute inset-0 opacity-20">
+              <div className="absolute inset-0 opacity-15">
                 <img
                   src={productImage}
-                  className="w-full h-full object-cover blur-sm"
+                  className="w-full h-full object-cover blur-md"
                   alt={t("alt.productBackground")}
                   loading="lazy"
                 />
               </div>
             )}
+
+            {/* Content title preview */}
+            <p className="text-sm text-white/60 font-medium mb-4 line-clamp-2 max-w-[80%] relative z-10">
+              {contentSet.title}
+            </p>
+
+            {/* Mode toggle pills */}
+            <div className="flex items-center gap-2 mb-4 relative z-10">
+              <button
+                onClick={(e) => { e.stopPropagation(); setGenerationMode("prompt"); }}
+                className={`text-[10px] px-3 py-1 rounded-full transition-all ${
+                  generationMode === "prompt"
+                    ? "bg-white/15 text-white border border-white/30"
+                    : "bg-white/5 text-gray-500 border border-white/10 hover:text-gray-300"
+                }`}
+              >
+                {t("production.promptMode")}
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setGenerationMode("reference"); }}
+                className={`text-[10px] px-3 py-1 rounded-full transition-all ${
+                  generationMode === "reference"
+                    ? "bg-white/15 text-white border border-white/30"
+                    : "bg-white/5 text-gray-500 border border-white/10 hover:text-gray-300"
+                }`}
+              >
+                {t("production.referenceMode")}
+              </button>
+            </div>
+
+            {/* Large gradient generate button */}
             <button
               onClick={handleGenerate}
               disabled={!productImage}
-              className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-white hover:text-black transition-all text-gray-500 border border-white/10 relative z-10 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-6 py-3 rounded-full bg-gradient-to-r from-white/15 to-white/5 border border-white/20 flex items-center gap-2 hover:scale-105 hover:border-white/40 transition-all text-white relative z-10 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
                 />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
               </svg>
+              <span className="text-sm font-medium">{t("production.generateButton")}</span>
             </button>
           </div>
         )}
@@ -299,7 +326,7 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
 
       {/* Compact Info & Expand Toggle */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-400 truncate flex-1 pr-2" title={contentSet.title}>
+        <p className="text-xs text-gray-300 font-medium truncate flex-1 pr-2" title={contentSet.title}>
           {contentSet.title}
         </p>
         <button

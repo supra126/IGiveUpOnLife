@@ -22,6 +22,7 @@ export function RouteEditor({
   onUpdateSupplement,
 }: RouteEditorProps) {
   const { t } = useLocale();
+  const activeRoute = routes[activeRouteIndex];
 
   return (
     <div className="mb-8 sm:mb-10 animate-fade-in-up">
@@ -37,7 +38,8 @@ export function RouteEditor({
         <span className="text-xs text-gray-500 mt-2 sm:mt-0">{t("phase1.selectHint")}</span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Zone A — Summary Selection Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         {routes.map((route, idx) => {
           const isSelected = activeRouteIndex === idx;
 
@@ -45,7 +47,9 @@ export function RouteEditor({
             <div
               key={idx}
               onClick={() => onSelectRoute(idx)}
-              className={`card-hover glass-panel p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer flex flex-col group relative overflow-hidden`}
+              className={`card-hover glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden ${
+                isSelected ? "opacity-100" : "opacity-50 hover:opacity-75"
+              }`}
               style={{
                 border: isSelected
                   ? "1px solid rgba(255, 255, 255, 0.3)"
@@ -59,12 +63,10 @@ export function RouteEditor({
                 }`}
               />
 
-              {/* Selection indicator */}
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-2">
                 {isSelected ? (
-                  <span
-                    className="text-xs font-mono text-white px-2 py-1 rounded-md bg-white/10 border border-white/40"
-                  >
+                  <span className="text-xs font-mono text-white px-2 py-1 rounded-md bg-white/10 border border-white/40">
                     {t("phase1.routeLabel")} {String.fromCharCode(65 + idx)}
                   </span>
                 ) : (
@@ -98,105 +100,122 @@ export function RouteEditor({
                 </div>
               </div>
 
-              {/* Editable Fields */}
-              <div className="space-y-4 sm:space-y-5 flex-grow">
-                <div>
-                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
-                    {t("phase1.routeName")}
-                  </label>
-                  <input
-                    type="text"
-                    value={route.route_name}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdateRoute(idx, { ...route, route_name: e.target.value });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`input-field text-base sm:text-lg font-bold ${isSelected ? "text-white" : ""}`}
-                  />
-                </div>
+              {/* Route Name (read-only title) */}
+              <h4 className={`text-base sm:text-lg font-bold mb-1 ${isSelected ? "text-white" : "text-gray-300"}`}>
+                {route.route_name}
+              </h4>
 
-                <div>
-                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
-                    {t("phase1.headline")}
-                  </label>
-                  <textarea
-                    value={route.headline}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdateRoute(idx, { ...route, headline: e.target.value });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`input-field text-sm sm:text-base font-medium resize-none h-16 sm:h-20 ${isSelected ? "text-white" : "text-gray-300"}`}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
-                    {t("phase1.subhead")}
-                  </label>
-                  <textarea
-                    value={route.subhead}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdateRoute(idx, { ...route, subhead: e.target.value });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="input-field text-sm text-gray-300 resize-none h-16 sm:h-20"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
-                    {t("phase1.styleDescription")}
-                  </label>
-                  <textarea
-                    value={route.style_brief}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdateRoute(idx, { ...route, style_brief: e.target.value });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="input-field text-sm text-gray-300 resize-none h-24 sm:h-28"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
-                    {t("phase1.targetAudience")}
-                  </label>
-                  <textarea
-                    value={route.target_audience}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdateRoute(idx, { ...route, target_audience: e.target.value });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="input-field text-sm text-gray-300 resize-none h-20 sm:h-24"
-                  />
-                </div>
-
-                {/* Supplement Field */}
-                <div>
-                  <label className="text-[10px] font-semibold tracking-wide mb-1 block text-white">
-                    {t("phase1.supplement")}
-                  </label>
-                  <textarea
-                    value={routeSupplements[idx]}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdateSupplement(idx, e.target.value);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    placeholder={t("phase1.supplementPlaceholder")}
-                    className="input-field text-xs text-gray-300 placeholder-gray-600 resize-none h-16 sm:h-20 !bg-white/5 !border-white/15"
-                  />
-                </div>
-              </div>
+              {/* Headline (truncated 2 lines, read-only) */}
+              <p className={`text-sm line-clamp-2 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
+                {route.headline}
+              </p>
             </div>
           );
         })}
       </div>
+
+      {/* Zone B — Detailed Edit Panel for selected route */}
+      {activeRoute && (
+        <div
+          key={activeRouteIndex}
+          className="glass-panel rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 animate-scale-in"
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <span className="text-xs font-mono text-white px-2 py-1 rounded-md bg-white/10 border border-white/40">
+              {t("phase1.routeLabel")} {String.fromCharCode(65 + activeRouteIndex)}
+            </span>
+            <span className="text-xs text-gray-400">
+              {t("phase1.editingRoute")}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+            {/* Left Column */}
+            <div className="space-y-5">
+              <div>
+                <label className="field-label">
+                  {t("phase1.routeName")}
+                </label>
+                <input
+                  type="text"
+                  value={activeRoute.route_name}
+                  onChange={(e) =>
+                    onUpdateRoute(activeRouteIndex, { ...activeRoute, route_name: e.target.value })
+                  }
+                  className="input-field text-base sm:text-lg font-bold text-white"
+                />
+              </div>
+
+              <div>
+                <label className="field-label">
+                  {t("phase1.headline")}
+                </label>
+                <textarea
+                  value={activeRoute.headline}
+                  onChange={(e) =>
+                    onUpdateRoute(activeRouteIndex, { ...activeRoute, headline: e.target.value })
+                  }
+                  className="input-field text-sm sm:text-base font-medium text-white resize-none h-20 sm:h-24"
+                />
+              </div>
+
+              <div>
+                <label className="field-label">
+                  {t("phase1.subhead")}
+                </label>
+                <textarea
+                  value={activeRoute.subhead}
+                  onChange={(e) =>
+                    onUpdateRoute(activeRouteIndex, { ...activeRoute, subhead: e.target.value })
+                  }
+                  className="input-field text-sm text-gray-300 resize-none h-20 sm:h-24"
+                />
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-5">
+              <div>
+                <label className="field-label">
+                  {t("phase1.styleDescription")}
+                </label>
+                <textarea
+                  value={activeRoute.style_brief}
+                  onChange={(e) =>
+                    onUpdateRoute(activeRouteIndex, { ...activeRoute, style_brief: e.target.value })
+                  }
+                  className="input-field text-sm text-gray-300 resize-none h-24 sm:h-28"
+                />
+              </div>
+
+              <div>
+                <label className="field-label">
+                  {t("phase1.targetAudience")}
+                </label>
+                <textarea
+                  value={activeRoute.target_audience}
+                  onChange={(e) =>
+                    onUpdateRoute(activeRouteIndex, { ...activeRoute, target_audience: e.target.value })
+                  }
+                  className="input-field text-sm text-gray-300 resize-none h-20 sm:h-24"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-semibold tracking-wide mb-1 block text-white">
+                  {t("phase1.supplement")}
+                </label>
+                <textarea
+                  value={routeSupplements[activeRouteIndex]}
+                  onChange={(e) => onUpdateSupplement(activeRouteIndex, e.target.value)}
+                  placeholder={t("phase1.supplementPlaceholder")}
+                  className="input-field text-xs text-gray-300 placeholder-gray-600 resize-none h-16 sm:h-20 !bg-white/5 !border-white/15"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
