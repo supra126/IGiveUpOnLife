@@ -23,14 +23,6 @@ export function RouteEditor({
 }: RouteEditorProps) {
   const { t } = useLocale();
 
-  const gradients = [
-    "from-white/10 to-white/5",
-    "from-white/10 to-white/5",
-    "from-white/10 to-white/5",
-  ];
-  const borderColors = ["border-white/30", "border-white/30", "border-white/30"];
-  const accentColors = ["text-white", "text-white", "text-white"];
-
   return (
     <div className="mb-8 sm:mb-10 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 border-b border-white/5 pb-4">
@@ -53,22 +45,25 @@ export function RouteEditor({
             <div
               key={idx}
               onClick={() => onSelectRoute(idx)}
-              className="card-hover glass-panel p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer flex flex-col group relative"
+              className={`card-hover glass-panel p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer flex flex-col group relative overflow-hidden`}
               style={{
                 border: isSelected
                   ? "1px solid rgba(255, 255, 255, 0.3)"
                   : "1px solid rgba(255, 255, 255, 0.05)",
               }}
             >
+              {/* Left accent bar when selected */}
+              <div
+                className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl transition-all duration-500 ${
+                  isSelected ? "bg-white/60" : "bg-transparent"
+                }`}
+              />
+
               {/* Selection indicator */}
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 {isSelected ? (
                   <span
-                    className="text-xs font-mono text-white px-2 py-1 rounded-md"
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      border: "1px solid rgba(255, 255, 255, 0.4)",
-                    }}
+                    className="text-xs font-mono text-white px-2 py-1 rounded-md bg-white/10 border border-white/40"
                   >
                     {t("phase1.routeLabel")} {String.fromCharCode(65 + idx)}
                   </span>
@@ -106,7 +101,7 @@ export function RouteEditor({
               {/* Editable Fields */}
               <div className="space-y-4 sm:space-y-5 flex-grow">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
                     {t("phase1.routeName")}
                   </label>
                   <input
@@ -117,12 +112,12 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, route_name: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className={`w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-base sm:text-lg font-bold text-white focus:border-[var(--accent-primary)]/50 focus:outline-none transition-colors ${isSelected ? accentColors[idx % 3] : ""}`}
+                    className={`input-field text-base sm:text-lg font-bold ${isSelected ? "text-white" : ""}`}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
                     {t("phase1.headline")}
                   </label>
                   <textarea
@@ -132,12 +127,12 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, headline: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className={`w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm sm:text-base focus:border-[var(--accent-primary)]/50 focus:outline-none font-medium resize-none h-16 sm:h-20 ${isSelected ? "text-white" : "text-gray-300"}`}
+                    className={`input-field text-sm sm:text-base font-medium resize-none h-16 sm:h-20 ${isSelected ? "text-white" : "text-gray-300"}`}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
                     {t("phase1.subhead")}
                   </label>
                   <textarea
@@ -147,12 +142,12 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, subhead: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm text-gray-300 focus:border-[var(--accent-primary)]/50 focus:outline-none resize-none h-16 sm:h-20"
+                    className="input-field text-sm text-gray-300 resize-none h-16 sm:h-20"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
                     {t("phase1.styleDescription")}
                   </label>
                   <textarea
@@ -162,12 +157,12 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, style_brief: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm text-gray-300 focus:border-[var(--accent-primary)]/50 focus:outline-none resize-none h-24 sm:h-28"
+                    className="input-field text-sm text-gray-300 resize-none h-24 sm:h-28"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                  <label className="text-xs font-semibold tracking-wide text-gray-400 mb-1.5 block">
                     {t("phase1.targetAudience")}
                   </label>
                   <textarea
@@ -177,15 +172,13 @@ export function RouteEditor({
                       onUpdateRoute(idx, { ...route, target_audience: e.target.value });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 sm:py-3 text-sm text-gray-300 focus:border-[var(--accent-primary)]/50 focus:outline-none resize-none h-20 sm:h-24"
+                    className="input-field text-sm text-gray-300 resize-none h-20 sm:h-24"
                   />
                 </div>
 
                 {/* Supplement Field */}
                 <div>
-                  <label
-                    className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${accentColors[idx % 3]}`}
-                  >
+                  <label className="text-[10px] font-semibold tracking-wide mb-1 block text-white">
                     {t("phase1.supplement")}
                   </label>
                   <textarea
@@ -196,15 +189,10 @@ export function RouteEditor({
                     }}
                     onClick={(e) => e.stopPropagation()}
                     placeholder={t("phase1.supplementPlaceholder")}
-                    className={`w-full bg-gradient-to-br ${gradients[idx % 3]} border ${borderColors[idx % 3]} rounded-lg px-3 py-2 sm:py-2.5 text-xs text-gray-300 placeholder-gray-600 focus:outline-none resize-none h-16 sm:h-20`}
+                    className="input-field text-xs text-gray-300 placeholder-gray-600 resize-none h-16 sm:h-20 !bg-white/5 !border-white/15"
                   />
                 </div>
               </div>
-
-              {/* Hover glow effect */}
-              <div
-                className={`absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br ${gradients[idx % 3]} blur-xl -z-10`}
-              ></div>
             </div>
           );
         })}

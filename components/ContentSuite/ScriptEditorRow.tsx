@@ -29,7 +29,7 @@ export const ScriptEditorRow: React.FC<ScriptEditorRowProps> = React.memo(({
   const ARRANGEMENT_OPTIONS = getArrangementOptions(locale);
 
   return (
-    <div className="bg-[#1e1e24] border border-white/5 rounded-xl p-4 sm:p-5 lg:p-6">
+    <div className="glass-panel rounded-xl p-4 sm:p-5 lg:p-6">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span

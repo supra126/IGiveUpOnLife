@@ -83,10 +83,14 @@ export const SizeCheckbox: React.FC<SizeCheckboxProps> = React.memo(({
         className="sr-only"
       />
 
-      {/* Selected indicator */}
+      {/* Selected indicator - checkmark instead of dot */}
       {checked && (
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-          <div className={`w-2 h-2 rounded-full ${colors.checkbox} shadow-lg animate-pulse`}></div>
+          <div className={`w-5 h-5 rounded-full ${colors.checkbox} flex items-center justify-center shadow-lg`}>
+            <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
         </div>
       )}
 

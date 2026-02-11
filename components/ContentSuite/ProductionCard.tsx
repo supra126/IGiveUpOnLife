@@ -63,6 +63,7 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
   // 每張卡片獨立的模式和參考圖
   const [generationMode, setGenerationMode] = useState<GenerationMode>("prompt");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [isRefDragging, setIsRefDragging] = useState(false);
 
   const {
     showText,
@@ -351,8 +352,36 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
           {generationMode === "reference" && (
             <div className="pt-2 border-t border-white/10">
               <label className="text-[10px] text-gray-500 mb-1.5 block">{t("production.uploadReference")}</label>
-              <label className="flex items-center justify-center w-full h-20 border border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white hover:bg-white/5 transition-all relative overflow-hidden">
-                {referenceImage ? (
+              <label
+                className={`flex items-center justify-center w-full h-20 border border-dashed rounded-lg cursor-pointer transition-all relative overflow-hidden ${
+                  isRefDragging
+                    ? "border-white/60 bg-white/10 scale-[1.02]"
+                    : "border-white/30 hover:border-white hover:bg-white/5"
+                }`}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsRefDragging(true); }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+                    setIsRefDragging(false);
+                  }
+                }}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsRefDragging(false);
+                  const files = e.dataTransfer.files;
+                  if (files && files.length > 0 && files[0].type.startsWith("image/")) {
+                    const base64 = await fileToBase64(files[0]);
+                    setReferenceImage(base64);
+                  }
+                }}
+              >
+                {isRefDragging ? (
+                  <p className="text-white/80 font-bold text-[10px] animate-pulse">{t("input.dropToUpload")}</p>
+                ) : referenceImage ? (
                   <div className="w-full h-full relative group">
                     <img
                       src={referenceImage}
@@ -376,7 +405,7 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
                     <p className="text-[10px] text-gray-400">{t("contentSuite.clickToUpload")}</p>

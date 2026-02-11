@@ -17,6 +17,7 @@ interface SizeSelectionPanelProps {
   errorMsg: string | null;
   onSizeChange: (ratio: keyof SizeSelectionState, checked: boolean) => void;
   onConfirm: () => void;
+  onBack?: () => void;
 }
 
 export function SizeSelectionPanel({
@@ -24,6 +25,7 @@ export function SizeSelectionPanel({
   errorMsg,
   onSizeChange,
   onConfirm,
+  onBack,
 }: SizeSelectionPanelProps) {
   const { t } = useLocale();
 
@@ -46,7 +48,7 @@ export function SizeSelectionPanel({
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 bg-[var(--brand-pink)]/10 border border-[var(--brand-pink)]/30 rounded-lg text-[var(--brand-pink)] text-sm">
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm animate-slide-down">
             {errorMsg}
           </div>
         )}
@@ -104,8 +106,16 @@ export function SizeSelectionPanel({
         </div>
       </div>
 
-      {/* Button - Outside the panel, centered below */}
-      <div className="flex justify-center mt-6 sm:mt-8">
+      {/* Buttons - Outside the panel, centered below */}
+      <div className="flex items-center justify-center gap-4 mt-6 sm:mt-8">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-semibold text-sm text-gray-400 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            {t("common.back")}
+          </button>
+        )}
         <button
           onClick={onConfirm}
           className="btn-primary px-10 sm:px-12 py-3.5 sm:py-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-300 bg-white text-black hover:bg-gray-200 hover:scale-[1.02]"

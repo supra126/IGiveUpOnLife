@@ -114,7 +114,8 @@ export type AppAction =
   | { type: "SET_GUIDE_OPEN"; payload: boolean }
   | { type: "SET_API_KEY_MODAL_OPEN"; payload: boolean }
   | { type: "RESET_RESULTS" }
-  | { type: "RESET_PHASE2" };
+  | { type: "RESET_PHASE2" }
+  | { type: "GO_TO_STEP"; payload: number };
 
 // Reducer function
 export function appReducer(state: AppPageState, action: AppAction): AppPageState {
@@ -241,6 +242,30 @@ export function appReducer(state: AppPageState, action: AppAction): AppPageState
         sizeSelection: INITIAL_SIZE_SELECTION,
         appState: AppState.SIZE_SELECTION,
       };
+
+    case "GO_TO_STEP": {
+      const step = action.payload;
+      if (step === 0) {
+        // Go back to IDLE - preserve analysis data but go back to input view
+        return {
+          ...state,
+          appState: AppState.IDLE,
+          errorMsg: "",
+        };
+      }
+      if (step === 1) {
+        // Go back to SIZE_SELECTION - preserve analysis + routes, reset phase 2 content
+        return {
+          ...state,
+          appState: AppState.SIZE_SELECTION,
+          contentPlan: null,
+          editedContentSets: [],
+          errorMsg: "",
+        };
+      }
+      // step === 2: only reachable if already at step 2
+      return state;
+    }
 
     default:
       return state;

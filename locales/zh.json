@@ -11,7 +11,8 @@
     "confirm": "確認",
     "optional": "選填",
     "required": "必填",
-    "unknownError": "未知錯誤"
+    "unknownError": "未知錯誤",
+    "back": "上一步"
   },
   "header": {
     "guide": "使用方式",
@@ -27,6 +28,7 @@
   },
   "input": {
     "uploadOrTakePhoto": "上傳 / 拍照",
+    "dropToUpload": "放開以上傳圖片",
     "supportedFormats": "支援 JPG, PNG",
     "changeImage": "更換圖片",
     "productName": "產品名稱",

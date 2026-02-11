@@ -173,7 +173,7 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
       {/* Upload Settings Section - STEP 04 */}
-      <div className="mb-8 p-6 bg-white/5 border border-white/10 rounded-xl">
+      <div className="mb-8 p-6 glass-panel rounded-xl">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-md border border-white/20">
             {t("stepIndicator.step04")}
@@ -242,23 +242,27 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Pill-style mode toggle */}
+        <div className="relative flex items-center bg-white/5 rounded-full p-1 border border-white/10">
+          <div
+            className="absolute top-1 bottom-1 bg-white/15 rounded-full transition-all duration-300 ease-out"
+            style={{
+              left: mode === "review" ? "4px" : "50%",
+              width: "calc(50% - 4px)",
+            }}
+          />
           <button
             onClick={() => setMode("review")}
-            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${
-              mode === "review"
-                ? "bg-white/10 text-white border border-white"
-                : "bg-white/5 text-gray-400 border border-transparent hover:text-white hover:bg-white/10"
+            className={`relative z-10 px-5 py-2 rounded-full text-sm font-bold transition-colors duration-200 ${
+              mode === "review" ? "text-white" : "text-gray-400 hover:text-gray-300"
             }`}
           >
             {t("contentSuite.reviewMode")}
           </button>
           <button
             onClick={() => setMode("production")}
-            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${
-              mode === "production"
-                ? "bg-white/10 text-white border border-white"
-                : "bg-white/5 text-gray-400 border border-transparent hover:text-white hover:bg-white/10"
+            className={`relative z-10 px-5 py-2 rounded-full text-sm font-bold transition-colors duration-200 ${
+              mode === "production" ? "text-white" : "text-gray-400 hover:text-gray-300"
             }`}
           >
             {t("contentSuite.productionMode")}

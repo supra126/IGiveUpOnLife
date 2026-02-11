@@ -11,7 +11,8 @@
     "confirm": "Confirm",
     "optional": "Optional",
     "required": "Required",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "back": "Back"
   },
   "header": {
     "guide": "Guide",
@@ -27,6 +28,7 @@
   },
   "input": {
     "uploadOrTakePhoto": "Upload / Take Photo",
+    "dropToUpload": "Drop to upload",
     "supportedFormats": "Supports JPG, PNG",
     "changeImage": "Change Image",
     "productName": "Product Name",

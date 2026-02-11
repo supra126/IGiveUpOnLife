@@ -40,8 +40,9 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#1e1e24] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all scale-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-overlay-in" onClick={onClose} />
+      <div className="relative glass-panel rounded-2xl p-8 max-w-md w-full shadow-2xl animate-modal-in">
         <h3 className="text-xl font-bold text-white mb-4 serif">{t("apiKeyModal.title")}</h3>
 
         {/* Server has key: Show free mode info */}
@@ -79,7 +80,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-500 tracking-wide mb-2">
               {t("apiKeyModal.labelOptional")} {serverHasKey && <span className="text-gray-600 normal-case">({t("common.optional")})</span>}
             </label>
             <input
@@ -87,21 +88,21 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="AIzaSy..."
-              className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none transition-colors font-mono text-sm"
+              className="input-field font-mono text-sm"
             />
           </div>
 
           <div className="flex gap-3 pt-4">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-lg border border-white/10 text-gray-400 hover:bg-white/5 hover:text-white transition-colors text-sm font-medium"
+              className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 text-gray-400 hover:bg-white/5 hover:text-white transition-colors text-sm font-medium"
             >
               {serverHasKey ? t("common.close") : t("common.cancel")}
             </button>
             {key.trim() && (
               <button
                 onClick={handleSave}
-                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors text-sm"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--accent-primary)] text-white font-bold hover:opacity-90 transition-opacity text-sm"
               >
                 {t("apiKeyModal.saveButton")}
               </button>
@@ -109,7 +110,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
             {getApiKey() && (
               <button
                 onClick={handleClearKey}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-500 transition-colors text-sm"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white font-bold hover:bg-red-500 transition-colors text-sm"
               >
                 {t("apiKeyModal.clearKey")}
               </button>
@@ -117,7 +118,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSav
           </div>
 
           <div className="text-center pt-2">
-             <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 underline">
+             <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--accent-primary)] hover:opacity-80 underline transition-opacity">
                  {t("apiKeyModal.getApiKey")}
              </a>
           </div>

@@ -70,18 +70,18 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
     return null;
   }
 
-  const separator = locale === "zh" ? "：" : ": ";
+  const separator = locale === "zh" ? "\uFF1A" : ": ";
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-overlay-in"
         onClick={onClose}
       />
 
       {/* Content */}
-      <div className="relative bg-[#1a1a1f] border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-purple-900/20 animate-in fade-in zoom-in duration-300">
+      <div className="relative glass-panel rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-purple-900/20 animate-modal-in">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-2"
@@ -107,7 +107,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           {/* API Key Notice */}
           <div className="mb-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
             <div className="flex items-start gap-3">
-              <span className="text-blue-400 text-xl">🔑</span>
+              <span className="text-blue-400 text-xl">&#x1F511;</span>
               <div>
                 <p className="text-blue-300 font-semibold mb-1">{t("guideModal.apiKeyNotice")}</p>
                 <p className="text-gray-400 text-sm leading-relaxed">
@@ -129,7 +129,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-8">
             {/* Step 1 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-lg border border-purple-600/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
                 1
               </div>
               <div>
@@ -149,7 +149,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 2 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-600/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
                 2
               </div>
               <div>
@@ -170,7 +170,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 3 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-pink-600/20 text-pink-400 flex items-center justify-center font-bold text-lg border border-pink-600/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
                 3
               </div>
               <div>
@@ -192,7 +192,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 4 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-green-600/20 text-green-400 flex items-center justify-center font-bold text-lg border border-green-600/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
                 4
               </div>
               <div>
@@ -211,7 +211,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 5 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-yellow-600/20 text-yellow-400 flex items-center justify-center font-bold text-lg border border-yellow-600/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
                 5
               </div>
               <div>
@@ -227,7 +227,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 6 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-orange-600/20 text-orange-400 flex items-center justify-center font-bold text-lg border border-orange-600/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
                 6
               </div>
               <div>

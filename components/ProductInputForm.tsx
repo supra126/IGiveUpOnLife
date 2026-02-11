@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 
 interface ProductInputFormProps {
@@ -11,6 +11,7 @@ interface ProductInputFormProps {
   refCopy: string;
   showAnalyzeButton: boolean;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileDrop: (file: File) => void;
   onClearImage: () => void;
   onProductNameChange: (value: string) => void;
   onProductInfoChange: (value: string) => void;
@@ -27,6 +28,7 @@ export function ProductInputForm({
   refCopy,
   showAnalyzeButton,
   onFileChange,
+  onFileDrop,
   onClearImage,
   onProductNameChange,
   onProductInfoChange,
@@ -35,31 +37,86 @@ export function ProductInputForm({
   onAnalyze,
 }: ProductInputFormProps) {
   const { t } = useLocale();
+  const [isDragging, setIsDragging] = useState(false);
 
-  // 判斷是否已上傳圖片，決定外框顏色
   const hasImage = !!imagePreview;
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set false if leaving the actual drop zone (not entering a child)
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith("image/")) {
+        onFileDrop(file);
+      }
+    }
+  }, [onFileDrop]);
 
   return (
     <div
       className={`
         w-full max-w-4xl mx-auto mt-6 sm:mt-8 animate-fade-in-up
         p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 transition-all duration-500
-        ${hasImage
-          ? "border-white/40 bg-white/5"
-          : "border-gray-600/50 bg-black/20"
+        ${isDragging
+          ? "border-white/60 bg-white/10 scale-[1.01]"
+          : hasImage
+            ? "border-white/40 bg-white/5"
+            : "border-gray-600/50 bg-black/20"
         }
       `}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Left: Image Upload */}
         <div className="order-2 md:order-1">
           <label
             className={`flex flex-col items-center justify-center w-full h-full min-h-[280px] sm:min-h-[320px] border-2 border-dashed rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-500 relative overflow-hidden group ${
-              hasImage
-                ? "border-white/30 bg-black/30"
-                : "border-gray-600/50 hover:border-gray-500/70 bg-black/20"
+              isDragging
+                ? "border-white/50 bg-white/10"
+                : hasImage
+                  ? "border-white/30 bg-black/30"
+                  : "border-gray-600/50 hover:border-gray-500/70 bg-black/20"
             }`}
           >
+            {/* Drag overlay */}
+            {isDragging && !hasImage && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/5 backdrop-blur-[2px]">
+                <svg className="w-12 h-12 text-white/70 mb-3 animate-pulse-ring" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-white/80 font-bold text-sm">{t("input.dropToUpload")}</p>
+              </div>
+            )}
+
             {imagePreview ? (
               <div className="w-full h-full relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -126,7 +183,7 @@ export function ProductInputForm({
         {/* Right: Text Inputs */}
         <div className="order-1 md:order-2 flex flex-col gap-3 sm:gap-4">
           <div>
-            <label className={`block text-xs sm:text-sm font-bold uppercase tracking-wider mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-white" : "text-gray-500"}`}>
+            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-white" : "text-gray-500"}`}>
               {t("input.productName")}
             </label>
             <input
@@ -134,22 +191,22 @@ export function ProductInputForm({
               value={productName}
               onChange={(e) => onProductNameChange(e.target.value)}
               placeholder={t("input.productNamePlaceholder")}
-              className={`w-full border rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder-gray-600 focus:outline-none transition-all duration-300 text-sm sm:text-base ${hasImage ? "bg-black/30 border-white/20 focus:border-white/40" : "bg-black/20 border-gray-600/30 focus:border-gray-500/50"}`}
+              className={`input-field text-sm sm:text-base ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
             />
           </div>
           <div>
-            <label className={`block text-xs sm:text-sm font-bold uppercase tracking-wider mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
+            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
               {t("input.productInfo")}
             </label>
             <textarea
               value={productInfo}
               onChange={(e) => onProductInfoChange(e.target.value)}
               placeholder={t("input.productInfoPlaceholder")}
-              className={`w-full border rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder-gray-600 focus:outline-none transition-all duration-300 h-20 sm:h-24 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "bg-black/30 border-white/20 focus:border-white/40" : "bg-black/20 border-gray-600/30 focus:border-gray-500/50"}`}
+              className={`input-field h-20 sm:h-24 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
             />
           </div>
           <div>
-            <label className={`block text-xs sm:text-sm font-bold uppercase tracking-wider mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
+            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
               {t("input.productUrl")}
             </label>
             <input
@@ -157,27 +214,27 @@ export function ProductInputForm({
               value={productUrl}
               onChange={(e) => onProductUrlChange(e.target.value)}
               placeholder={t("input.productUrlPlaceholder")}
-              className={`w-full border rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder-gray-600 focus:outline-none transition-all duration-300 text-sm sm:text-base ${hasImage ? "bg-black/30 border-white/20 focus:border-white/40" : "bg-black/20 border-gray-600/30 focus:border-gray-500/50"}`}
+              className={`input-field text-sm sm:text-base ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
             />
           </div>
           <div>
-            <label className={`block text-xs sm:text-sm font-bold uppercase tracking-wider mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
+            <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-gray-400" : "text-gray-600"}`}>
               {t("input.refCopy")}
             </label>
             <textarea
               value={refCopy}
               onChange={(e) => onRefCopyChange(e.target.value)}
               placeholder={t("input.refCopyPlaceholder")}
-              className={`w-full border rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder-gray-600 focus:outline-none transition-all duration-300 h-20 sm:h-24 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "bg-black/30 border-white/20 focus:border-white/40" : "bg-black/20 border-gray-600/30 focus:border-gray-500/50"}`}
+              className={`input-field h-20 sm:h-24 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
             />
           </div>
 
           {showAnalyzeButton && (
             <button
               onClick={onAnalyze}
-              className={`btn-primary mt-2 sm:mt-auto w-full py-3 sm:py-4 font-bold text-xs sm:text-sm uppercase tracking-widest rounded-lg sm:rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
+              className={`btn-primary mt-2 sm:mt-auto w-full py-3 sm:py-4 font-bold text-xs sm:text-sm tracking-widest rounded-lg sm:rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
                 hasImage
-                  ? "bg-white text-black hover:bg-gray-200 hover:scale-[1.02]"
+                  ? "bg-gradient-to-r from-white to-gray-100 text-black hover:from-gray-100 hover:to-white hover:scale-[1.02]"
                   : "bg-gray-700 text-gray-400 cursor-not-allowed"
               }`}
               disabled={!hasImage}

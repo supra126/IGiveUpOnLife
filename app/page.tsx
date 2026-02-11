@@ -72,20 +72,27 @@ export default function Home() {
     dispatch({ type: "SET_API_KEY", payload: key });
   }, []);
 
-  // --- Handlers ---
+  // --- File handling (unified for input change and drop) ---
+  const handleFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      dispatch({
+        type: "SET_SELECTED_FILE",
+        payload: { file, preview: ev.target?.result as string },
+      });
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        dispatch({
-          type: "SET_SELECTED_FILE",
-          payload: { file, preview: ev.target?.result as string },
-        });
-      };
-      reader.readAsDataURL(file);
+      handleFile(e.target.files[0]);
     }
-  }, []);
+  }, [handleFile]);
+
+  const handleFileDrop = useCallback((file: File) => {
+    handleFile(file);
+  }, [handleFile]);
 
   const handleClearImage = useCallback(() => {
     dispatch({
@@ -197,7 +204,7 @@ export default function Home() {
     }
   }, [analysisResult, sizeSelection, editedRoutes, activeRouteIndex, routeSupplements, refCopy, apiKey, locale, t]);
 
-  // --- Get Current Step ---
+  // --- Step Navigation ---
   const getCurrentStep = (): number => {
     switch (appState) {
       case AppState.IDLE:
@@ -213,6 +220,10 @@ export default function Home() {
         return 0;
     }
   };
+
+  const handleGoToStep = useCallback((step: number) => {
+    dispatch({ type: "GO_TO_STEP", payload: step });
+  }, []);
 
   const steps = [
     { label: t("steps.analyze"), shortLabel: "01" },
@@ -234,17 +245,20 @@ export default function Home() {
             {steps.map((step, idx) => {
               const isCompleted = idx < currentStep;
               const isCurrent = idx === currentStep;
-              const isPending = idx > currentStep;
+              const isClickable = isCompleted;
 
               return (
                 <React.Fragment key={idx}>
                   {/* Step Item */}
-                  <div className="flex items-center gap-2">
+                  <div
+                    className={`flex items-center gap-2 ${isClickable ? "cursor-pointer group/step" : ""}`}
+                    onClick={() => isClickable && handleGoToStep(idx)}
+                  >
                     <div
                       className={`
                         w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500
                         ${isCompleted
-                          ? "bg-white text-black"
+                          ? "bg-white text-black group-hover/step:bg-gray-200 group-hover/step:scale-110"
                           : isCurrent
                             ? "bg-white text-black"
                             : "bg-white/5 text-gray-500 border border-white/10"
@@ -262,7 +276,7 @@ export default function Home() {
                     <span
                       className={`
                         text-sm font-medium transition-colors duration-300
-                        ${isCurrent ? "text-white" : isCompleted ? "text-white" : "text-gray-500"}
+                        ${isCurrent ? "text-white" : isCompleted ? "text-white group-hover/step:text-gray-300" : "text-gray-500"}
                       `}
                     >
                       {step.label}
@@ -299,14 +313,15 @@ export default function Home() {
             {/* Progress Dots */}
             <div className="flex gap-1.5">
               {steps.map((_, idx) => (
-                <div
+                <button
                   key={idx}
+                  onClick={() => idx < currentStep && handleGoToStep(idx)}
                   className={`
-                    w-2 h-2 rounded-full transition-all duration-300
+                    w-2.5 h-2.5 rounded-full transition-all duration-300
                     ${idx === currentStep
-                      ? "bg-white"
+                      ? "bg-white scale-110"
                       : idx < currentStep
-                        ? "bg-white/50"
+                        ? "bg-white/50 cursor-pointer hover:bg-white/70"
                         : "bg-white/20"
                     }
                   `}
@@ -319,6 +334,19 @@ export default function Home() {
     );
   };
 
+  // --- Back Button Component ---
+  const BackButton = ({ onClick, label }: { onClick: () => void; label?: string }) => (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors group/back"
+    >
+      <svg className="w-4 h-4 transition-transform group-hover/back:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>{label || t("common.back")}</span>
+    </button>
+  );
+
   // --- Render Helpers ---
 
   const renderInputs = () => (
@@ -330,6 +358,7 @@ export default function Home() {
       refCopy={refCopy}
       showAnalyzeButton={!!selectedFile && appState === AppState.IDLE}
       onFileChange={handleFileChange}
+      onFileDrop={handleFileDrop}
       onClearImage={handleClearImage}
       onProductNameChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productName", value } })}
       onProductInfoChange={(value) => dispatch({ type: "SET_INPUT", payload: { field: "productInfo", value } })}
@@ -347,10 +376,15 @@ export default function Home() {
     const showPhase1And2 = appState === AppState.RESULTS || appState === AppState.SIZE_SELECTION;
 
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 pb-20">
+      <div className="w-full max-w-6xl mx-auto px-4 pb-20 section-transition">
         {/* Phase 1: Product Card & Route Selection - Hidden during PLANNING and SUITE_READY */}
         {showPhase1And2 && (
           <>
+            {/* Back to upload */}
+            <div className="mb-6">
+              <BackButton onClick={() => handleGoToStep(0)} />
+            </div>
+
             <ProductCard
               analysis={analysisResult.product_analysis}
               imageSrc={imagePreview}
@@ -379,6 +413,7 @@ export default function Home() {
                   dispatch({ type: "SET_SIZE_SELECTION", payload: { ratio, checked } })
                 }
                 onConfirm={handleSizeConfirm}
+                onBack={() => handleGoToStep(0)}
               />
             </div>
           </>
@@ -391,7 +426,12 @@ export default function Home() {
 
         {/* Phase 4: Content Suite - Only shown in SUITE_READY */}
         {appState === AppState.SUITE_READY && contentPlan && (
-          <div className="relative" id="content-section">
+          <div className="relative section-transition" id="content-section">
+            {/* Back to strategy/size selection */}
+            <div className="mb-6">
+              <BackButton onClick={() => handleGoToStep(1)} />
+            </div>
+
             <ContentSuite
               plan={contentPlan}
               onContentUpdate={(newSets) => dispatch({ type: "SET_EDITED_CONTENT_SETS", payload: newSets })}
@@ -478,7 +518,7 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8 pb-16 flex-1 flex flex-col">
         {/* Global Error */}
         {errorMsg && (
-          <div className="w-full max-w-2xl mx-auto mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-center flex items-center justify-between">
+          <div className="w-full max-w-2xl mx-auto mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-center flex items-center justify-between animate-slide-down">
             <span>{errorMsg}</span>
             <button
               onClick={() => dispatch({ type: "RESET_RESULTS" })}
@@ -494,7 +534,7 @@ export default function Home() {
 
         {/* Main Views */}
         {appState === AppState.IDLE && (
-          <div className="flex-1 flex flex-col items-center mt-8 text-center">
+          <div className="flex-1 flex flex-col items-center mt-8 text-center animate-fade-in-up">
             <h2 className="text-4xl md:text-6xl font-bold text-white serif mb-4 leading-tight">
               {t("home.heroTitle")}
               <br />

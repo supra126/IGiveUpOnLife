@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 
 interface ImageUploaderProps {
   file: File | null;
@@ -25,6 +25,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = React.memo(({
   borderColor,
   iconColor,
 }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
   const borderClasses =
     borderColor === "white"
       ? "border-white/20 hover:border-white/40 hover:bg-white/5"
@@ -37,11 +39,53 @@ export const ImageUploader: React.FC<ImageUploaderProps> = React.memo(({
   const textClasses =
     iconColor === "white" ? "text-white/70" : iconColor === "indigo" ? "text-indigo-300" : "text-pink-300";
 
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const droppedFile = files[0];
+      if (droppedFile.type.startsWith("image/")) {
+        onFileChange(droppedFile);
+      }
+    }
+  }, [onFileChange]);
+
   return (
     <div className="relative">
-      <label className={`block text-sm font-bold mb-2 ${iconColor === "white" ? "text-white/80" : "text-indigo-200"}`}>{label}</label>
+      <label className={`block text-sm font-semibold mb-2 ${iconColor === "white" ? "text-white/80" : "text-indigo-200"}`}>{label}</label>
       <label
-        className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all relative overflow-hidden bg-black/20 ${borderClasses}`}
+        className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all relative overflow-hidden bg-black/20 ${
+          isDragging ? "border-white/50 bg-white/10 scale-[1.02]" : borderClasses
+        }`}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {file && previewUrl ? (
           <div className="w-full h-full relative group">
@@ -52,21 +96,27 @@ export const ImageUploader: React.FC<ImageUploaderProps> = React.memo(({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-4">
-            <svg
-              className={`w-8 h-8 mb-2 ${iconClasses}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <p className={`text-xs ${textClasses}`}>{emptyText}</p>
-            {hint && <p className="text-[10px] text-gray-500 mt-1">{hint}</p>}
+            {isDragging ? (
+              <p className="text-white/80 font-bold text-xs animate-pulse">Drop here</p>
+            ) : (
+              <>
+                <svg
+                  className={`w-8 h-8 mb-2 ${iconClasses}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className={`text-xs ${textClasses}`}>{emptyText}</p>
+                {hint && <p className="text-[10px] text-gray-500 mt-1">{hint}</p>}
+              </>
+            )}
           </div>
         )}
         <input
