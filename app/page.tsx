@@ -238,7 +238,7 @@ export default function Home() {
     if (appState === AppState.IDLE) return null;
 
     return (
-      <div className="w-full glass-panel border-b border-white/5 py-4 sticky top-[73px] z-40">
+      <div className="w-full backdrop-blur-xl bg-black/60 border-b border-white/5 py-3 sticky top-[53px] z-40">
         <div className="container mx-auto px-6">
           {/* Desktop Step Indicator */}
           <div className="hidden md:flex items-center justify-center gap-2">
@@ -258,9 +258,9 @@ export default function Home() {
                       className={`
                         w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500
                         ${isCompleted
-                          ? "bg-white text-black group-hover/step:bg-gray-200 group-hover/step:scale-110"
+                          ? "bg-blue-500 text-white group-hover/step:bg-blue-400 group-hover/step:scale-110"
                           : isCurrent
-                            ? "bg-white text-black"
+                            ? "bg-blue-500 text-white"
                             : "bg-white/5 text-gray-500 border border-white/10"
                         }
                       `}
@@ -288,7 +288,7 @@ export default function Home() {
                     <div className="w-12 h-0.5 mx-2 relative overflow-hidden rounded-full bg-white/10">
                       <div
                         className={`
-                          absolute inset-y-0 left-0 bg-white transition-all duration-700 ease-out rounded-full
+                          absolute inset-y-0 left-0 bg-blue-500 transition-all duration-700 ease-out rounded-full
                           ${idx < currentStep ? "w-full" : "w-0"}
                         `}
                       />
@@ -302,7 +302,7 @@ export default function Home() {
           {/* Mobile Step Indicator */}
           <div className="flex md:hidden items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
                 {currentStep + 1}
               </div>
               <div>
@@ -319,9 +319,9 @@ export default function Home() {
                   className={`
                     w-2.5 h-2.5 rounded-full transition-all duration-300
                     ${idx === currentStep
-                      ? "bg-white scale-110"
+                      ? "bg-blue-500 scale-110"
                       : idx < currentStep
-                        ? "bg-white/50 cursor-pointer hover:bg-white/70"
+                        ? "bg-blue-500/50 cursor-pointer hover:bg-blue-400/70"
                         : "bg-white/20"
                     }
                   `}
@@ -376,12 +376,12 @@ export default function Home() {
     const showPhase1And2 = appState === AppState.RESULTS || appState === AppState.SIZE_SELECTION;
 
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 pb-20 section-transition">
+      <div className="w-full max-w-6xl mx-auto px-4 pb-24 section-transition">
         {/* Phase 1: Product Card & Route Selection - Hidden during PLANNING and SUITE_READY */}
         {showPhase1And2 && (
           <>
             {/* Back to upload */}
-            <div className="mb-6">
+            <div className="mb-8">
               <BackButton onClick={() => handleGoToStep(0)} />
             </div>
 
@@ -390,22 +390,24 @@ export default function Home() {
               imageSrc={imagePreview}
             />
 
-            {/* Route Selection */}
-            <RouteEditor
-              routes={editedRoutes}
-              activeRouteIndex={activeRouteIndex}
-              routeSupplements={routeSupplements}
-              onSelectRoute={(idx) => dispatch({ type: "SET_ACTIVE_ROUTE", payload: idx })}
-              onUpdateRoute={(idx, route) =>
-                dispatch({ type: "UPDATE_EDITED_ROUTE", payload: { index: idx, route } })
-              }
-              onUpdateSupplement={(idx, value) =>
-                dispatch({ type: "UPDATE_ROUTE_SUPPLEMENT", payload: { index: idx, value } })
-              }
-            />
+            {/* Route Selection — separated by generous spacing */}
+            <div className="mt-12 sm:mt-16">
+              <RouteEditor
+                routes={editedRoutes}
+                activeRouteIndex={activeRouteIndex}
+                routeSupplements={routeSupplements}
+                onSelectRoute={(idx) => dispatch({ type: "SET_ACTIVE_ROUTE", payload: idx })}
+                onUpdateRoute={(idx, route) =>
+                  dispatch({ type: "UPDATE_EDITED_ROUTE", payload: { index: idx, route } })
+                }
+                onUpdateSupplement={(idx, value) =>
+                  dispatch({ type: "UPDATE_ROUTE_SUPPLEMENT", payload: { index: idx, value } })
+                }
+              />
+            </div>
 
-            {/* Phase 2: Size Selection */}
-            <div className="border-t border-white/10 pt-12" id="phase2-section">
+            {/* Phase 2: Size Selection — clear section break */}
+            <div className="mt-16 sm:mt-20 pt-12 sm:pt-16 border-t border-white/5" id="phase2-section">
               <SizeSelectionPanel
                 sizeSelection={sizeSelection}
                 errorMsg={errorMsg}
@@ -460,30 +462,30 @@ export default function Home() {
         serverHasKey={serverHasKey}
       />
 
-      {/* Header */}
-      <header className="w-full py-4 sm:py-6 border-b border-white/5 glass-panel sticky top-0 z-50">
+      {/* Header — minimal floating bar */}
+      <header className="w-full py-3 sm:py-4 sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/5">
         <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div
-            className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group"
             onClick={() => dispatch({ type: "SET_APP_STATE", payload: AppState.IDLE })}
           >
-            <div className="w-8 h-8 flex items-center justify-center">
+            <div className="w-7 h-7 flex items-center justify-center">
               <Image
                 src="/images/logo.svg"
                 alt="Logo"
-                width={32}
-                height={32}
-                className="w-full h-full object-contain animate-float"
+                width={28}
+                height={28}
+                className="w-full h-full object-contain"
               />
             </div>
-            <h1 className="text-base sm:text-lg font-bold text-white hidden sm:block group-hover:text-gray-300 transition-colors">
+            <h1 className="text-sm sm:text-base font-bold text-white/80 hidden sm:block group-hover:text-white transition-colors tracking-tight">
               {t("common.appName")}
             </h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => dispatch({ type: "SET_API_KEY_MODAL_OPEN", payload: true })}
-              className="text-white hover:text-gray-300 text-xs sm:text-sm font-bold transition-colors"
+              className="text-gray-400 hover:text-white text-xs sm:text-sm font-medium transition-colors"
             >
               {serverHasKey
                 ? apiKey
@@ -502,7 +504,7 @@ export default function Home() {
             >
               <svg
                 viewBox="0 0 24 24"
-                className="w-5 h-5 text-white/70 hover:text-white"
+                className="w-4.5 h-4.5 text-gray-500 hover:text-white transition-colors"
                 fill="currentColor"
               >
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -534,13 +536,14 @@ export default function Home() {
 
         {/* Main Views */}
         {appState === AppState.IDLE && (
-          <div className="flex-1 flex flex-col items-center mt-8 text-center animate-fade-in-up">
-            <h2 className="text-4xl md:text-6xl font-bold text-white serif mb-4 leading-tight">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-in-up">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gradient-hero serif mb-4 leading-[1.1] tracking-tight">
               {t("home.heroTitle")}
-              <br />
+            </h2>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white serif mb-8 leading-[1.1] tracking-tight">
               {t("home.heroTitle2")}
             </h2>
-            <p className="text-gray-400 max-w-xl mx-auto mb-8 text-base mt-2">
+            <p className="text-gray-400 max-w-lg mx-auto mb-12 sm:mb-16 text-base sm:text-lg leading-relaxed">
               {t("home.heroDescription")}
             </p>
             {renderInputs()}
@@ -554,16 +557,16 @@ export default function Home() {
           renderPhase1Results()}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-4 mt-auto">
+      {/* Footer — minimal */}
+      <footer className="border-t border-white/5 py-3 mt-auto">
         <div className="container mx-auto px-4 flex items-center justify-end gap-4">
           <button
             onClick={() => dispatch({ type: "SET_GUIDE_OPEN", payload: true })}
-            className="text-gray-400 hover:text-white text-xs sm:text-sm font-bold transition-colors"
+            className="text-gray-500 hover:text-white text-xs font-medium transition-colors"
           >
             {t("header.guide")}
           </button>
-          <span className="text-gray-600">|</span>
+          <span className="text-gray-700">·</span>
           <LanguageToggle />
         </div>
       </footer>

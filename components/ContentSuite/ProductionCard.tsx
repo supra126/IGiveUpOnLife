@@ -113,6 +113,11 @@ export const ProductionCard: React.FC<ProductionCardProps> = ({
         // Build prompt with product protection at the start
         let enhancedPrompt = `${PRODUCT_PROTECTION_PROMPT} ${contentSet.visual_prompt_en}`;
 
+        // Enforce white/gray background for commercial photography
+        if (contentSet.ratio === "1:1-commercial") {
+          enhancedPrompt += " MANDATORY: CLEAN SOLID WHITE (#ffffff) OR LIGHT GRAY (#f6f6f6) BACKGROUND ONLY. Absolutely NO colored backgrounds, NO gradients, NO decorative elements, NO props, NO plants, NO patterns. Professional studio lighting only.";
+        }
+
         if (brandLogo) {
           enhancedPrompt +=
             " Place brand logo in corner subtly.";

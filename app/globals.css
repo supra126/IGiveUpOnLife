@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  /* 主色調 - 紫羅蘭 */
-  --accent-primary: #8B5CF6;
-  --accent-primary-muted: #7C3AED;
+  /* 主色調 - 冷調電光藍 */
+  --accent-primary: #3B82F6;
+  --accent-primary-light: #60A5FA;
+  --accent-primary-muted: #2563EB;
+  --accent-primary-subtle: rgba(59, 130, 246, 0.12);
 
-  /* 次要色調 - 琥珀 */
+  /* 次要色調 */
   --accent-secondary: #F59E0B;
 
   /* 語義顏色 */
@@ -14,12 +16,12 @@
   --error: #EF4444;
   --info: #3B82F6;
 
-  /* 表面顏色 */
-  --surface-base: #0a0a0f;
-  --surface-elevated: #14141e;
-  --surface-overlay: #1e1e28;
+  /* 表面顏色 — 冷色調 */
+  --surface-base: #09090f;
+  --surface-elevated: #111318;
+  --surface-overlay: #1a1c24;
 
-  /* 細膩灰階層級 */
+  /* 冷灰階層級 */
   --gray-50: #f8fafc;
   --gray-100: #f1f5f9;
   --gray-200: #e2e8f0;
@@ -72,12 +74,12 @@ h1, h2, h3, .serif {
   background: rgba(255, 255, 255, 0.35);
 }
 
-/* Glass Panel Effect - Refined */
+/* Glass Panel Effect - Cool tinted */
 .glass-panel {
   background: linear-gradient(
     145deg,
-    rgba(20, 20, 35, 0.80) 0%,
-    rgba(12, 12, 28, 0.65) 100%
+    rgba(17, 19, 28, 0.80) 0%,
+    rgba(11, 13, 22, 0.65) 100%
   );
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -118,8 +120,8 @@ h1, h2, h3, .serif {
 
 .input-field:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05), 0 0 20px rgba(139, 92, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08), 0 0 20px rgba(59, 130, 246, 0.06);
 }
 
 /* Field Label */
@@ -138,6 +140,45 @@ h1, h2, h3, .serif {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Hero Gradient - Cool blue personality */
+.text-gradient-hero {
+  background: linear-gradient(135deg, #FFFFFF 0%, #e2e8f0 35%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Feature Pill Tag */
+.pill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.pill-tag:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Aspect ratio preview boxes */
+.ratio-preview {
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.ratio-preview-active {
+  opacity: 1;
 }
 
 /* Card Hover Effect - Refined (smaller movement) */
@@ -361,13 +402,13 @@ h1, h2, h3, .serif {
   animation: modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Selection */
+/* Selection — blue accent */
 ::selection {
-  background: rgba(139, 92, 246, 0.35);
+  background: rgba(59, 130, 246, 0.35);
   color: white;
 }
 
-/* Dynamic Background: Kinetic Grid - Toned Down */
+/* Dynamic Background: Cool Blue */
 .bg-dynamic {
   position: fixed;
   top: 0;
@@ -376,10 +417,10 @@ h1, h2, h3, .serif {
   height: 100vh;
   z-index: -1;
   background:
-    radial-gradient(ellipse at 20% 20%, rgba(50, 50, 70, 0.3) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(35, 35, 55, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(25, 25, 45, 0.15) 0%, transparent 70%),
-    #0a0a0f;
+    radial-gradient(ellipse at 20% 20%, rgba(30, 58, 95, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(20, 40, 80, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(15, 30, 60, 0.12) 0%, transparent 70%),
+    #09090f;
   overflow: hidden;
 }
 
@@ -408,7 +449,7 @@ h1, h2, h3, .serif {
   isolation: isolate;
 }
 
-/* Ambient Glow Effects - Reduced */
+/* Ambient Glow Effects - Cool blue */
 .bg-glow {
   position: absolute;
   top: 0;
@@ -416,9 +457,9 @@ h1, h2, h3, .serif {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(90, 90, 130, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 80% at 80% 60%, rgba(70, 70, 110, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(50, 50, 90, 0.06) 0%, transparent 40%);
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 80% at 80% 60%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(30, 64, 175, 0.04) 0%, transparent 40%);
   filter: blur(60px);
   pointer-events: none;
   animation: glow-drift 20s ease-in-out infinite alternate;

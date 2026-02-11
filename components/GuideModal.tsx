@@ -81,7 +81,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       />
 
       {/* Content */}
-      <div className="relative glass-panel rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-purple-900/20 animate-modal-in">
+      <div className="relative glass-panel rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-blue-900/20 animate-modal-in">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-2"
@@ -129,7 +129,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-8">
             {/* Step 1 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/30">
                 1
               </div>
               <div>
@@ -149,7 +149,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 2 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/30">
                 2
               </div>
               <div>
@@ -170,7 +170,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 3 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/30">
                 3
               </div>
               <div>
@@ -192,7 +192,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 4 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/30">
                 4
               </div>
               <div>
@@ -211,7 +211,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 5 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/30">
                 5
               </div>
               <div>
@@ -227,7 +227,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 6 */}
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)]/30 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-bold text-lg border border-[var(--accent-primary)]/30">
+              <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg border border-blue-500/30">
                 6
               </div>
               <div>

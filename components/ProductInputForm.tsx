@@ -55,7 +55,6 @@ export function ProductInputForm({
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Only set false if leaving the actual drop zone (not entering a child)
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
@@ -81,8 +80,8 @@ export function ProductInputForm({
   return (
     <div
       className={`
-        w-full max-w-4xl mx-auto mt-6 sm:mt-8 animate-fade-in-up
-        p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 transition-all duration-500
+        w-full max-w-5xl mx-auto mt-6 sm:mt-8 animate-fade-in-up
+        rounded-2xl sm:rounded-3xl border-2 transition-all duration-500 overflow-hidden
         ${isDragging
           ? "border-white/60 bg-white/10 scale-[1.01]"
           : hasImage
@@ -95,16 +94,16 @@ export function ProductInputForm({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {/* Left: Image Upload */}
-        <div className="order-2 md:order-1">
+      <div className="flex flex-col md:flex-row">
+        {/* Left: Image Upload — takes 55% on desktop */}
+        <div className="md:w-[55%] shrink-0 order-2 md:order-1">
           <label
-            className={`flex flex-col items-center justify-center w-full h-full min-h-[280px] sm:min-h-[320px] border-2 border-dashed rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-500 relative overflow-hidden group ${
+            className={`flex flex-col items-center justify-center w-full h-full min-h-[300px] sm:min-h-[360px] md:min-h-[440px] cursor-pointer transition-all duration-500 relative overflow-hidden group ${
               isDragging
-                ? "border-white/50 bg-white/10"
+                ? "bg-white/10"
                 : hasImage
-                  ? "border-white/30 bg-black/30"
-                  : "border-gray-600/50 hover:border-gray-500/70 bg-black/20"
+                  ? "bg-black/30"
+                  : "bg-black/20 hover:bg-black/10"
             }`}
           >
             {/* Drag overlay */}
@@ -123,9 +122,9 @@ export function ProductInputForm({
                 <img
                   src={imagePreview}
                   alt={t("alt.preview")}
-                  className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-contain p-6 sm:p-8 transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 backdrop-blur-[2px]">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                   <span className="text-white font-bold text-sm px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">{t("input.changeImage")}</span>
                 </div>
                 {/* Clear Image Button */}
@@ -136,7 +135,7 @@ export function ProductInputForm({
                     e.stopPropagation();
                     onClearImage();
                   }}
-                  className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-red-500/80 rounded-full text-white transition-colors z-10"
+                  className="absolute top-3 right-3 p-2 bg-black/60 hover:bg-red-500/80 rounded-full text-white transition-colors z-10"
                   title={t("input.clearImage")}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,10 +144,10 @@ export function ProductInputForm({
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-700/30 border border-gray-600/50 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:border-gray-500/70 transition-all duration-300">
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gray-700/30 border border-gray-600/50 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:border-gray-500/70 transition-all duration-300">
                   <svg
-                    className="w-8 h-8 sm:w-10 sm:h-10 text-gray-500 group-hover:text-gray-400 transition-colors"
+                    className="w-10 h-10 sm:w-12 sm:h-12 text-gray-500 group-hover:text-gray-400 transition-colors"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -167,7 +166,7 @@ export function ProductInputForm({
                     />
                   </svg>
                 </div>
-                <p className="mb-2 text-sm sm:text-base font-medium text-gray-400 group-hover:text-gray-300 transition-colors">{t("input.uploadOrTakePhoto")}</p>
+                <p className="mb-2 text-base sm:text-lg font-medium text-gray-400 group-hover:text-gray-300 transition-colors">{t("input.uploadOrTakePhoto")}</p>
                 <p className="text-xs text-gray-600">{t("input.supportedFormats")}</p>
               </div>
             )}
@@ -180,8 +179,8 @@ export function ProductInputForm({
           </label>
         </div>
 
-        {/* Right: Text Inputs */}
-        <div className="order-1 md:order-2 flex flex-col gap-3 sm:gap-4">
+        {/* Right: Text Inputs — 45% on desktop, stacked on mobile */}
+        <div className="md:w-[45%] order-1 md:order-2 p-5 sm:p-7 lg:p-8 flex flex-col gap-4 sm:gap-5 md:border-l border-white/10">
           <div>
             <label className={`block text-xs sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-2 text-center md:text-left transition-colors ${hasImage ? "text-white" : "text-gray-500"}`}>
               {t("input.productName")}
@@ -202,7 +201,7 @@ export function ProductInputForm({
               value={productInfo}
               onChange={(e) => onProductInfoChange(e.target.value)}
               placeholder={t("input.productInfoPlaceholder")}
-              className={`input-field h-20 sm:h-24 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
+              className={`input-field h-24 sm:h-28 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
             />
           </div>
           <div>
@@ -225,16 +224,16 @@ export function ProductInputForm({
               value={refCopy}
               onChange={(e) => onRefCopyChange(e.target.value)}
               placeholder={t("input.refCopyPlaceholder")}
-              className={`input-field h-20 sm:h-24 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
+              className={`input-field h-24 sm:h-28 resize-none text-xs sm:text-sm leading-relaxed ${hasImage ? "!border-white/20 hover:!border-white/30 focus:!border-white/40" : ""}`}
             />
           </div>
 
           {showAnalyzeButton && (
             <button
               onClick={onAnalyze}
-              className={`btn-primary mt-2 sm:mt-auto w-full py-3 sm:py-4 font-bold text-xs sm:text-sm tracking-widest rounded-lg sm:rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
+              className={`btn-primary mt-auto w-full py-3.5 sm:py-4 font-bold text-xs sm:text-sm tracking-widest rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
                 hasImage
-                  ? "bg-gradient-to-r from-white to-gray-100 text-black hover:from-gray-100 hover:to-white hover:scale-[1.02]"
+                  ? "bg-blue-500 text-white hover:bg-blue-400 hover:scale-[1.02] shadow-lg shadow-blue-500/20"
                   : "bg-gray-700 text-gray-400 cursor-not-allowed"
               }`}
               disabled={!hasImage}

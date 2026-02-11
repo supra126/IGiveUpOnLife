@@ -26,7 +26,7 @@ export const RATIO_REQUIREMENTS: Record<ImageRatio, string> = {
   "4:5": "Vertical 4:5 IG optimized, product centered",
   "16:9": "Horizontal 16:9 banner, product centered",
   "1:1-commercial":
-    "Square 1:1, clean solid background (#f6f6f6 or white), studio lighting, sharp focus, commercial photography, product centered",
+    "Square 1:1, CLEAN SOLID WHITE OR LIGHT GRAY BACKGROUND ONLY (#f6f6f6 or #ffffff), NO props, NO decorations, NO colored backgrounds, NO gradients, professional studio lighting, sharp focus, commercial e-commerce product photography, product centered",
 };
 
 /**
@@ -77,7 +77,7 @@ export function getVisualPromptSystemPrompt(
 1. **產品保護（最重要）**：${PRODUCT_PROTECTION_PROMPT}
 2. **只調整背景和氛圍**：根據標題、文案和構圖摘要調整「背景、光線、道具、氛圍」
 3. 必須包含尺寸規範：${ratioRequirement}
-4. ${visualSummaryZh ? "**構圖摘要優先級最高，必須完全遵循**" : ""}
+4. ${visualSummaryZh ? "**構圖摘要優先級最高，必須完全遵循**" : ""}${ratio === "1:1-commercial" ? "\n5. **⚠️ 商業攝影硬性規則**：背景只能是純白(#ffffff)或淺灰(#f6f6f6)，禁止任何彩色/漸層/裝飾/道具/植物/圖案，只允許調整燈光角度和產品擺放" : ""}
 
 **Prompt 寫作指南：**
 - 開頭：${PRODUCT_PROTECTION_PROMPT}

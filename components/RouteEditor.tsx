@@ -26,90 +26,51 @@ export function RouteEditor({
 
   return (
     <div className="mb-8 sm:mb-10 animate-fade-in-up">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 border-b border-white/5 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-md border border-white/20">
               {t("stepIndicator.step01")}
             </span>
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-white">{t("phase1.title")}</h3>
+          <h3 className="text-2xl sm:text-3xl font-bold text-gradient-hero">{t("phase1.title")}</h3>
         </div>
         <span className="text-xs text-gray-500 mt-2 sm:mt-0">{t("phase1.selectHint")}</span>
       </div>
 
-      {/* Zone A — Summary Selection Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+      {/* Zone A — Horizontal Tab Selector */}
+      <div className="flex border-b border-white/10 mb-8 overflow-x-auto">
         {routes.map((route, idx) => {
           const isSelected = activeRouteIndex === idx;
 
           return (
-            <div
+            <button
               key={idx}
               onClick={() => onSelectRoute(idx)}
-              className={`card-hover glass-panel p-4 sm:p-5 rounded-xl sm:rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden ${
-                isSelected ? "opacity-100" : "opacity-50 hover:opacity-75"
+              className={`flex-1 min-w-0 px-4 sm:px-6 py-4 sm:py-5 text-left transition-all duration-300 border-b-2 -mb-px relative ${
+                isSelected
+                  ? "text-white border-blue-400"
+                  : "text-gray-500 border-transparent hover:text-gray-300 hover:border-white/20"
               }`}
-              style={{
-                border: isSelected
-                  ? "1px solid rgba(255, 255, 255, 0.3)"
-                  : "1px solid rgba(255, 255, 255, 0.05)",
-              }}
             >
-              {/* Left accent bar when selected */}
-              <div
-                className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl transition-all duration-500 ${
-                  isSelected ? "bg-white/60" : "bg-transparent"
-                }`}
-              />
-
-              {/* Header */}
-              <div className="flex items-center justify-between mb-2">
-                {isSelected ? (
-                  <span className="text-xs font-mono text-white px-2 py-1 rounded-md bg-white/10 border border-white/40">
-                    {t("phase1.routeLabel")} {String.fromCharCode(65 + idx)}
-                  </span>
-                ) : (
-                  <span className="text-xs font-mono text-gray-500 px-2 py-1">
-                    {t("phase1.routeLabel")} {String.fromCharCode(65 + idx)}
-                  </span>
-                )}
-                <div
-                  className={`
-                    w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all duration-300
-                    ${
-                      isSelected
-                        ? "bg-white/10 text-white shadow-lg scale-100"
-                        : "bg-white/5 border border-white/10 scale-90 opacity-0 group-hover:opacity-50"
-                    }
-                  `}
-                >
-                  <svg
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+              <div className="flex items-center gap-3">
+                <span className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  isSelected
+                    ? "bg-blue-500 text-white"
+                    : "bg-white/5 text-gray-500 border border-white/10"
+                }`}>
+                  {String.fromCharCode(65 + idx)}
+                </span>
+                <div className="min-w-0">
+                  <h4 className={`text-sm sm:text-base font-bold truncate transition-colors ${isSelected ? "text-white" : "text-gray-400"}`}>
+                    {route.route_name}
+                  </h4>
+                  <p className={`text-xs truncate transition-colors ${isSelected ? "text-gray-400" : "text-gray-600"}`}>
+                    {route.headline}
+                  </p>
                 </div>
               </div>
-
-              {/* Route Name (read-only title) */}
-              <h4 className={`text-base sm:text-lg font-bold mb-1 ${isSelected ? "text-white" : "text-gray-300"}`}>
-                {route.route_name}
-              </h4>
-
-              {/* Headline (truncated 2 lines, read-only) */}
-              <p className={`text-sm line-clamp-2 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
-                {route.headline}
-              </p>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -118,34 +79,25 @@ export function RouteEditor({
       {activeRoute && (
         <div
           key={activeRouteIndex}
-          className="glass-panel rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 animate-scale-in"
+          className="animate-scale-in"
         >
-          <div className="flex items-center gap-3 mb-5">
-            <span className="text-xs font-mono text-white px-2 py-1 rounded-md bg-white/10 border border-white/40">
-              {t("phase1.routeLabel")} {String.fromCharCode(65 + activeRouteIndex)}
-            </span>
-            <span className="text-xs text-gray-400">
-              {t("phase1.editingRoute")}
-            </span>
+          {/* Route name as a big editable title */}
+          <div className="mb-8">
+            <input
+              type="text"
+              value={activeRoute.route_name}
+              onChange={(e) =>
+                onUpdateRoute(activeRouteIndex, { ...activeRoute, route_name: e.target.value })
+              }
+              className="w-full bg-transparent text-2xl sm:text-3xl font-bold text-white border-none outline-none placeholder-gray-600 focus:ring-0"
+              placeholder={t("phase1.routeName")}
+            />
+            <div className="h-px bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent mt-2" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-            {/* Left Column */}
-            <div className="space-y-5">
-              <div>
-                <label className="field-label">
-                  {t("phase1.routeName")}
-                </label>
-                <input
-                  type="text"
-                  value={activeRoute.route_name}
-                  onChange={(e) =>
-                    onUpdateRoute(activeRouteIndex, { ...activeRoute, route_name: e.target.value })
-                  }
-                  className="input-field text-base sm:text-lg font-bold text-white"
-                />
-              </div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Left Column — Content */}
+            <div className="space-y-6">
               <div>
                 <label className="field-label">
                   {t("phase1.headline")}
@@ -155,7 +107,7 @@ export function RouteEditor({
                   onChange={(e) =>
                     onUpdateRoute(activeRouteIndex, { ...activeRoute, headline: e.target.value })
                   }
-                  className="input-field text-sm sm:text-base font-medium text-white resize-none h-20 sm:h-24"
+                  className="input-field text-sm sm:text-base font-medium text-white resize-none h-24 sm:h-28"
                 />
               </div>
 
@@ -168,13 +120,25 @@ export function RouteEditor({
                   onChange={(e) =>
                     onUpdateRoute(activeRouteIndex, { ...activeRoute, subhead: e.target.value })
                   }
-                  className="input-field text-sm text-gray-300 resize-none h-20 sm:h-24"
+                  className="input-field text-sm text-gray-300 resize-none h-24 sm:h-28"
+                />
+              </div>
+
+              <div>
+                <label className="field-label text-white">
+                  {t("phase1.supplement")}
+                </label>
+                <textarea
+                  value={routeSupplements[activeRouteIndex]}
+                  onChange={(e) => onUpdateSupplement(activeRouteIndex, e.target.value)}
+                  placeholder={t("phase1.supplementPlaceholder")}
+                  className="input-field text-sm text-gray-300 placeholder-gray-600 resize-none h-20 sm:h-24 !bg-white/5 !border-white/15"
                 />
               </div>
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-5">
+            {/* Right Column — Strategy & Style */}
+            <div className="space-y-6">
               <div>
                 <label className="field-label">
                   {t("phase1.styleDescription")}
@@ -184,7 +148,7 @@ export function RouteEditor({
                   onChange={(e) =>
                     onUpdateRoute(activeRouteIndex, { ...activeRoute, style_brief: e.target.value })
                   }
-                  className="input-field text-sm text-gray-300 resize-none h-24 sm:h-28"
+                  className="input-field text-sm text-gray-300 resize-none h-28 sm:h-32"
                 />
               </div>
 
@@ -197,19 +161,7 @@ export function RouteEditor({
                   onChange={(e) =>
                     onUpdateRoute(activeRouteIndex, { ...activeRoute, target_audience: e.target.value })
                   }
-                  className="input-field text-sm text-gray-300 resize-none h-20 sm:h-24"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-semibold tracking-wide mb-1 block text-white">
-                  {t("phase1.supplement")}
-                </label>
-                <textarea
-                  value={routeSupplements[activeRouteIndex]}
-                  onChange={(e) => onUpdateSupplement(activeRouteIndex, e.target.value)}
-                  placeholder={t("phase1.supplementPlaceholder")}
-                  className="input-field text-xs text-gray-300 placeholder-gray-600 resize-none h-16 sm:h-20 !bg-white/5 !border-white/15"
+                  className="input-field text-sm text-gray-300 resize-none h-24 sm:h-28"
                 />
               </div>
             </div>

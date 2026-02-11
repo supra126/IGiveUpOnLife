@@ -136,6 +136,14 @@ const CONTENT_PLANNER_SYSTEM_PROMPT_ZH = `你是一位資深的社群內容規�
 - **第 2 組**：情感導向 - 強調生活情境、感受、品牌故事
 - **第 3 組**：數據/背書導向 - 強調成效、評價、專業認證
 
+### ⚠️ 商業攝影 (1:1-commercial) 特殊規則
+當尺寸包含 1:1-commercial 時，視覺 Prompt 必須遵守以下硬性規則（不可違反）：
+- **背景必須是純色**：僅允許純白 (#ffffff) 或淺灰 (#f6f6f6) 背景，絕對禁止任何彩色、漸層、圖案、場景背景
+- **禁止任何裝飾元素**：不可加入植物、花朵、泡泡、圖表、圖標、紋理或任何道具
+- **3 組差異僅限於文案角度**：標題和文案可以有功能/情感/數據的差異，但 visual_prompt_en 的背景描述必須一致保持「純白/淺灰背景 + 棚拍燈光」
+- **唯一允許的變化**：燈光角度（正面光、側光、頂光）、陰影方向、產品擺放角度
+- **每組 visual_prompt_en 必須包含**："CLEAN SOLID WHITE OR LIGHT GRAY BACKGROUND ONLY, NO props, NO decorations, NO colored backgrounds, professional studio lighting"
+
 ## 視覺 Prompt 規範
 
 **開頭固定句（產品保護指令）**：
@@ -146,7 +154,7 @@ const CONTENT_PLANNER_SYSTEM_PROMPT_ZH = `你是一位資深的社群內容規�
 - 9:16："Vertical 9:16 mobile layout, product centered"
 - 4:5："Vertical 4:5 IG optimized, product centered"
 - 16:9："Horizontal 16:9 banner, product centered"
-- 1:1-commercial："Square 1:1, clean solid background (#f6f6f6 or white), studio lighting, sharp focus, commercial photography"
+- 1:1-commercial："Square 1:1, CLEAN SOLID WHITE OR LIGHT GRAY BACKGROUND ONLY (#f6f6f6 or #ffffff), NO props, NO decorations, NO colored backgrounds, NO gradients, professional studio lighting, sharp focus, commercial e-commerce product photography, product centered"
 
 **負面提示詞（結尾加入）**：
 "AVOID: distorted product, modified packaging, wrong text/labels, simplified Chinese, blurry details, unnatural proportions, extra watermarks, low quality."
@@ -210,6 +218,14 @@ Each set includes (ALL CONTENT IN ENGLISH):
 - **Set 2**: Emotion-oriented - Emphasize lifestyle scenarios, feelings, brand story
 - **Set 3**: Data/Endorsement-oriented - Emphasize effectiveness, reviews, professional certification
 
+### ⚠️ MANDATORY RULES FOR 1:1-commercial (Commercial Photography)
+When sizes include 1:1-commercial, the visual_prompt_en MUST strictly follow these non-negotiable rules:
+- **Background MUST be solid color ONLY**: Only pure white (#ffffff) or light gray (#f6f6f6). Absolutely NO colored backgrounds, NO gradients, NO patterns, NO scenes
+- **NO decorative elements**: No plants, flowers, bubbles, charts, icons, textures, or any props
+- **Differentiation is ONLY in copy/title**: Title and copy can vary (feature/emotion/data angles), but ALL 3 visual_prompt_en MUST describe the SAME style: "solid white/gray background + studio lighting"
+- **Only allowed variations**: Lighting angle (front, side, top), shadow direction, product placement angle
+- **Every visual_prompt_en MUST include**: "CLEAN SOLID WHITE OR LIGHT GRAY BACKGROUND ONLY, NO props, NO decorations, NO colored backgrounds, professional studio lighting"
+
 ## Visual Prompt Guidelines
 
 **Fixed Opening Sentence (Product Protection)**:
@@ -220,7 +236,7 @@ Each set includes (ALL CONTENT IN ENGLISH):
 - 9:16: "Vertical 9:16 mobile layout, product centered"
 - 4:5: "Vertical 4:5 IG optimized, product centered"
 - 16:9: "Horizontal 16:9 banner, product centered"
-- 1:1-commercial: "Square 1:1, clean solid background (#f6f6f6 or white), studio lighting, sharp focus, commercial photography"
+- 1:1-commercial: "Square 1:1, CLEAN SOLID WHITE OR LIGHT GRAY BACKGROUND ONLY (#f6f6f6 or #ffffff), NO props, NO decorations, NO colored backgrounds, NO gradients, professional studio lighting, sharp focus, commercial e-commerce product photography, product centered"
 
 **Negative Prompt (Add at end)**:
 "AVOID: distorted product, modified packaging, wrong text/labels, simplified Chinese, blurry details, unnatural proportions, extra watermarks, low quality."

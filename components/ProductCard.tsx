@@ -12,24 +12,68 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ analysis, imageSrc }) => {
   const { t } = useLocale();
 
-  return (
-    <div className="glass-panel rounded-xl sm:rounded-2xl p-5 sm:p-6 mb-8 flex flex-col md:flex-row gap-6 animate-fade-in-up">
-      <div className="w-full md:w-1/3 shrink-0">
-        <div className="aspect-square rounded-xl overflow-hidden bg-black/20 relative group shadow-lg shadow-black/30">
-            <img src={imageSrc} alt={analysis.name} className="w-full h-full object-contain" />
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <span className="text-xs text-white/80">{t("productCard.originalImage")}</span>
-            </div>
-        </div>
-      </div>
-      <div className="flex flex-col justify-center w-full">
-        <div className="text-xs text-[var(--accent-primary)] font-semibold tracking-wide mb-2">{t("productCard.analysisReport")}</div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-white serif mb-2">{analysis.name}</h2>
-        <p className="text-gray-400 text-sm mb-5 italic leading-relaxed">{analysis.visual_description}</p>
+  // Split key_features into individual pills
+  const featurePills = analysis.key_features
+    .split(/[,，、\n]+/)
+    .map((f) => f.trim())
+    .filter((f) => f.length > 0);
 
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-white/80 tracking-wide border-b border-[var(--accent-primary)]/20 pb-1 inline-block">{t("productCard.keyFeatures")}</h3>
-          <p className="text-gray-300 leading-relaxed text-sm">{analysis.key_features}</p>
+  return (
+    <div className="mb-10 sm:mb-14 animate-fade-in-up">
+      {/* Full-width hero banner layout */}
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl">
+        {/* Background: blurred product image */}
+        <div className="absolute inset-0">
+          <img
+            src={imageSrc}
+            alt=""
+            className="w-full h-full object-cover scale-110 blur-2xl opacity-20"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+        </div>
+
+        {/* Content */}
+        <div className="relative flex flex-col md:flex-row items-center gap-8 lg:gap-12 p-6 sm:p-8 lg:p-12">
+          {/* Product Image — prominent */}
+          <div className="w-full md:w-2/5 shrink-0">
+            <div className="aspect-square rounded-2xl overflow-hidden bg-black/30 shadow-2xl shadow-black/50 border border-white/10 max-w-[320px] mx-auto">
+              <img src={imageSrc} alt={analysis.name} className="w-full h-full object-contain p-4" />
+            </div>
+          </div>
+
+          {/* Info — big typography */}
+          <div className="w-full text-center md:text-left">
+            <div className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full mb-4 border border-blue-500/20">
+              {t("productCard.analysisReport")}
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight tracking-tight">
+              {analysis.name}
+            </h2>
+
+            <p className="text-gray-400 text-sm sm:text-base leading-relaxed mb-8 max-w-lg">
+              {analysis.visual_description}
+            </p>
+
+            {/* Key Features as pills */}
+            <div>
+              <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] mb-3">
+                {t("productCard.keyFeatures")}
+              </h3>
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                {featurePills.length > 1 ? (
+                  featurePills.map((feature, idx) => (
+                    <span key={idx} className="pill-tag">
+                      {feature}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-gray-300 leading-relaxed text-sm">{analysis.key_features}</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -174,26 +174,18 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
       {/* Upload Settings Section - STEP 04 */}
-      <div className="mb-8 p-6 glass-panel rounded-xl">
+      <div className="mb-12 sm:mb-16">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-md border border-white/20">
             {t("stepIndicator.step04")}
           </span>
         </div>
-        <h4 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
+        <h4 className="text-xl sm:text-2xl font-bold text-white mb-2">
           {t("contentSuite.settingsTitle")}
         </h4>
-        <p className="text-sm text-gray-400 mb-6">{t("contentSuite.settingsDescription")}</p>
+        <p className="text-sm text-gray-500 mb-8">{t("contentSuite.settingsDescription")}</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           <ImageUploader
             file={productImageFile}
             previewUrl={productImage.previewUrl}
@@ -228,42 +220,37 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
         </div>
       </div>
 
-      {/* Header & Mode Switch */}
-      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white serif mb-1">{plan.plan_name}</h2>
-          <p className="text-gray-400 text-sm">
-            {plan.selected_sizes
-              .map((r) => {
-                const count = contentSets.filter((s) => s.ratio === r).length;
-                const label = contentSets.find((s) => s.ratio === r)?.size_label || r;
-                return `${label} ${count}${t("contentSuite.sets")}`;
-              })
-              .join(" | ")}
-          </p>
-        </div>
+      {/* Plan Header + Mode Switch */}
+      <div className="mb-10">
+        <h2 className="text-3xl sm:text-4xl font-bold text-gradient-hero serif mb-2">{plan.plan_name}</h2>
+        <p className="text-gray-500 text-sm mb-8">
+          {plan.selected_sizes
+            .map((r) => {
+              const count = contentSets.filter((s) => s.ratio === r).length;
+              const label = contentSets.find((s) => s.ratio === r)?.size_label || r;
+              return `${label} ${count}${t("contentSuite.sets")}`;
+            })
+            .join(" · ")}
+        </p>
 
-        {/* Pill-style mode toggle */}
-        <div className="relative flex items-center bg-white/5 rounded-full p-1 border border-white/10">
-          <div
-            className="absolute top-1 bottom-1 bg-white/15 rounded-full transition-all duration-300 ease-out"
-            style={{
-              left: mode === "review" ? "4px" : "50%",
-              width: "calc(50% - 4px)",
-            }}
-          />
+        {/* Full-width tab bar mode switch */}
+        <div className="flex border-b border-white/10">
           <button
             onClick={() => setMode("review")}
-            className={`relative z-10 px-5 py-2 rounded-full text-sm font-bold transition-colors duration-200 ${
-              mode === "review" ? "text-white" : "text-gray-400 hover:text-gray-300"
+            className={`flex-1 sm:flex-none px-6 sm:px-8 py-3.5 text-sm font-bold transition-all duration-200 border-b-2 -mb-px ${
+              mode === "review"
+                ? "text-white border-blue-400"
+                : "text-gray-500 border-transparent hover:text-gray-300 hover:border-white/20"
             }`}
           >
             {t("contentSuite.reviewMode")}
           </button>
           <button
             onClick={() => setMode("production")}
-            className={`relative z-10 px-5 py-2 rounded-full text-sm font-bold transition-colors duration-200 ${
-              mode === "production" ? "text-white" : "text-gray-400 hover:text-gray-300"
+            className={`flex-1 sm:flex-none px-6 sm:px-8 py-3.5 text-sm font-bold transition-all duration-200 border-b-2 -mb-px ${
+              mode === "production"
+                ? "text-white border-blue-400"
+                : "text-gray-500 border-transparent hover:text-gray-300 hover:border-white/20"
             }`}
           >
             {t("contentSuite.productionMode")}
@@ -303,29 +290,36 @@ export const ContentSuite: React.FC<ContentSuiteProps> = ({
             const activeSet = group.sets[activeIdx];
 
             return (
-              <div key={group.ratio}>
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <span className={`w-2 h-6 rounded-full ${getRatioBackgroundColor(group.ratio)}`} />
-                  {group.label} ({group.ratio}) - {group.sets.length} {t("contentSuite.sets")}
-                </h3>
+              <div key={group.ratio} className="pb-10 last:pb-0">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className={`w-1.5 h-8 rounded-full ${getRatioBackgroundColor(group.ratio)}`} />
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white">
+                        {group.label}
+                      </h3>
+                      <p className="text-xs text-gray-500">{group.ratio} · {group.sets.length} {t("contentSuite.sets")}</p>
+                    </div>
+                  </div>
 
-                {/* Tab pill strip */}
-                <div className="flex items-center gap-2 mb-4">
-                  {group.sets.map((set, setIdx) => (
-                    <button
-                      key={set.id}
-                      onClick={() =>
-                        setActiveSetIndexByRatio((prev) => ({ ...prev, [group.ratio]: setIdx }))
-                      }
-                      className={`px-4 py-1.5 text-sm font-bold rounded-full transition-all duration-200 ${
-                        setIdx === activeIdx
-                          ? "bg-white/15 text-white border border-white/30"
-                          : "bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent"
-                      }`}
-                    >
-                      {t("contentSuite.plan")} {set.set_number}
-                    </button>
-                  ))}
+                  {/* Tab pills — inline with header */}
+                  <div className="flex items-center gap-2">
+                    {group.sets.map((set, setIdx) => (
+                      <button
+                        key={set.id}
+                        onClick={() =>
+                          setActiveSetIndexByRatio((prev) => ({ ...prev, [group.ratio]: setIdx }))
+                        }
+                        className={`w-9 h-9 rounded-full text-sm font-bold transition-all duration-200 ${
+                          setIdx === activeIdx
+                            ? "bg-blue-500 text-white"
+                            : "bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white border border-white/10"
+                        }`}
+                      >
+                        {set.set_number}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Single content card (full width) */}
