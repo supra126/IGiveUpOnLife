@@ -178,26 +178,26 @@ export const isValidUrl = (string: string): boolean => {
 
 /**
  * Get text model name from environment variable
- * Defaults to gemini-2.5-flash if not set
+ * Defaults to gemini-3.1-pro-preview if not set
  */
 export function getTextModel(): string {
   const model = process.env.GEMINI_TEXT_MODEL;
-  if (model === "gemini-2.5-pro" || model === "gemini-2.5-flash") {
+  if (model) {
     return model;
   }
-  return "gemini-2.5-flash"; // default
+  return "gemini-3.1-pro-preview"; // default
 }
 
 /**
  * Get image model name from environment variable
- * Defaults to gemini-3-pro-image-preview if not set
+ * Defaults to gemini-3.1-flash-image-preview if not set
  */
 export function getImageModel(): string {
   const model = process.env.GEMINI_IMAGE_MODEL;
   if (model) {
     return model;
   }
-  return "gemini-3-pro-image-preview"; // default
+  return "gemini-3.1-flash-image-preview"; // default
 }
 
 /**

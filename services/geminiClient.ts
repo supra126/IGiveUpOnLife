@@ -64,8 +64,8 @@ function getErrorMessage(key: keyof typeof errorMessages.en, locale: Locale = "e
 
 // --- Configuration ---
 
-const TEXT_MODEL = "gemini-2.5-flash";
-const IMAGE_MODEL = "gemini-3-pro-image-preview";
+const TEXT_MODEL = "gemini-3.1-pro-preview";
+const IMAGE_MODEL = "gemini-3.1-flash-image-preview";
 const THINKING_BUDGET = 2048;
 
 // Resolution types and helpers
@@ -630,7 +630,7 @@ export async function regenerateVisualPromptClient(
 
   const systemPrompt = `你是一位專業的視覺設計 Prompt 工程師。
 
-你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3 Pro Image 生成圖片。
+你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3.1 Flash Image (Nano Banana 2) 生成圖片。
 
 **輸入資訊：**
 - 標題 (Title): ${input.titleZh}

@@ -66,7 +66,7 @@ export function getVisualPromptSystemPrompt(
 
   return `你是一位專業的視覺設計 Prompt 工程師。
 
-你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3 Pro Image 生成圖片。
+你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3.1 Flash Image (Nano Banana 2) 生成圖片。
 
 **輸入資訊：**
 - 標題 (Title): ${titleZh}
