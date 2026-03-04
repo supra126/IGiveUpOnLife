@@ -108,8 +108,8 @@ _Still Grinding_
 | --------- | -------------------------------------------------------------- |
 | Framework | Next.js 16 + React 19 + TypeScript                             |
 | AI Models | Google Gemini                                                  |
-|           | `gemini-2.5-flash` (text analysis & content planning)          |
-|           | `gemini-3-pro-image-preview` (image generation)                |
+|           | `gemini-3.1-pro-preview` (text analysis & content planning)    |
+|           | `gemini-3.1-flash-image-preview` (image generation)            |
 | Styling   | Tailwind CSS                                                   |
 | Fonts     | Inter + Playfair Display (UI), Noto Sans TC (generated images) |
 | Auth      | Cloudflare Zero Trust (optional)                               |
@@ -162,8 +162,8 @@ Copy `.env.example` to `.env.local`:
 GEMINI_API_KEY=your-api-key
 
 # Gemini Model Settings (optional)
-GEMINI_TEXT_MODEL=gemini-2.5-flash
-GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
+GEMINI_TEXT_MODEL=gemini-3.1-pro-preview
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview
 GEMINI_THINKING_BUDGET=2048
 
 # Rate Limiting (only when using server API key)
@@ -386,8 +386,8 @@ _不努力步驟二_
 | ------- | ---------------------------------------------------------- |
 | 框架    | Next.js 16 + React 19 + TypeScript                         |
 | AI 模型 | Google Gemini                                              |
-|         | `gemini-2.5-flash`（文字分析與內容規劃）                   |
-|         | `gemini-3-pro-image-preview`（專業圖片生成）               |
+|         | `gemini-3.1-pro-preview`（文字分析與內容規劃）             |
+|         | `gemini-3.1-flash-image-preview`（專業圖片生成）           |
 | 樣式    | Tailwind CSS                                               |
 | 字體    | Inter + Playfair Display（介面）、Noto Sans TC（生成圖片） |
 | 認證    | Cloudflare Zero Trust（選填）                              |
@@ -440,8 +440,8 @@ pnpm start:static  # 本地測試
 GEMINI_API_KEY=your-api-key
 
 # Gemini 模型設定（選填）
-GEMINI_TEXT_MODEL=gemini-2.5-flash
-GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
+GEMINI_TEXT_MODEL=gemini-3.1-pro-preview
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview
 GEMINI_THINKING_BUDGET=2048
 
 # 速率限制（僅在使用伺服器 API 金鑰時生效）
