@@ -124,11 +124,11 @@ export async function generateMarketingImageAction(
 // --- Regenerate Visual Prompt ---
 
 export interface RegeneratePromptInput {
-  titleZh: string;
-  copyZh: string;
+  title: string;
+  copy: string;
   ratio: ImageRatio;
   sizeLabel: string;
-  visualSummaryZh?: string;
+  visualSummary?: string;
   userApiKey?: string;
   locale?: Locale;
 }
@@ -150,11 +150,11 @@ export async function regenerateVisualPromptAction(
   const ai = createGeminiClient(validatedInput.userApiKey, locale);
 
   const systemPrompt = getVisualPromptSystemPrompt(
-    validatedInput.titleZh,
-    validatedInput.copyZh,
+    validatedInput.title,
+    validatedInput.copy,
     validatedInput.ratio,
     validatedInput.sizeLabel,
-    validatedInput.visualSummaryZh
+    validatedInput.visualSummary
   );
 
   try {

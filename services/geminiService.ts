@@ -230,12 +230,12 @@ export const generateMarketingImage = async (
  * Regenerate visual prompt
  */
 export const regenerateVisualPrompt = async (
-  titleZh: string,
-  copyZh: string,
+  title: string,
+  copy: string,
   ratio: ImageRatio,
   sizeLabel: string,
   apiKey?: string,
-  visualSummaryZh?: string,
+  visualSummary?: string,
   locale?: Locale
 ): Promise<string> => {
   await initModule();
@@ -245,21 +245,21 @@ export const regenerateVisualPrompt = async (
       throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
     }
     return clientFunctions!.regenerateVisualPromptClient({
-      titleZh,
-      copyZh,
+      title,
+      copy,
       ratio,
       sizeLabel,
-      visualSummaryZh,
+      visualSummary,
       apiKey,
     });
   }
 
   return serverActions!.regenerateVisualPromptAction({
-    titleZh,
-    copyZh,
+    title,
+    copy,
     ratio,
     sizeLabel,
-    visualSummaryZh,
+    visualSummary,
     userApiKey: apiKey || undefined,
     locale,
   });

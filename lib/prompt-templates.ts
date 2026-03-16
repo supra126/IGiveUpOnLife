@@ -53,40 +53,40 @@ export const FONT_WEIGHT_MAP: Record<string, string> = {
  * Generate visual prompt regeneration system prompt
  */
 export function getVisualPromptSystemPrompt(
-  titleZh: string,
-  copyZh: string,
+  title: string,
+  copy: string,
   ratio: ImageRatio,
   sizeLabel: string,
-  visualSummaryZh?: string
+  visualSummary?: string
 ): string {
   const ratioRequirement = RATIO_REQUIREMENTS[ratio];
-  const visualSummarySection = visualSummaryZh
-    ? `\n- 構圖摘要 (Visual Summary): ${visualSummaryZh}\n\n**重要：請務必根據「構圖摘要」的描述來生成視覺提示詞，這是使用者指定的視覺方向。**`
+  const visualSummarySection = visualSummary
+    ? `\n- Visual Summary: ${visualSummary}\n\n**IMPORTANT: The visual summary above is the user's specified visual direction and must be followed.**`
     : "";
 
-  return `你是一位專業的視覺設計 Prompt 工程師。
+  return `You are a professional visual design prompt engineer.
 
-你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3.1 Flash Image (Nano Banana 2) 生成圖片。
+Your task is to generate a professional English visual prompt for Gemini image model, based on the provided title, copy, and visual summary.
 
-**輸入資訊：**
-- 標題 (Title): ${titleZh}
-- 文案 (Copy): ${copyZh}
-- 圖片尺寸: ${ratio} (${sizeLabel})${visualSummarySection}
+**Input:**
+- Title: ${title}
+- Copy: ${copy}
+- Image Size: ${ratio} (${sizeLabel})${visualSummarySection}
 
-**核心要求：**
-1. **產品保護（最重要）**：${PRODUCT_PROTECTION_PROMPT}
-2. **只調整背景和氛圍**：根據標題、文案和構圖摘要調整「背景、光線、道具、氛圍」
-3. 必須包含尺寸規範：${ratioRequirement}
-4. ${visualSummaryZh ? "**構圖摘要優先級最高，必須完全遵循**" : ""}${ratio === "1:1-commercial" ? "\n5. **⚠️ 商業攝影硬性規則**：背景只能是純白(#ffffff)或淺灰(#f6f6f6)，禁止任何彩色/漸層/裝飾/道具/植物/圖案，只允許調整燈光角度和產品擺放" : ""}
+**Core Requirements:**
+1. **Product Protection (top priority)**: ${PRODUCT_PROTECTION_PROMPT}
+2. **Only adjust background and atmosphere**: Adjust background, lighting, props, and mood based on the title, copy, and visual summary.
+3. Must include size specification: ${ratioRequirement}
+4. ${visualSummary ? "**Visual summary has the highest priority and must be fully followed.**" : ""}${ratio === "1:1-commercial" ? "\n5. **Commercial photography strict rules**: Background must be pure white (#ffffff) or light gray (#f6f6f6) ONLY. No colored/gradient/decorative/props/plants/patterns allowed. Only lighting angle and product placement may be adjusted." : ""}
 
-**Prompt 寫作指南：**
-- 開頭：${PRODUCT_PROTECTION_PROMPT}
-- 尺寸：${ratioRequirement}
-- 結尾：${NEGATIVE_PROMPT}
-- Prompt 總長度控制在 100-150 英文字內
-- 只輸出英文 Prompt 文字，不要包含任何其他說明
+**Prompt Writing Guidelines:**
+- Start with: ${PRODUCT_PROTECTION_PROMPT}
+- Size: ${ratioRequirement}
+- End with: ${NEGATIVE_PROMPT}
+- Keep total prompt length within 100-150 English words
+- Output English prompt text only, no other explanation
 
-**範例格式：**
+**Example Format:**
 "${PRODUCT_PROTECTION_PROMPT} ${ratioRequirement}, [background], [lighting], [mood]. ${NEGATIVE_PROMPT}"`;
 }
 
