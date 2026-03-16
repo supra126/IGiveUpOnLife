@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+@layer base {
 :root {
   /* 主色調 - 冷調電光藍 */
   --accent-primary: #3B82F6;
@@ -218,6 +219,9 @@ h1, h2, h3, .serif {
   transform: translateY(0);
 }
 
+} /* end @layer components */
+
+@layer utilities {
 /* ===== ANIMATIONS ===== */
 
 /* Glow Pulse Animation */
@@ -407,8 +411,9 @@ h1, h2, h3, .serif {
   background: rgba(59, 130, 246, 0.35);
   color: white;
 }
+} /* end @layer base */
 
-/* Dynamic Background: Cool Blue */
+@layer components {
 .bg-dynamic {
   position: fixed;
   top: 0;
@@ -498,3 +503,4 @@ h1, h2, h3, .serif {
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+} /* end @layer utilities */
