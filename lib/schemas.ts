@@ -67,11 +67,11 @@ export const GenerateImageInputSchema = z.object({
 
 // Regenerate Prompt Input Schema
 export const RegeneratePromptInputSchema = z.object({
-  titleZh: z.string().min(1, "Title is required"),
-  copyZh: z.string().min(1, "Copy is required"),
+  title: z.string().min(1, "Title is required"),
+  copy: z.string().min(1, "Copy is required"),
   ratio: ImageRatioSchema,
   sizeLabel: z.string().min(1, "Size label is required"),
-  visualSummaryZh: z.string().optional(),
+  visualSummary: z.string().optional(),
   userApiKey: z.string().optional(),
   locale: LocaleSchema,
 });

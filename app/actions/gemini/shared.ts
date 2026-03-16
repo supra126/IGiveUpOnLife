@@ -190,14 +190,14 @@ export function getTextModel(): string {
 
 /**
  * Get image model name from environment variable
- * Defaults to gemini-3.1-flash-image-preview if not set
+ * Defaults to gemini-3-pro-image-preview if not set
  */
 export function getImageModel(): string {
   const model = process.env.GEMINI_IMAGE_MODEL;
   if (model) {
     return model;
   }
-  return "gemini-3.1-flash-image-preview"; // default
+  return "gemini-3-pro-image-preview"; // default
 }
 
 /**

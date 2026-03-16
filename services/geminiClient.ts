@@ -64,8 +64,8 @@ function getErrorMessage(key: keyof typeof errorMessages.en, locale: Locale = "e
 
 // --- Configuration ---
 
-const TEXT_MODEL = "gemini-3.1-pro-preview";
-const IMAGE_MODEL = "gemini-3.1-flash-image-preview";
+const TEXT_MODEL = process.env.NEXT_PUBLIC_GEMINI_TEXT_MODEL || "gemini-3.1-pro-preview";
+const IMAGE_MODEL = process.env.NEXT_PUBLIC_GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
 const THINKING_BUDGET = 2048;
 
 // Resolution types and helpers
@@ -176,11 +176,12 @@ const isValidUrl = (string: string): boolean => {
 
 /**
  * Retry wrapper for API calls with exponential backoff
+ * Note: Gemini Image API free tier has 2 RPM limit, so we use 30s base delay
  */
 async function withRetry<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelayMs: number = 1000
+  baseDelayMs: number = 30000
 ): Promise<T> {
   let lastError: Error | undefined;
 
@@ -595,11 +596,11 @@ export async function generateMarketingImageClient(
 }
 
 export interface RegeneratePromptInput {
-  titleZh: string;
-  copyZh: string;
+  title: string;
+  copy: string;
   ratio: ImageRatio;
   sizeLabel: string;
-  visualSummaryZh?: string;
+  visualSummary?: string;
   apiKey: string;
   locale?: Locale;
 }
@@ -624,33 +625,33 @@ export async function regenerateVisualPromptClient(
       "Professional commercial photography, square composition, 1:1 aspect ratio, CLEAN SOLID COLOR BACKGROUND (light gray #f6f6f6 or pure white #ffffff), NO props NO decorations NO distracting elements, studio lighting setup with soft diffused light, high-end DSLR camera quality (Canon EOS R5 or Sony A7R IV style), product as the ABSOLUTE focal point centered in frame, sharp focus on product details and texture, minimal harsh shadows, commercial e-commerce product photography aesthetic, high resolution, professional color grading, simple minimalist composition",
   };
 
-  const visualSummarySection = input.visualSummaryZh
-    ? `\n- 構圖摘要 (Visual Summary): ${input.visualSummaryZh}\n\n**重要：請務必根據「構圖摘要」的描述來生成視覺提示詞，這是使用者指定的視覺方向。**`
+  const visualSummarySection = input.visualSummary
+    ? `\n- Visual Summary: ${input.visualSummary}\n\n**IMPORTANT: The visual summary above is the user's specified visual direction and must be followed.**`
     : "";
 
-  const systemPrompt = `你是一位專業的視覺設計 Prompt 工程師。
+  const systemPrompt = `You are a professional visual design prompt engineer.
 
-你的任務是根據提供的「中文標題」、「中文文案」和「構圖摘要」，生成一個專業的英文視覺提示詞 (Visual Prompt)，用於 Gemini 3.1 Flash Image (Nano Banana 2) 生成圖片。
+Your task is to generate a professional English visual prompt for Gemini image model, based on the provided title, copy, and visual summary.
 
-**輸入資訊：**
-- 標題 (Title): ${input.titleZh}
-- 文案 (Copy): ${input.copyZh}
-- 圖片尺寸: ${input.ratio} (${input.sizeLabel})${visualSummarySection}
+**Input:**
+- Title: ${input.title}
+- Copy: ${input.copy}
+- Image Size: ${input.ratio} (${input.sizeLabel})${visualSummarySection}
 
-**核心要求：**
-1. **必須保持產品原貌**：使用者會提供產品參考圖，生成的圖片必須「保留產品的完整外觀、包裝設計、顏色、形狀」，不可改變產品本身
-2. **只調整背景和氛圍**：根據標題、文案和構圖摘要調整「背景、光線、道具、氛圍」，但產品本身必須維持原樣
-3. 必須包含尺寸規範：${ratioRequirements[input.ratio]}
-4. ${input.visualSummaryZh ? "**最重要：構圖摘要中的指示優先級最高，必須完全遵循**" : ""}
+**Core Requirements:**
+1. **Product Protection (top priority)**: KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF
+2. **Only adjust background and atmosphere**: Adjust background, lighting, props, and mood based on the title, copy, and visual summary.
+3. Must include size specification: ${ratioRequirements[input.ratio]}
+4. ${input.visualSummary ? "**Visual summary has the highest priority and must be fully followed.**" : ""}
 
-**Prompt 寫作指南：**
-- 在 Prompt 開頭加上：KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF
-- 使用 "product placement in center" 確保產品位置正確
-- 描述背景、光線、氛圍時，明確說明「around the product」或「in the background」
-- 使用專業的攝影和設計術語（英文）
-- 只輸出英文 Prompt 文字，不要包含任何其他說明
+**Prompt Writing Guidelines:**
+- Start with: KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF
+- Use "product placement in center" to ensure correct product positioning
+- When describing background, lighting, atmosphere, use "around the product" or "in the background"
+- Use professional photography and design terminology in English
+- Output English prompt text only, no other explanation
 
-**範例格式：**
+**Example Format:**
 "KEEP THE PRODUCT EXACTLY AS SHOWN IN THE REFERENCE IMAGE, DO NOT MODIFY THE PRODUCT ITSELF. ${ratioRequirements[input.ratio]}, product placement in center, [background description], [lighting description around the product], [mood and atmosphere], [additional props or elements in the background]"`;
 
   try {
