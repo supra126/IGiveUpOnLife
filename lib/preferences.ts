@@ -37,7 +37,7 @@ const KEYS: Record<keyof Preferences, string> = {
 const DEFAULTS: Preferences = {
   apiKey: "",
   theme: "system",
-  concurrency: 2,
+  concurrency: 1,
   imageModel: DEFAULT_IMAGE_MODEL,
   textModel: DEFAULT_TEXT_MODEL,
   imageSize: "2K",
