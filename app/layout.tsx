@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans_TC } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/contexts/LocaleContext";
 import { SEO_CONFIG } from "@/lib/seo-config";
@@ -35,15 +35,34 @@ const jsonLd = {
   ],
 };
 
+// 介面字型：拉丁字用 IBM Plex Sans，中文用 Noto Sans TC，資料欄位用 Plex Mono
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-plex-sans",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-plex-mono",
+});
+
 const notoSansTC = Noto_Sans_TC({
   subsets: ["latin"],
-  weight: ["400", "700"], // Only load essential weights for faster LCP
+  weight: ["400", "500", "700"],
   display: "swap",
   variable: "--font-noto-sans-tc",
-  preload: true,
-  fallback: ["system-ui", "sans-serif"],
-  adjustFontFallback: true,
+  preload: false,
 });
+
+/**
+ * 在首次繪製前套用主題與語系，避免閃爍
+ * localStorage: theme = light | dark | system；locale = zh | en
+ */
+const bootScript = `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";var l=localStorage.getItem("locale")||((navigator.language||"").indexOf("zh")===0?"zh":"en");document.documentElement.lang=l==="zh"?"zh-TW":"en";}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -99,21 +118,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-TW" suppressHydrationWarning className={notoSansTC.variable}>
+    <html
+      lang="zh-TW"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${plexSans.variable} ${plexMono.variable} ${notoSansTC.variable}`}
+    >
       <head>
-        {/* Preconnect to Google Fonts for faster font loading */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={notoSansTC.className}>
-        <div className="bg-dynamic">
-          <div className="bg-grid"></div>
-          <div className="bg-glow"></div>
-        </div>
+      <body>
         <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>

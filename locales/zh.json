@@ -1,347 +1,247 @@
 {
   "common": {
     "appName": "不想努力了",
-    "loading": "載入中...",
-    "error": "錯誤",
-    "success": "成功",
     "cancel": "取消",
     "close": "關閉",
     "save": "儲存",
-    "reset": "重置",
-    "confirm": "確認",
-    "optional": "選填",
-    "required": "必填",
-    "unknownError": "未知錯誤",
-    "back": "上一步"
+    "optional": "選填"
   },
-  "header": {
-    "guide": "使用方式",
-    "apiSettings": "連線努力",
-    "apiSettingsConnected": "連線努力 (已連線)",
-    "apiSettingsFree": "API 設定 (免費)",
-    "apiSettingsCustom": "API 設定 (自訂)"
+  "welcome": {
+    "title": "今天也不想努力？",
+    "subtitle": "選一個開始，剩下的交給小GG。",
+    "similarDesc": "丟一張參考圖和你的產品圖，照低／中／高相似度生出新圖。",
+    "campaignDesc": "從產品分析、行銷策略到各平台素材，一路規劃到底。"
   },
-  "home": {
-    "heroTitle": "打造完整品牌視覺資產？",
-    "heroTitle2": "不用，我不想努力了。",
-    "heroDescription": "讓 小GG 幫你結合產品識別、品牌故事與競品策略，你只需要負責呼吸就好"
+  "layout": {
+    "setup": "設定",
+    "results": "成果"
   },
-  "input": {
-    "uploadOrTakePhoto": "上傳 / 拍照",
-    "dropToUpload": "放開以上傳圖片",
-    "supportedFormats": "支援 JPG, PNG",
-    "changeImage": "更換圖片",
-    "productName": "產品名稱",
-    "productNamePlaceholder": "例如：我大玫瑰洗面乳...",
-    "productInfo": "產品資訊（選填）",
-    "productInfoPlaceholder": "品牌故事、核心價值、產品特色...",
-    "productUrl": "產品網址（選填）",
-    "productUrlPlaceholder": "https://example.com/product",
-    "refCopy": "參考文案 / 競品參考（選填）",
-    "refCopyPlaceholder": "貼上同類型商品的熱銷文案，或競品官網內容。AI 將拆解其「說服邏輯」...",
-    "startButton": "啟動努力",
-    "clearImage": "清除圖片"
-  },
-  "analyzing": {
-    "title": "小GG已上線，先讓他努力一下",
-    "description": "（正在假裝很專業地分析你的產品）"
-  },
-  "phase1": {
-    "title": "讓我努力步驟一",
-    "selectHint": "選擇一條路線後點擊「繼續努力」",
-    "routeLabel": "努力方案",
-    "selected": "已選擇",
-    "select": "選擇",
-    "routeName": "路線名稱",
-    "headline": "主打標語",
-    "subhead": "副標題",
-    "styleDescription": "視覺風格",
-    "targetAudience": "目標受眾",
-    "supplement": "補充說明（選填）",
-    "supplementPlaceholder": "可以補充任何想法、特殊需求或調整方向...",
-    "editingRoute": "編輯詳細內容",
-    "continueButton": "繼續努力",
-    "retryButton": "再重新努力一次",
-    "processing": "哭勒..."
-  },
-  "phase2": {
-    "title": "努力步驟二：選擇圖片尺寸",
-    "description": "請選擇您需要的圖片尺寸（可多選），每個尺寸將生成 3 組不同的內容方案",
-    "selectAtLeastOne": "請至少選擇一個圖片尺寸",
-    "confirmButton": "讓我努力一下",
-    "planningTitle": "不努力步驟二",
-    "planningDescription": "小GG正在爆肝寫腳本中，正依照",
-    "planningDescription2": "產出建議，先等著看看他的努力"
-  },
-  "sizes": {
-    "1:1": {
-      "name": "FB 貼文",
-      "ratio": "1:1 方形圖",
-      "description": "適合：FB 貼文、IG 輪播、電商主圖"
+  "project": {
+    "untitled": "未命名專案",
+    "kind": {
+      "similar": "相似圖",
+      "campaign": "完整企劃"
     },
-    "9:16": {
-      "name": "限時動態 / Stories",
-      "ratio": "9:16 直式長圖",
-      "description": "適合：IG Stories、Reels、手機全螢幕"
+    "newSimilar": "新的相似圖",
+    "newCampaign": "新的完整企劃",
+    "none": "還沒有專案。",
+    "rename": "專案名稱",
+    "delete": "刪除「{name}」",
+    "deleteConfirm": "確定刪除這個專案？裡面的圖片會一起刪掉，無法復原。"
+  },
+  "queue": {
+    "pending": "處理中 {count}",
+    "cancel": "全部停止",
+    "cancelHint": "停止後，已送出的請求仍可能計費"
+  },
+  "upload": {
+    "prompt": "點擊、拖放或貼上",
+    "drop": "放開就好",
+    "choose": "選擇{label}",
+    "replace": "更換{label}",
+    "remove": "移除{label}",
+    "notImage": "這不是圖片",
+    "tooLarge": "檔案超過 25MB",
+    "unsupported": "這個圖片格式讀不出來，換 JPG 或 PNG 試試"
+  },
+  "similar": {
+    "images": "圖片",
+    "reference": "參考圖",
+    "referenceHint": "要模仿的風格",
+    "product": "產品圖",
+    "productHint": "會原樣保留",
+    "secondary": "副產品",
+    "similarity": "相似度",
+    "levels": {
+      "low": "低",
+      "medium": "中",
+      "high": "高"
     },
-    "4:5": {
-      "name": "IG 貼文",
-      "ratio": "4:5 直式圖",
-      "description": "適合：IG Feed 主頁、優化手機瀏覽"
+    "levelDesc": {
+      "low": "只借參考圖的色調氛圍，構圖、場景、光線全部重新發想。",
+      "medium": "保留光線、色調與場景風格，換一個構圖、角度與道具。",
+      "high": "幾乎照抄參考圖的畫面，只把主角換成你的產品。"
     },
-    "16:9": {
-      "name": "橫式貼文",
-      "ratio": "16:9 橫式長圖",
-      "description": "適合：封面、廣告圖片"
+    "ratio": "比例",
+    "direction": "補充",
+    "instructions": "補充指示",
+    "instructionsPlaceholder": "例如：背景換成大理石、加一點清晨的光",
+    "copySpace": "預留文字空間",
+    "copySpaceOptions": {
+      "none": "不需要",
+      "top": "上方",
+      "bottom": "下方",
+      "left": "左側",
+      "right": "右側"
     },
-    "1:1-commercial": {
-      "name": "商業攝影",
-      "ratio": "1:1 方形圖",
-      "description": "適合：電商主圖、輪播圖、專業商品攝影"
+    "count": "張數",
+    "decrease": "減少張數",
+    "increase": "增加張數",
+    "generate": "生成 {count} 張",
+    "readyHint": "按下去就可以去發呆了。",
+    "notReadyHint": "先放參考圖和產品圖。",
+    "missingImages": "需要參考圖和產品圖",
+    "emptyTitle": "這裡還空空的",
+    "emptyBody": "在左邊放好參考圖和產品圖，選相似度，然後放空等結果。"
+  },
+  "output": {
+    "title": "輸出",
+    "imageModel": "生圖模型",
+    "textModel": "文字模型",
+    "size": "解析度",
+    "sizeUnsupported": "這個模型不支援此解析度",
+    "thinking": "思考程度",
+    "thinkingAuto": "自動",
+    "thinkingLevels": {
+      "minimal": "最少",
+      "low": "低",
+      "medium": "中",
+      "high": "高"
     }
   },
-  "contentSuite": {
-    "settingsTitle": "爆肝產圖設定",
-    "settingsDescription": "上傳產品圖或品牌 Logo，讓 AI 生成圖片時使用（隨時可以調整）",
-    "mainProduct": "主產品圖片（選填）",
-    "secondaryProduct": "副產品圖片（選填）",
-    "secondaryProductHint": "與主產品融合展示",
-    "brandLogo": "品牌 Logo（選填）",
-    "clickToUpload": "點擊上傳",
-    "clickToUploadMain": "點擊上傳主產品",
-    "clickToUploadSecondary": "點擊上傳副產品",
-    "clickToUploadLogo": "點擊上傳品牌 Logo",
-    "changeImage": "更換圖片",
-    "changeLogo": "更換 Logo",
-    "reviewMode": "1. 內容來嘴看看",
-    "productionMode": "2. 爆肝產圖去",
-    "reviewTitle": "內容來嘴看看",
-    "reviewDescription": "檢查看看小GG剛剛生了什麼內容，標題不對味？內文有點怪？沒關係，你想改就改。修改後記得點擊「重新生成 Prompt」按鈕。",
-    "plan": "方案",
-    "sets": "組方案",
+  "models": {
+    "nanoBanana21": "均衡",
+    "nanoBananaPro": "品質最佳，較慢較貴",
+    "nanoBananaLite": "最快最省，僅 1K",
+    "flash38": "快速",
+    "pro31": "推理較強",
+    "custom": "自訂",
+    "preview": "預覽版"
+  },
+  "gallery": {
+    "count": "{count} 張完成",
+    "downloadAll": "全部下載 (.zip)",
+    "download": "下載原圖",
+    "open": "放大檢視",
+    "openEdit": "檢視與修圖",
+    "addText": "加文字",
+    "extend": "延伸比例",
+    "extendTo": "延伸成",
+    "retry": "再試一次",
+    "delete": "刪除",
+    "queued": "排隊中，先喝口水",
+    "running": "小GG 努力中…",
+    "cancelled": "已取消",
+    "withText": "含文字",
+    "imageAlt": "生成結果（{ratio}）",
+    "source": {
+      "edit": "修圖",
+      "extend": "延伸",
+      "similar": "相似圖",
+      "campaign": "企劃"
+    }
+  },
+  "viewer": {
+    "title": "檢視",
+    "versions": "版本",
+    "original": "原圖",
+    "edit": "用一句話修圖",
+    "editPlaceholder": "例如：背景換成淺藍色、拿掉右邊的葉子",
+    "editHint": "⌘/Ctrl + Enter 送出",
+    "apply": "修改"
+  },
+  "campaign": {
+    "steps": "企劃步驟",
+    "step": {
+      "input": "產品",
+      "strategy": "策略",
+      "suite": "素材"
+    },
+    "productImages": "產品圖",
+    "product": "主產品",
+    "secondary": "副產品",
+    "brief": "產品資訊",
+    "productName": "產品名稱",
+    "productNamePlaceholder": "例如：玫瑰保濕洗面乳",
+    "productInfo": "品牌 / 產品資訊",
+    "productInfoPlaceholder": "品牌故事、核心價值、產品特色…",
+    "productUrl": "產品網址",
+    "referenceCopy": "參考文案 / 競品",
+    "referenceCopyPlaceholder": "貼上你喜歡的文案，會參考它的說服結構",
+    "analyze": "分析產品",
+    "reanalyze": "重新分析",
+    "analyzing": "小GG 正在研究你的產品…",
+    "planning": "小GG 正在寫企劃，比你認真多了…",
+    "missingProduct": "需要產品圖",
+    "routes": "策略路線",
+    "routeDetail": "路線內容",
+    "routeFields": {
+      "headline": "主標題",
+      "subhead": "副標題",
+      "style_brief": "視覺風格",
+      "target_audience": "目標受眾"
+    },
+    "supplement": "策略補充",
+    "supplementPlaceholder": "想強調的重點、不想要的方向…",
+    "formats": "輸出版型",
+    "plan": "規劃內容（{count} 組）",
+    "generateAll": "全部生成（{count} 張）",
+    "analysis": "產品分析",
     "title": "標題",
-    "titleLabel": "標題 (Title)",
     "copy": "文案",
-    "copyLabel": "內文 (Copy)",
-    "visualSummary": "構圖摘要 (Visual Summary)",
-    "visualSummaryCommercial": "商業攝影模式",
-    "visualSummaryPlaceholder": "描述畫面構圖、背景、光線、氛圍等視覺元素...",
-    "visualSummaryHint": "修改後點擊「重新生成 Prompt」按鈕更新視覺提示詞",
-    "visualSummaryHintCommercial": "排列方式、構圖摘要修改後，點擊「重新生成 Prompt」按鈕更新視覺提示詞",
-    "visualPrompt": "視覺提示詞 (Prompt) - AI 生成",
-    "regeneratePrompt": "重新生成 Prompt",
-    "regenerating": "生成中...",
-    "arrangement": "排列方式",
-    "arrangementSingle": "單品特寫",
-    "arrangementSingleDesc": "單一產品置中展示",
-    "arrangementFan": "扇形展開",
-    "arrangementFanDesc": "多產品呈扇形排列",
-    "arrangementGrid": "整齊並排",
-    "arrangementGridDesc": "產品整齊排列成行",
-    "arrangementStack": "自然堆疊",
-    "arrangementStackDesc": "產品自然層疊擺放",
-    "arrangementCustom": "自訂",
-    "arrangementCustomDesc": "使用構圖摘要描述",
-    "reviewInfoTitle": "內容來嘴看看",
-    "reviewInfoDescription": "檢查看看小GG剛剛生了什麼內容，標題不對味？內文有點怪？沒關係，你想改就改。修改後記得點擊「重新生成 Prompt」按鈕。",
-    "regeneratePromptFailed": "重新生成 Prompt 失敗："
+    "visualSummary": "畫面構圖",
+    "prompt": "生圖指令",
+    "regeneratePrompt": "依上面內容重寫指令",
+    "noImageYet": "還沒有圖",
+    "generateOne": "生成",
+    "generateAnother": "再生一張",
+    "emptyTitle": "先讓小GG 看看你的產品",
+    "emptyBody": "左邊上傳產品圖、填一點資訊，按「分析產品」。"
   },
-  "production": {
-    "generateButton": "生成圖片",
-    "generating": "生成中...",
-    "pleaseWait": "請稍候片刻",
-    "uploadProductFirst": "請先上傳產品圖",
-    "uploadReferenceFirst": "請先上傳參考圖",
-    "generateFailed": "生成失敗",
-    "download": "下載",
-    "redraw": "重繪",
-    "showContent": "顯示內容（標題 + 文案）",
-    "titleInput": "標題",
-    "titlePlaceholder": "輸入標題",
-    "copyInput": "文案",
-    "copyPlaceholder": "輸入文案",
-    "promptMode": "提詞版",
-    "referenceMode": "參考版",
-    "referenceSettings": "參考圖設定",
-    "uploadReference": "上傳參考圖",
-    "changeReference": "更換參考圖",
-    "similarity": "相似度",
-    "referenceSimilarity": "參考圖相似度（參考版模式適用）",
-    "similarityLow": "低相似度",
-    "similarityLowDesc": "創意發揮",
-    "similarityMedium": "中等相似度",
-    "similarityMediumDesc": "適度參考",
-    "similarityHigh": "高相似度",
-    "similarityHighDesc": "完全模仿",
-    "globalSettings": "全局產圖設定",
-    "referenceByRatio": "每個尺寸可以設定不同的參考圖",
-    "generationMode": "產圖模式",
-    "textSettings": "文字設定",
-    "titleWeight": "標題字重",
-    "copyWeight": "文案字重",
-    "expand": "展開",
-    "collapse": "收合",
-    "perCardModeHint": "點擊「展開」可針對每張圖片獨立設定產圖模式與參考圖",
-    "resolution": "輸出解析度",
-    "resolution1K": "1K",
-    "resolution1KDesc": "1024px",
-    "resolution2K": "2K",
-    "resolution2KDesc": "2048px",
-    "resolution4K": "4K",
-    "resolution4KDesc": "4096px"
+  "formats": {
+    "1:1": "FB 貼文",
+    "9:16": "限時動態",
+    "4:5": "IG 貼文",
+    "16:9": "橫式封面",
+    "1:1-commercial": "商業攝影"
   },
-  "apiKeyModal": {
-    "title": "API Key 設定",
-    "freeMode": "免費模式已啟用",
-    "freeModeDesc": "本站提供免費 API 額度，您可以直接使用而無需輸入自己的 API Key。",
-    "freeModeDesc2": "如需更高額度或避免流量限制，可輸入自己的 Key。",
-    "enterKeyOptional": "輸入您自己的 Google Gemini API Key（選填）：",
-    "enterKeyOptionalDesc": "自訂 Key 可享有獨立額度，不受免費模式的流量限制。",
-    "enterKeyRequired": "請輸入您的 Google Gemini API Key 以啟用 AI 功能。",
-    "enterKeyRequiredDesc": "您的 Key 僅會儲存在瀏覽器中，不會傳送至伺服器。",
-    "labelOptional": "Gemini API Key",
-    "saveButton": "儲存設定",
-    "useFreeMode": "改用免費模式",
-    "clearKey": "清除 Key",
-    "getApiKey": "取得 API Key"
+  "settings": {
+    "title": "設定",
+    "apiKey": "Gemini API 金鑰",
+    "showKey": "顯示金鑰",
+    "hideKey": "隱藏金鑰",
+    "keyStatusOwn": "使用你自己的金鑰，不受伺服器限流。",
+    "keyStatusServer": "目前使用本站提供的額度（有次數限制）。",
+    "keyStatusNone": "還沒有金鑰，小GG 動不了。",
+    "keyHelpStatic": "金鑰只存在這台瀏覽器，直接連線 Google。",
+    "keyHelpServer": "金鑰存在這台瀏覽器，請求會經由本站伺服器轉送給 Google。",
+    "getKey": "取得金鑰",
+    "theme": "主題",
+    "themeLight": "淺色",
+    "themeDark": "深色",
+    "themeSystem": "跟隨系統",
+    "toggleTheme": "切換深淺色",
+    "language": "語言",
+    "concurrency": "同時生成張數",
+    "concurrencyHelp": "免費額度建議 1–2；付費帳號可以開到 4。",
+    "storage": "本機儲存",
+    "storageUsage": "已使用 {used}，可用 {quota}",
+    "storageUnknown": "這個瀏覽器查不到用量。",
+    "storageHelp": "專案與圖片只存在這台瀏覽器，重要成果記得下載 zip 備份。"
   },
-  "guideModal": {
-    "title": "使用方式",
-    "apiKeyNotice": "關於 API 金鑰",
-    "apiKeyDesc": "本工具使用 Google Gemini API。你可以在",
-    "apiKeyLink": "Google AI Studio",
-    "apiKeyDesc2": "免費取得 API 金鑰。輸入後會儲存在瀏覽器中，關閉分頁後自動清除。",
-    "step1Title": "上傳與資訊輸入｜一次填完所有資訊",
-    "step1Desc": "上傳產品圖後，可以選填以下資訊（填越多，AI 越懂你）：",
-    "step2Title": "Phase 1：策略選擇｜秒速決定視覺方向",
-    "step2Desc": "AI 會分析產品後，立即提供",
-    "step2Desc2": "三條截然不同的視覺策略",
-    "step2Desc3": "，每條路線包含：",
-    "step3Title": "選擇圖片尺寸｜多平台支援",
-    "step3Desc": "選擇策略路線後，系統會自動進入尺寸選擇畫面，勾選你需要的尺寸：",
-    "step4Title": "上傳產品圖與 Logo｜產圖前置準備",
-    "step4Desc": "在「爆肝產圖設定」區域，上傳以下素材（這些設定會在所有方案間共用）：",
-    "step5Title": "腳本審閱模式｜內容來嘴看看",
-    "step5Desc": "切換至「內容來嘴看看」模式，可以：",
-    "step6Title": "圖片製作模式｜爆肝產圖",
-    "step6Desc": "切換至「爆肝產圖」模式，針對每個方案可以："
-  },
-  "language": {
-    "zh": "繁中",
-    "en": "EN",
-    "switchToEnglish": "Switch to English",
-    "switchToChinese": "切換至繁體中文"
-  },
-  "productCard": {
-    "originalImage": "原始圖片",
-    "analysisReport": "分析報告",
-    "keyFeatures": "核心賣點"
-  },
-  "promptCard": {
-    "generateFailed": "圖片生成失敗",
-    "loadRefImageFailed": "讀取參考圖片失敗",
-    "generatedImage": "已生成圖片",
-    "downloadImage": "下載圖片",
-    "aiDrawing": "AI 正在繪製中...",
-    "waitingGenerate": "等待生成",
-    "designSummary": "設計摘要",
-    "version": "版本",
-    "noSummary": "暫無摘要",
-    "refImageOptional": "參考圖片（選填）",
-    "remove": "移除",
-    "refImage": "參考圖片",
-    "uploadRefHint": "+ 上傳（例如：指定顏色/Logo）",
-    "prompt": "提示詞（Prompt）",
-    "collapse": "收起",
-    "edit": "編輯",
-    "editPromptPlaceholder": "編輯提示詞...",
-    "generating": "生成中...",
-    "regenerate": "重新生成",
-    "generateVisual": "生成視覺圖",
-    "clickToEdit": "點擊編輯"
+  "toast": {
+    "needKey": "先設定 API 金鑰，小GG 才有力氣動。",
+    "rateLimitPause": "請求太頻繁，休息 {seconds} 秒後自動繼續。",
+    "memoryMode": "瀏覽器不允許本機儲存，關掉頁面後專案會消失。"
   },
   "errors": {
-    "unexpectedError": "分析過程中發生了意外錯誤。",
-    "contentPlanFailed": "內容規劃失敗",
-    "apiKeyInvalid": "API 金鑰無效或已過期。請檢查您的金鑰設定。",
-    "rateLimitExceeded": "請求過於頻繁，已達到 API 限制。請稍後再試。",
-    "networkError": "網路連線錯誤。請檢查您的網路連線後再試。",
-    "requestTimeout": "請求超時。請稍後再試，或嘗試生成較簡單的內容。",
-    "contentBlocked": "內容被安全過濾器阻擋。請嘗試調整您的輸入內容。",
-    "serviceUnavailable": "AI 服務暫時無法使用。請稍後再試。",
-    "apiKeyMissing": "找不到 API 金鑰。請在設定中輸入金鑰，或聯繫管理員。",
-    "rateLimitWarning": "請求過於頻繁，請稍後再試",
-    "noResponse": "Gemini 沒有回應文字",
-    "invalidFormat": "AI 返回了無效的格式，且自動修復失敗。請再試一次。",
-    "rateLimitRetry": "請求過於頻繁，請在 {seconds} 秒後再試",
-    "cannotReadImage": "無法讀取圖片",
-    "staticModeApiKeyRequired": "靜態版本需要提供 API 金鑰",
-    "invalidImageFormat": "無效的圖片格式",
-    "failedToGetCanvas": "無法取得 Canvas 上下文",
-    "failedToLoadImage": "載入圖片失敗",
-    "planningFailed": "規劃失敗",
-    "missingContentSets": "API 返回格式錯誤：缺少 content_sets 陣列",
-    "missingSelectedSizes": "API 返回格式錯誤：缺少 selected_sizes 陣列",
-    "noImageGenerated": "未生成圖片",
-    "promptRegenerateFailed": "重新生成視覺提示詞失敗",
-    "invalidInput": "輸入無效"
-  },
-  "prompt": {
-    "strategySupplement": "【策略補充說明】"
-  },
-  "steps": {
-    "analyze": "分析",
-    "strategy": "策略",
-    "format": "格式",
-    "strategyFormat": "策略與格式",
-    "adjust": "調整",
-    "generate": "產圖",
-    "adjustGenerate": "調整與產圖",
-    "stepOf": "第 {current} 步，共 {total} 步"
-  },
-  "extend": {
-    "title": "延伸至其他尺寸",
-    "sourceImage": "來源圖片",
-    "selectRatios": "選擇要延伸的尺寸",
-    "startExtend": "開始延伸",
-    "generating": "正在生成中...",
-    "generatedImages": "延伸圖片",
-    "socialCopy": "社群發文建議",
-    "headline": "主打標語",
-    "subhead": "副標題",
-    "copy": "複製",
-    "copied": "已複製",
-    "retry": "重試",
-    "addMore": "延伸更多尺寸",
-    "done": "完成",
-    "extendButton": "延伸",
-    "openInNewTab": "在新視窗開啟",
-    "sizeLabels": {
-      "fb": "FB 貼文",
-      "story": "限時動態",
-      "ig": "IG 貼文",
-      "landscape": "橫式貼文",
-      "commercial": "商業攝影"
-    },
-    "sizeDescriptions": {
-      "square": "1:1 方形圖",
-      "vertical": "9:16 直式",
-      "portrait": "4:5 直式",
-      "horizontal": "16:9 橫式",
-      "commercial": "1:1 商品"
-    },
-    "hashtags": {
-      "newProduct": "#新品上市",
-      "recommended": "#好物推薦",
-      "mustBuy": "#必買清單",
-      "quality": "#品質保證"
-    },
-    "socialTemplates": {
-      "instagram": "Instagram",
-      "facebook": "Facebook",
-      "story": "限時動態"
-    },
-    "generationFailed": "生成失敗"
+    "API_KEY_MISSING": "還沒有 API 金鑰，請到設定輸入。",
+    "API_KEY_INVALID": "API 金鑰無效或沒有權限。",
+    "RATE_LIMITED": "請求太頻繁了，稍等一下再試。",
+    "QUOTA_EXHAUSTED": "今天的額度用完了，明天再來或換一把金鑰。",
+    "NETWORK": "網路連不上，檢查一下連線。",
+    "TIMEOUT": "等太久沒有回應，再試一次。",
+    "CONTENT_BLOCKED": "被安全過濾擋下了，換張圖或換個描述試試。",
+    "NO_IMAGE": "模型這次沒交出圖，再試一次。",
+    "RESPONSE_TRUNCATED": "回應太長被截斷了，少選幾個版型再試。",
+    "INVALID_RESPONSE": "AI 回傳的格式怪怪的，再試一次。",
+    "INVALID_INPUT": "輸入有問題（圖片太大或內容不完整）。",
+    "MODEL_NOT_ALLOWED": "本站額度不開放這個模型，請改用自己的金鑰。",
+    "MODEL_NOT_FOUND": "找不到這個模型，可能已經下架。",
+    "PAYLOAD_TOO_LARGE": "圖片太大了，換小一點的圖。",
+    "SERVICE_UNAVAILABLE": "Gemini 暫時忙不過來，稍後再試。",
+    "ABORTED": "已取消。",
+    "UNKNOWN": "發生未知錯誤。"
   },
   "errorPage": {
     "title": "發生錯誤",
@@ -352,209 +252,5 @@
     "globalErrorTitle": "應用程式錯誤",
     "globalErrorDescription": "抱歉，發生了嚴重的錯誤。請重新整理頁面或稍後再試。",
     "reload": "重新載入"
-  },
-  "seo": {
-    "appName": "不想努力了 I Give Up",
-    "fullTitle": "不想努力了 I Give Up - AI Marketing Content Generator",
-    "titleTemplate": "%s | 不想努力了 I Give Up",
-    "description": "使用 AI 快速生成產品行銷素材。",
-    "keywords": {
-      "marketing": "產品行銷",
-      "ai": "AI 生成"
-    },
-    "ogImageAlt": "不想努力了 I Give Up - AI Marketing Content Generator"
-  },
-  "guide": {
-    "step1": {
-      "title": "上傳與資訊輸入｜一次填完所有資訊",
-      "description": "上傳產品圖後，可以選填以下資訊（填越多，AI 越懂你）：",
-      "items": {
-        "productName": "產品名稱（必填）",
-        "productInfo": "產品資訊（選填）：品牌故事、核心價值、產品特色等",
-        "productUrl": "產品網址（選填）：AI 可能會參考該網站內容",
-        "refCopy": "參考文案（選填）：貼上競品或同類型商品的熱銷文案，AI 將拆解其說服邏輯"
-      },
-      "tip": "💡 小提示：所有資訊一次填完，就不用在流程中重複輸入了"
-    },
-    "step2": {
-      "title": "Phase 1：策略選擇｜秒速決定視覺方向",
-      "description": "AI 會分析產品後，立即提供三條截然不同的視覺策略，每條路線包含：",
-      "items": {
-        "routeName": "路線名稱：策略取向的一句話概括",
-        "headline": "主打標語：適合做標題、廣告文案的句子",
-        "subhead": "副標題：補充說明或進一步引導",
-        "styleDescription": "視覺風格：描述整體畫面氛圍、構圖方向",
-        "targetAudience": "目標受眾：推測適合的消費族群"
-      }
-    },
-    "step3": {
-      "title": "選擇圖片尺寸｜多平台支援",
-      "description": "選擇策略路線後，系統會自動進入尺寸選擇畫面，勾選你需要的尺寸：",
-      "items": {
-        "square": "1:1 方形圖（FB 貼文、IG 輪播、電商主圖）",
-        "story": "9:16 直式長圖（IG Stories、Reels、手機全螢幕）",
-        "portrait": "4:5 直式圖（IG Feed 主頁、優化手機瀏覽）",
-        "landscape": "16:9 橫式長圖（封面、廣告圖片）",
-        "commercial": "1:1 商業攝影（電商主圖、輪播圖、專業商品攝影）"
-      }
-    },
-    "step4": {
-      "title": "上傳產品圖與 Logo｜產圖前置準備",
-      "description": "在「爆肝產圖設定」區域，上傳以下素材（這些設定會在所有方案間共用）：",
-      "items": {
-        "mainProduct": "主產品圖片：主要的產品照片",
-        "secondaryProduct": "副產品圖片（選填）：與主產品融合展示的第二個產品",
-        "brandLogo": "品牌 Logo（選填）：AI 會自動將 Logo 放置在圖片四角之一"
-      }
-    },
-    "step5": {
-      "title": "腳本審閱模式｜內容來嘴看看",
-      "description": "切換至「內容來嘴看看」模式，可以：",
-      "items": {
-        "editContent": "編輯標題、文案、構圖摘要等內容",
-        "arrangement": "選擇產品排列方式（商業攝影模式）",
-        "regeneratePrompt": "修改後點擊「重新生成 Prompt」按鈕更新視覺提示詞"
-      }
-    },
-    "step6": {
-      "title": "圖片製作模式｜爆肝產圖",
-      "description": "切換至「爆肝產圖」模式，針對每個方案可以：",
-      "items": {
-        "generateImage": "點擊卡片生成圖片",
-        "modes": "選擇產圖模式：",
-        "promptMode": "• 提詞版：根據 AI 生成的 Prompt 創作",
-        "referenceMode": "• 參考版：上傳參考圖，設定相似度等級",
-        "textSettings": "文字設定：調整標題與文案的字重",
-        "actions": "產圖後可以：下載圖片、重繪、延伸至其他尺寸"
-      }
-    }
-  },
-  "imageUtils": {
-    "windowBlocked": "無法打開新窗口，可能被瀏覽器阻擋",
-    "imagePreview": "圖片預覽",
-    "previewImage": "預覽圖片"
-  },
-  "arrangement": {
-    "single": "單品特寫",
-    "singleDesc": "單一產品置中展示",
-    "fan": "扇形展開",
-    "fanDesc": "多產品呈扇形排列",
-    "grid": "整齊並排",
-    "gridDesc": "產品整齊排列成行",
-    "stack": "自然堆疊",
-    "stackDesc": "產品自然層疊擺放",
-    "custom": "自訂",
-    "customDesc": "使用構圖摘要描述"
-  },
-  "fontWeights": {
-    "regular": "Regular",
-    "medium": "Medium",
-    "bold": "Bold",
-    "black": "Black",
-    "regular400": "Regular (400)",
-    "medium500": "Medium (500)",
-    "bold700": "Bold (700)",
-    "black900": "Black (900)"
-  },
-  "stepIndicator": {
-    "step01": "步驟 01",
-    "step02": "步驟 02",
-    "step03": "步驟 03",
-    "step04": "步驟 04"
-  },
-  "alt": {
-    "preview": "預覽",
-    "loading": "載入中",
-    "source": "來源",
-    "productBackground": "產品背景",
-    "reference": "參考圖"
-  },
-  "guideV2": {
-    "step1": {
-      "title": "上傳與資訊輸入｜一次填完所有資訊",
-      "desc": "上傳產品圖後，可以選填以下資訊（填越多，AI 越懂你）：",
-      "items": [
-        { "label": "產品名稱", "desc": "讓 AI 認得你的產品" },
-        { "label": "產品資訊", "desc": "品牌故事、核心價值、產品特色" },
-        { "label": "產品網址", "desc": "AI 會自動抓取官網內容進行分析" },
-        { "label": "參考文案 / 競品參考", "desc": "貼上同類商品的熱銷文案，AI 會拆解其說服邏輯" }
-      ],
-      "tip": "💡 小提示：所有資訊一次填完，就不用在流程中重複輸入了"
-    },
-    "step2": {
-      "title": "Phase 1：策略選擇｜秒速決定視覺方向",
-      "desc": "AI 會分析產品後，立即提供",
-      "descHighlight": "三條截然不同的視覺策略",
-      "descSuffix": "，每條路線包含：",
-      "items": ["主打標語與副標題", "視覺風格描述（色調、氛圍、設計元素）", "目標受眾定位"],
-      "tip": "👉 點選一個你喜歡的路線，系統會自動進入 Phase 2 開始規劃完整內容"
-    },
-    "step3": {
-      "title": "選擇圖片尺寸｜多平台支援",
-      "desc": "選擇策略路線後，系統會自動進入尺寸選擇畫面，勾選你需要的尺寸：",
-      "items": [
-        { "label": "1:1 方形圖", "desc": "適合 FB 貼文、IG 輪播、電商主圖" },
-        { "label": "9:16 直式長圖", "desc": "適合限時動態、Instagram Stories、Reels" },
-        { "label": "4:5 直式圖", "desc": "適合 IG Feed 主頁、優化手機瀏覽" },
-        { "label": "16:9 橫式長圖", "desc": "適合封面、廣告圖片、橫幅設計" },
-        { "label": "1:1 商業攝影", "desc": "專業商品攝影風格（工作室燈光、高端相機質感）" }
-      ],
-      "tip": "AI 會為每個選定的尺寸生成 3 組不同的內容方案（功能導向、情感導向、數據導向）"
-    },
-    "step4": {
-      "title": "上傳產品圖與 Logo｜產圖前置準備",
-      "desc": "在「爆肝產圖設定」區域，上傳以下素材（這些設定會在所有方案間共用）：",
-      "items": [
-        { "label": "📸 產品圖片", "desc": "必要，用於圖片生成的主要素材" },
-        { "label": "🏷️ 品牌 Logo", "desc": "選填，會自動放置在圖片角落" }
-      ]
-    },
-    "step5": {
-      "title": "腳本審閱模式｜內容來嘴看看",
-      "desc": "切換至「內容來嘴看看」模式，可以：",
-      "items": ["查看所有方案的標題、文案、視覺摘要", "編輯任何不滿意的文案", "調整 AI Prompt（進階功能）", "為每個方案重新生成 Prompt"]
-    },
-    "step6": {
-      "title": "圖片製作模式｜爆肝產圖",
-      "desc": "切換至「爆肝產圖」模式，針對每個方案可以：",
-      "sections": [
-        {
-          "title": "✅ 文字與字體控制",
-          "items": [
-            "勾選「顯示內容（標題 + 文案）」決定是否在圖片上疊加文字",
-            "直接在產圖模式修改標題和文案",
-            "選擇字體粗細（Regular、Medium、Bold、Black）",
-            "所有文字使用開源字體思源黑體（Noto Sans TC），無版權問題"
-          ]
-        },
-        {
-          "title": "🎨 雙模式生成",
-          "items": [
-            "提詞版（預設）：使用 AI 自動生成的視覺 Prompt 創作",
-            "參考版：上傳參考圖片，選擇相似度（低 / 中 / 高）"
-          ]
-        },
-        {
-          "title": "📥 生成與下載",
-          "items": ["點擊播放按鈕開始生成（約 10-20 秒）", "滑鼠移至圖片上方可下載或重繪"]
-        }
-      ]
-    }
-  },
-  "contentSuiteV2": {
-    "arrangementPriorityNote": "【產品排列方式 - 最高優先級】"
-  },
-  "extendTemplates": {
-    "styleLabel": "風格：",
-    "suitableFor": "適合：",
-    "clickToLearnMore": "點擊連結了解更多",
-    "dmForDiscount": "私訊小編享專屬優惠",
-    "styleFeature": "▸ 風格特色：",
-    "targetAudience": "▸ 適合對象：",
-    "limitedOffer": "▸ 限時優惠進行中",
-    "freeShipping": "▸ 全館滿額免運",
-    "comment1ForDm": "留言 +1 小編私訊您",
-    "learnMoreLink": "立即了解更多：[連結]",
-    "swipeUpToLearnMore": "上滑了解更多"
   }
 }

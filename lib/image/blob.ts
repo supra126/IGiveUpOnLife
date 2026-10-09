@@ -74,3 +74,22 @@ export function downloadBlob(blob: Blob, filename: string): void {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/**
+ * 上傳的圖統一轉成瀏覽器與 Gemini 都能處理的格式（AVIF、HEIC 等轉 PNG），
+ * 無法解碼時丟出錯誤
+ */
+export async function normalizeUpload(file: Blob): Promise<Blob> {
+  if (API_FRIENDLY.has(file.type)) return file;
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas unavailable");
+  ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Encode failed"))), "image/png")
+  );
+}

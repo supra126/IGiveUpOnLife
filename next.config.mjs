@@ -16,6 +16,10 @@ const projectRoot = new URL(".", import.meta.url).pathname;
 const nextConfig = {
   // 明確指定專案根目錄，避免 Turbopack 往上層目錄解析 tailwindcss
   turbopack: { root: projectRoot },
+  // server action 的參數含使用者 API 金鑰與圖片，不要印到終端機
+  logging: { serverFunctions: false },
+  // 不要讓 next dev 自動在 repo 產生 AGENTS.md
+  agentRules: false,
   // Enable static export for static builds
   ...(isStaticBuild && {
     output: "export",
