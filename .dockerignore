@@ -50,3 +50,8 @@ docker-compose*.yml
 CLAUDE.md
 CLAUDE-*.md
 .claude/
+
+# 本機雜項
+temp/
+tsconfig.tsbuildinfo
+scripts/
