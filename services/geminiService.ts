@@ -1,61 +1,24 @@
 /**
- * Gemini Service - Unified entry point with build mode detection
+ * 舊 UI 用的相容層（Phase 3 換成新工作台後刪除）
  *
- * This module automatically switches between:
- * - Server Actions (default): Uses server-side API calls with rate limiting
- * - Client Mode (BUILD_MODE=static): Uses direct client-side API calls
- *
- * The build mode is determined by NEXT_PUBLIC_BUILD_MODE environment variable.
+ * 保留舊函式簽章，內部改走 lib/gemini/transport。
  */
+import type { ContentPlan, DirectorOutput, ImageRatio, Locale, MarketingRoute, ProductAnalysis } from "@/types";
+import { ensureGeminiCompatibleFormat } from "@/lib/image-utils";
+import { gemini } from "@/lib/gemini/transport";
+import { formatToAspectRatio } from "@/lib/gemini/formats";
+import type { ImageSize } from "@/lib/gemini/models";
 
-import {
-  DirectorOutput,
-  ContentPlan,
-  MarketingRoute,
-  ProductAnalysis,
-  ContentSet,
-  ImageRatio,
-} from "@/types";
-import { Locale } from "@/prompts";
-import {
-  parseBase64Image,
-  ensureGeminiCompatibleFormat,
-} from "@/lib/image-utils";
+type ResolutionLevel = "1k" | "2k" | "4k";
 
-// Detect build mode at compile time
-const IS_STATIC_BUILD = process.env.NEXT_PUBLIC_BUILD_MODE === "static";
+const toImageSize = (r: ResolutionLevel): ImageSize => r.toUpperCase() as ImageSize;
 
-// --- Error Messages ---
-const serviceErrorMessages = {
-  zh: {
-    cannotReadImage: "無法讀取圖片",
-    staticModeApiKeyRequired: "靜態版本需要提供 API 金鑰",
-  },
-  en: {
-    cannotReadImage: "Cannot read image",
-    staticModeApiKeyRequired: "Static mode requires API key",
-  },
-};
-
-function getServiceErrorMessage(key: keyof typeof serviceErrorMessages.en, locale: Locale = "en"): string {
-  return serviceErrorMessages[locale][key];
-}
-
-// --- Client-side Helpers (always available) ---
-
-/**
- * Convert a File to base64 data URL, automatically converting
- * unsupported formats (like AVIF) to WebP for Gemini API compatibility
- */
-export const fileToBase64 = async (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
+export const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       try {
-        const base64 = reader.result as string;
-        // Auto-convert unsupported formats (AVIF, BMP, TIFF) to WebP
-        const compatible = await ensureGeminiCompatibleFormat(base64);
-        resolve(compatible);
+        resolve(await ensureGeminiCompatibleFormat(reader.result as string));
       } catch (err) {
         reject(err);
       }
@@ -63,329 +26,86 @@ export const fileToBase64 = async (file: File): Promise<string> => {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-};
 
-// --- Conditional Imports ---
+export const hasServerApiKey = async (): Promise<boolean> => (await gemini.capabilities()).hasServerKey;
 
-// Server Actions (only imported in server mode)
-let serverActions: typeof import("@/app/actions/gemini") | null = null;
-
-// Client functions (only imported in static mode)
-let clientFunctions: typeof import("@/services/geminiClient") | null = null;
-
-/**
- * Initialize the appropriate module based on build mode
- */
-async function initModule() {
-  if (IS_STATIC_BUILD) {
-    if (!clientFunctions) {
-      clientFunctions = await import("@/services/geminiClient");
-    }
-  } else {
-    if (!serverActions) {
-      serverActions = await import("@/app/actions/gemini");
-    }
-  }
-}
-
-// --- Wrapper Functions ---
-
-/**
- * Check if server has API key configured
- * Returns false for static builds
- */
-export const hasServerApiKey = async (): Promise<boolean> => {
-  if (IS_STATIC_BUILD) {
-    return false;
-  }
-  await initModule();
-  return serverActions!.hasServerApiKey();
-};
-
-/**
- * Analyze product image
- */
 export const analyzeProductImage = async (
   file: File,
   productName: string,
   productInfo: string,
   productUrl: string,
   apiKey?: string,
-  locale?: Locale
-): Promise<DirectorOutput> => {
-  const base64 = await fileToBase64(file);
-  const extracted = parseBase64Image(base64);
+  locale: Locale = "zh"
+): Promise<DirectorOutput> =>
+  gemini.analyze({ image: await fileToBase64(file), productName, productInfo, productUrl, locale }, { apiKey });
 
-  if (!extracted) {
-    throw new Error(getServiceErrorMessage("cannotReadImage", locale));
-  }
-
-  await initModule();
-
-  if (IS_STATIC_BUILD) {
-    if (!apiKey) {
-      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
-    }
-    return clientFunctions!.analyzeProductImageClient({
-      imageBase64: extracted.data,
-      imageMimeType: extracted.mimeType,
-      productName,
-      productInfo,
-      productUrl,
-      apiKey,
-      locale,
-    });
-  }
-
-  return serverActions!.analyzeProductImageAction({
-    imageBase64: extracted.data,
-    imageMimeType: extracted.mimeType,
-    productName,
-    productInfo,
-    productUrl,
-    userApiKey: apiKey || undefined,
-    locale,
-  });
-};
-
-/**
- * Generate content plan
- */
-export const generateContentPlan = async (
+export const generateContentPlan = (
   route: MarketingRoute,
   analysis: ProductAnalysis,
   referenceCopy: string,
   selectedSizes: ImageRatio[],
   apiKey?: string,
-  locale?: Locale
-): Promise<ContentPlan> => {
-  await initModule();
+  locale: Locale = "zh"
+): Promise<ContentPlan> => gemini.plan({ route, analysis, referenceCopy, formats: selectedSizes, locale }, { apiKey });
 
-  if (IS_STATIC_BUILD) {
-    if (!apiKey) {
-      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
-    }
-    return clientFunctions!.generateContentPlanClient({
-      route,
-      analysis,
-      referenceCopy,
-      selectedSizes,
-      apiKey,
-      locale,
-    });
-  }
-
-  return serverActions!.generateContentPlanAction({
-    route,
-    analysis,
-    referenceCopy,
-    selectedSizes,
-    userApiKey: apiKey || undefined,
-    locale,
-  });
-};
-
-export type ResolutionLevel = "1k" | "2k" | "4k";
-
-/**
- * Generate marketing image
- */
 export const generateMarketingImage = async (
   prompt: string,
   apiKey?: string,
-  referenceImageBase64?: string,
+  productImage?: string,
   aspectRatio: ImageRatio = "1:1",
-  secondaryImageBase64?: string | null,
-  resolution: ResolutionLevel = "2k",
-  locale?: Locale
+  secondaryImage?: string | null,
+  resolution: ResolutionLevel = "2k"
 ): Promise<string> => {
-  await initModule();
-
-  if (IS_STATIC_BUILD) {
-    if (!apiKey) {
-      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
-    }
-    return clientFunctions!.generateMarketingImageClient({
+  if (!productImage) throw new Error("Product image required");
+  const result = await gemini.promptImage(
+    {
       prompt,
-      referenceImageBase64,
-      aspectRatio,
-      secondaryImageBase64,
-      resolution,
-      apiKey,
-    });
-  }
-
-  return serverActions!.generateMarketingImageAction({
-    prompt,
-    referenceImageBase64,
-    aspectRatio,
-    secondaryImageBase64,
-    resolution,
-    userApiKey: apiKey || undefined,
-    locale,
-  });
+      productImage,
+      secondaryImage: secondaryImage || undefined,
+      formatId: aspectRatio,
+      aspectRatio: formatToAspectRatio(aspectRatio),
+      imageSize: toImageSize(resolution),
+    },
+    { apiKey }
+  );
+  return result.dataUrl;
 };
 
-/**
- * Regenerate visual prompt
- */
-export const regenerateVisualPrompt = async (
+export const regenerateVisualPrompt = (
   title: string,
   copy: string,
   ratio: ImageRatio,
-  sizeLabel: string,
+  _sizeLabel: string,
   apiKey?: string,
   visualSummary?: string,
-  locale?: Locale
-): Promise<string> => {
-  await initModule();
+  locale: Locale = "zh"
+): Promise<string> => gemini.regeneratePrompt({ title, copy, formatId: ratio, visualSummary, locale }, { apiKey });
 
-  if (IS_STATIC_BUILD) {
-    if (!apiKey) {
-      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
-    }
-    return clientFunctions!.regenerateVisualPromptClient({
-      title,
-      copy,
-      ratio,
-      sizeLabel,
-      visualSummary,
-      apiKey,
-    });
-  }
-
-  return serverActions!.regenerateVisualPromptAction({
-    title,
-    copy,
-    ratio,
-    sizeLabel,
-    visualSummary,
-    userApiKey: apiKey || undefined,
-    locale,
-  });
-};
-
-/**
- * Generate image from reference
- */
 export const generateImageFromReference = async (
-  productImageBase64: string,
-  referenceImageBase64: string,
+  productImage: string,
+  referenceImage: string,
   similarity: number,
   apiKey?: string,
   aspectRatio: ImageRatio = "1:1",
-  brandLogoBase64?: string | null,
-  titleText?: string,
-  copyText?: string,
-  showText?: boolean,
-  titleWeight?: "regular" | "medium" | "bold" | "black",
-  copyWeight?: "regular" | "medium" | "bold" | "black",
-  secondaryProductBase64?: string | null,
-  resolution: ResolutionLevel = "2k",
-  locale?: Locale
+  _brandLogo?: string | null,
+  _titleText?: string,
+  _copyText?: string,
+  _showText?: boolean,
+  _titleWeight?: string,
+  _copyWeight?: string,
+  secondaryProduct?: string | null,
+  resolution: ResolutionLevel = "2k"
 ): Promise<string> => {
-  await initModule();
-
-  if (IS_STATIC_BUILD) {
-    if (!apiKey) {
-      throw new Error(getServiceErrorMessage("staticModeApiKeyRequired", locale));
-    }
-    return clientFunctions!.generateImageFromReferenceClient({
-      productImageBase64,
-      referenceImageBase64,
-      similarity,
-      aspectRatio,
-      brandLogoBase64,
-      titleText,
-      copyText,
-      showText,
-      titleWeight,
-      copyWeight,
-      secondaryProductBase64,
-      resolution,
-      apiKey,
-    });
-  }
-
-  return serverActions!.generateImageFromReferenceAction({
-    productImageBase64,
-    referenceImageBase64,
-    similarity,
-    aspectRatio,
-    brandLogoBase64,
-    titleText,
-    copyText,
-    showText,
-    titleWeight,
-    copyWeight,
-    secondaryProductBase64,
-    resolution,
-    userApiKey: apiKey || undefined,
-    locale,
-  });
-};
-
-// --- Report Generation (client-side only, no API calls) ---
-
-export const generateFullReport = (
-  analysis: ProductAnalysis,
-  routes: MarketingRoute[],
-  selectedRouteIndex: number,
-  contentPlan: ContentPlan,
-  editedContentSets: ContentSet[]
-): string => {
-  const route = routes[selectedRouteIndex];
-  const date = new Date().toLocaleDateString();
-
-  let report = `不想怒力了 I give up on life - Product Marketing Strategy Report\n`;
-  report += `Date: ${date}\n`;
-  report += `=================================================\n\n`;
-
-  report += `[PRODUCT ANALYSIS]\n`;
-  report += `Name: ${analysis.name}\n`;
-  report += `Visual Description: ${analysis.visual_description}\n`;
-  report += `Key Features: ${analysis.key_features}\n\n`;
-
-  report += `[SELECTED STRATEGY: ${route.route_name}]\n`;
-  report += `Headline: ${route.headline}\n`;
-  report += `Subhead: ${route.subhead}\n`;
-  report += `Style: ${route.style_brief}\n`;
-  report += `Target Audience: ${route.target_audience}\n\n`;
-
-  report += `-------------------------------------------------\n`;
-  report += `[CONTENT PLAN]\n`;
-  report += `Plan Name: ${contentPlan.plan_name}\n`;
-  report += `Selected Sizes: ${contentPlan.selected_sizes.join(", ")}\n\n`;
-
-  editedContentSets.forEach((item) => {
-    report += `--- ${item.size_label} Set ${item.set_number} (${item.ratio}) ---\n`;
-    report += `Title: ${item.title}\n`;
-    report += `Copy: ${item.copy}\n`;
-    report += `Visual Summary: ${item.visual_summary}\n`;
-    report += `PROMPT:\n${item.visual_prompt_en}\n\n`;
-  });
-
-  return report;
-};
-
-// --- Build Mode Info ---
-
-/**
- * Check if running in static build mode
- */
-export const isStaticBuild = (): boolean => {
-  return IS_STATIC_BUILD;
-};
-
-/**
- * Get build mode info
- */
-export const getBuildModeInfo = (): {
-  mode: "static" | "server";
-  requiresUserApiKey: boolean;
-} => {
-  return {
-    mode: IS_STATIC_BUILD ? "static" : "server",
-    requiresUserApiKey: IS_STATIC_BUILD,
-  };
+  const result = await gemini.similarImage(
+    {
+      referenceImage,
+      productImage,
+      secondaryImage: secondaryProduct || undefined,
+      similarity: similarity >= 70 ? "high" : similarity >= 40 ? "medium" : "low",
+      aspectRatio: formatToAspectRatio(aspectRatio),
+      imageSize: toImageSize(resolution),
+    },
+    { apiKey }
+  );
+  return result.dataUrl;
 };

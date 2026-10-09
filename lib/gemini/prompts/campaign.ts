@@ -1,4 +1,4 @@
-export type Locale = "zh" | "en";
+import type { Locale } from "@/types";
 
 // --- DIRECTOR SYSTEM PROMPT ---
 

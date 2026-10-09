@@ -7,12 +7,15 @@
  * Static build limitations:
  * - No server-side API key support
  * - Users must provide their own API key
- * - Rate limiting is client-side only (localStorage based)
+ * - No server-side rate limiting
  */
 const isStaticBuild = process.env.NEXT_PUBLIC_BUILD_MODE === "static";
+const projectRoot = new URL(".", import.meta.url).pathname;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 明確指定專案根目錄，避免 Turbopack 往上層目錄解析 tailwindcss
+  turbopack: { root: projectRoot },
   // Enable static export for static builds
   ...(isStaticBuild && {
     output: "export",

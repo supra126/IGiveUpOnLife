@@ -69,3 +69,5 @@ export enum AppState {
   SUITE_READY, // Phase 2 Script Ready (Review Mode)
   ERROR
 }
+
+export type Locale = "zh" | "en";

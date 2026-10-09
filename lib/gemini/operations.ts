@@ -1,0 +1,447 @@
+/**
+ * Gemini 操作（前後端共用）
+ *
+ * 所有函式都接受一個 GoogleGenAI 實例與「已驗證」的輸入，失敗時丟出 GeminiError。
+ * server action 和瀏覽器 transport 只負責取得 ai 實例、驗證輸入與轉換錯誤。
+ */
+import type {
+  Content,
+  GenerateContentConfig,
+  GenerateContentResponse,
+  GoogleGenAI,
+  Part,
+  ThinkingLevel,
+} from "@google/genai";
+import type { z } from "zod";
+import type { ContentPlan, DirectorOutput } from "@/types";
+import { GeminiError } from "./errors";
+import { withRetry } from "./retry";
+import {
+  getImageModelSpec,
+  clampImageOptions,
+  DEFAULT_IMAGE_MODEL,
+  DEFAULT_TEXT_MODEL,
+  type ThinkingLevelName,
+} from "./models";
+import { FORMATS } from "./formats";
+import {
+  AnalyzeInputSchema,
+  CONTENT_PLAN_JSON_SCHEMA,
+  ContentPlanSchema,
+  DIRECTOR_OUTPUT_JSON_SCHEMA,
+  DirectorOutputSchema,
+  EditImageInputSchema,
+  PlanInputSchema,
+  PromptImageInputSchema,
+  RegeneratePromptInputSchema,
+  SimilarImageInputSchema,
+} from "./schemas";
+import { getContentPlannerSystemPrompt, getDirectorSystemPrompt } from "./prompts/campaign";
+import {
+  buildCampaignImagePrompt,
+  buildRegeneratePromptUserText,
+  VISUAL_PROMPT_SYSTEM,
+  wrapUserInput,
+} from "./prompts/image";
+import { buildSimilarInstruction, IMAGE_LABELS } from "./prompts/similar";
+import { buildEditInstruction } from "./prompts/edit";
+
+export interface OperationOptions {
+  signal?: AbortSignal;
+  textModel?: string;
+  imageModel?: string;
+}
+
+export interface GeneratedImage {
+  dataUrl: string;
+  mimeType: string;
+  /** 多輪修圖需要原封送回的簽章 */
+  thoughtSignature?: string;
+  /** 模型額外回傳的文字（若有） */
+  text?: string;
+  model: string;
+  aspectRatio: string;
+  imageSize: string;
+}
+
+// --- 輸入驗證 ---
+
+export function parseInput<S extends z.ZodType>(schema: S, raw: unknown): z.output<S> {
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    throw new GeminiError("INVALID_INPUT", issue ? `${issue.path.join(".")}: ${issue.message}` : undefined);
+  }
+  return result.data;
+}
+
+// --- 共用工具 ---
+
+export function dataUrlToPart(dataUrl: string): Part {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!match) throw new GeminiError("INVALID_INPUT", "Invalid image data URL");
+  return { inlineData: { mimeType: match[1], data: match[2] } };
+}
+
+const BLOCKED_FINISH_REASONS = new Set([
+  "SAFETY",
+  "IMAGE_SAFETY",
+  "PROHIBITED_CONTENT",
+  "IMAGE_PROHIBITED_CONTENT",
+  "BLOCKLIST",
+  "SPII",
+  "RECITATION",
+  "IMAGE_RECITATION",
+]);
+
+function assertNotBlocked(response: GenerateContentResponse): void {
+  if (response.promptFeedback?.blockReason) {
+    throw new GeminiError("CONTENT_BLOCKED", String(response.promptFeedback.blockReason));
+  }
+  const reason = response.candidates?.[0]?.finishReason;
+  if (reason && BLOCKED_FINISH_REASONS.has(String(reason))) {
+    throw new GeminiError("CONTENT_BLOCKED", String(reason));
+  }
+}
+
+/** 取出最終圖片（略過 thought 過程圖），並檢查安全過濾 */
+export function extractImage(
+  response: GenerateContentResponse
+): Pick<GeneratedImage, "dataUrl" | "mimeType" | "thoughtSignature" | "text"> {
+  assertNotBlocked(response);
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const finalParts = parts.filter((p) => !p.thought);
+  const imagePart = [...finalParts].reverse().find((p) => p.inlineData?.data);
+  if (!imagePart?.inlineData?.data) {
+    const reason = response.candidates?.[0]?.finishReason;
+    throw new GeminiError("NO_IMAGE", reason ? String(reason) : undefined);
+  }
+  const mimeType = imagePart.inlineData.mimeType || "image/png";
+  const text = finalParts
+    .map((p) => p.text)
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+  return {
+    dataUrl: `data:${mimeType};base64,${imagePart.inlineData.data}`,
+    mimeType,
+    thoughtSignature: imagePart.thoughtSignature,
+    text: text || undefined,
+  };
+}
+
+/** 解析結構化 JSON 回應並用 zod 驗證 */
+export function parseStructured<S extends z.ZodType>(response: GenerateContentResponse, schema: S): z.output<S> {
+  assertNotBlocked(response);
+  if (String(response.candidates?.[0]?.finishReason) === "MAX_TOKENS") {
+    throw new GeminiError("RESPONSE_TRUNCATED");
+  }
+  const text = response.text?.trim();
+  if (!text) throw new GeminiError("INVALID_RESPONSE", "Empty response");
+
+  let json: unknown;
+  try {
+    json = JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, ""));
+  } catch {
+    throw new GeminiError("INVALID_RESPONSE", "Response is not valid JSON");
+  }
+  const result = schema.safeParse(json);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    throw new GeminiError("INVALID_RESPONSE", issue ? `${issue.path.join(".")}: ${issue.message}` : undefined);
+  }
+  return result.data;
+}
+
+function toThinkingLevel(level: ThinkingLevelName | undefined): { thinkingLevel: ThinkingLevel } | undefined {
+  return level ? { thinkingLevel: level.toUpperCase() as ThinkingLevel } : undefined;
+}
+
+function imageConfigFor(
+  input: { model?: string; aspectRatio?: string; imageSize?: string; thinkingLevel?: ThinkingLevelName },
+  opts: OperationOptions,
+  signal?: AbortSignal
+): { model: string; config: GenerateContentConfig; aspectRatio: string; imageSize: string } {
+  const spec = getImageModelSpec(input.model || opts.imageModel || DEFAULT_IMAGE_MODEL);
+  const clamped = clampImageOptions(spec, {
+    size: input.imageSize as never,
+    aspectRatio: input.aspectRatio as never,
+    thinkingLevel: input.thinkingLevel,
+  });
+  const thinkingConfig = toThinkingLevel(clamped.thinkingLevel);
+  return {
+    model: spec.id,
+    aspectRatio: clamped.aspectRatio,
+    imageSize: clamped.size,
+    config: {
+      responseModalities: ["IMAGE", "TEXT"],
+      imageConfig: { aspectRatio: clamped.aspectRatio, imageSize: clamped.size },
+      ...(thinkingConfig ? { thinkingConfig } : {}),
+      abortSignal: signal,
+    },
+  };
+}
+
+async function generateImageWith(
+  ai: GoogleGenAI,
+  contents: Content[],
+  setup: ReturnType<typeof imageConfigFor>,
+  signal?: AbortSignal
+): Promise<GeneratedImage> {
+  const response = await withRetry(
+    () => ai.models.generateContent({ model: setup.model, contents, config: setup.config }),
+    { signal }
+  );
+  return {
+    ...extractImage(response),
+    model: setup.model,
+    aspectRatio: setup.aspectRatio,
+    imageSize: setup.imageSize,
+  };
+}
+
+// --- 完整企劃：分析 ---
+
+export async function analyzeProduct(
+  ai: GoogleGenAI,
+  input: z.output<typeof AnalyzeInputSchema>,
+  opts: OperationOptions = {}
+): Promise<DirectorOutput> {
+  const zh = input.locale === "zh";
+  const lines = [
+    `${zh ? "產品名稱" : "Product name"}: ${input.productName || (zh ? "未提供" : "Not provided")}`,
+    input.productInfo ? `${zh ? "品牌 / 產品資訊" : "Brand / product info"}: ${input.productInfo}` : "",
+    input.productUrl ? `${zh ? "產品網址（僅供參考，無法開啟）" : "Product URL (reference only, not fetched)"}: ${input.productUrl}` : "",
+  ].filter(Boolean);
+
+  const response = await withRetry(
+    () =>
+      ai.models.generateContent({
+        model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              dataUrlToPart(input.image),
+              {
+                text: `${wrapUserInput("product_brief", lines.join("\n"))}\n\n${
+                  zh ? "請根據圖片與上述資訊執行分析任務。" : "Analyze the image and the brief above."
+                }`,
+              },
+            ],
+          },
+        ],
+        config: {
+          systemInstruction: getDirectorSystemPrompt(input.locale),
+          responseMimeType: "application/json",
+          responseJsonSchema: DIRECTOR_OUTPUT_JSON_SCHEMA,
+          temperature: 1.0,
+          abortSignal: opts.signal,
+        },
+      }),
+    { signal: opts.signal }
+  );
+  return parseStructured(response, DirectorOutputSchema);
+}
+
+// --- 完整企劃：內容規劃 ---
+
+const SIZE_LABELS = {
+  zh: { "1:1": "FB 貼文", "9:16": "限時動態 / Stories", "4:5": "IG 貼文", "16:9": "橫式貼文", "1:1-commercial": "商業攝影" },
+  en: { "1:1": "FB Post", "9:16": "Stories", "4:5": "IG Post", "16:9": "Landscape", "1:1-commercial": "Commercial" },
+} as const;
+
+export async function planContent(
+  ai: GoogleGenAI,
+  input: z.output<typeof PlanInputSchema>,
+  opts: OperationOptions = {}
+): Promise<ContentPlan> {
+  const zh = input.locale === "zh";
+  const labels = SIZE_LABELS[input.locale];
+  const formats = input.formats as (keyof typeof labels)[];
+  const sizeList = formats.map((f) => `${f} (${labels[f]})`).join(", ");
+  const brief = [
+    `${zh ? "策略路線" : "Strategy route"}: ${input.route.route_name}`,
+    `${zh ? "主標題" : "Headline"}: ${input.route.headline}`,
+    `${zh ? "副標題" : "Subhead"}: ${input.route.subhead}`,
+    `${zh ? "風格" : "Style"}: ${input.route.style_brief}`,
+    `${zh ? "目標受眾" : "Target audience"}: ${input.route.target_audience}`,
+    input.supplement ? `${zh ? "策略補充" : "Strategy notes"}: ${input.supplement}` : "",
+    `${zh ? "產品名稱" : "Product"}: ${input.analysis.name}`,
+    `${zh ? "產品特點" : "Key features"}: ${input.analysis.key_features}`,
+    `${zh ? "參考文案" : "Reference copy"}: ${input.referenceCopy || (zh ? "無（請自行規劃最佳結構）" : "None (plan the best structure)")}`,
+    `${zh ? "選定尺寸" : "Selected sizes"}: ${sizeList}`,
+  ].filter(Boolean);
+
+  const response = await withRetry(
+    () =>
+      ai.models.generateContent({
+        model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `${wrapUserInput("campaign_brief", brief.join("\n"))}\n\n${
+                  zh ? "請為每個選定尺寸產生 3 組內容方案。" : "Generate 3 content sets for each selected size."
+                }`,
+              },
+            ],
+          },
+        ],
+        config: {
+          systemInstruction: getContentPlannerSystemPrompt(input.locale),
+          responseMimeType: "application/json",
+          responseJsonSchema: CONTENT_PLAN_JSON_SCHEMA,
+          temperature: 1.0,
+          maxOutputTokens: 32768,
+          abortSignal: opts.signal,
+        },
+      }),
+    { signal: opts.signal }
+  );
+  const plan = parseStructured(response, ContentPlanSchema) as ContentPlan;
+  // 只保留使用者選的尺寸，並確保 id 唯一
+  const seen = new Set<string>();
+  plan.content_sets = plan.content_sets
+    .filter((set) => formats.includes(set.ratio as keyof typeof labels))
+    .map((set) => {
+      let id = set.id;
+      while (seen.has(id)) id = `${id}_dup`;
+      seen.add(id);
+      return { ...set, id };
+    });
+  if (plan.content_sets.length === 0) throw new GeminiError("INVALID_RESPONSE", "No content sets");
+  return plan;
+}
+
+// --- 完整企劃：重新生成 visual prompt ---
+
+export async function regenerateVisualPrompt(
+  ai: GoogleGenAI,
+  input: z.output<typeof RegeneratePromptInputSchema>,
+  opts: OperationOptions = {}
+): Promise<string> {
+  const response = await withRetry(
+    () =>
+      ai.models.generateContent({
+        model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: buildRegeneratePromptUserText({ ...input, formatId: input.formatId as keyof typeof FORMATS }) }],
+          },
+        ],
+        config: { systemInstruction: VISUAL_PROMPT_SYSTEM, temperature: 0.8, abortSignal: opts.signal },
+      }),
+    { signal: opts.signal }
+  );
+  assertNotBlocked(response);
+  const text = response.text?.trim();
+  if (!text) throw new GeminiError("INVALID_RESPONSE", "Empty prompt");
+  return text;
+}
+
+// --- 完整企劃：以 visual prompt 生圖 ---
+
+export async function generatePromptImage(
+  ai: GoogleGenAI,
+  input: z.output<typeof PromptImageInputSchema>,
+  opts: OperationOptions = {}
+): Promise<GeneratedImage> {
+  const formatId = input.formatId as keyof typeof FORMATS | undefined;
+  const aspectRatio = formatId ? FORMATS[formatId].aspectRatio : input.aspectRatio;
+  const setup = imageConfigFor({ ...input, aspectRatio }, opts, opts.signal);
+  const parts: Part[] = [
+    { text: "PRODUCT IMAGE — reproduce this product exactly:" },
+    dataUrlToPart(input.productImage),
+  ];
+  if (input.secondaryImage) {
+    parts.push({ text: "SECONDARY PRODUCT:" }, dataUrlToPart(input.secondaryImage));
+  }
+  parts.push({ text: buildCampaignImagePrompt(input.prompt, formatId, Boolean(input.secondaryImage)) });
+  return generateImageWith(ai, [{ role: "user", parts }], setup, opts.signal);
+}
+
+// --- 相似圖 ---
+
+export function buildSimilarParts(input: z.output<typeof SimilarImageInputSchema>, aspectRatio: string): Part[] {
+  const parts: Part[] = [
+    { text: IMAGE_LABELS.reference },
+    dataUrlToPart(input.referenceImage),
+    { text: IMAGE_LABELS.product },
+    dataUrlToPart(input.productImage),
+  ];
+  if (input.secondaryImage) {
+    parts.push({ text: IMAGE_LABELS.secondary }, dataUrlToPart(input.secondaryImage));
+  }
+  parts.push({
+    text: buildSimilarInstruction({
+      similarity: input.similarity,
+      aspectRatio,
+      hasSecondary: Boolean(input.secondaryImage),
+      copySpace: input.copySpace,
+      instructions: input.instructions,
+      variantIndex: input.variantIndex,
+      variantCount: input.variantCount,
+    }),
+  });
+  return parts;
+}
+
+export async function generateSimilarImage(
+  ai: GoogleGenAI,
+  input: z.output<typeof SimilarImageInputSchema>,
+  opts: OperationOptions = {}
+): Promise<GeneratedImage> {
+  const setup = imageConfigFor(input, opts, opts.signal);
+  return generateImageWith(ai, [{ role: "user", parts: buildSimilarParts(input, setup.aspectRatio) }], setup, opts.signal);
+}
+
+// --- 對話式修圖 ---
+
+/** 合併相鄰同角色的 turn，讓 contents 保持 user / model 交替 */
+export function buildEditContents(input: z.output<typeof EditImageInputSchema>, aspectRatio: string): Content[] {
+  const contents: Content[] = [];
+  const push = (role: "user" | "model", parts: Part[]) => {
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) last.parts = [...(last.parts ?? []), ...parts];
+    else contents.push({ role, parts });
+  };
+
+  for (const turn of input.history) {
+    const parts: Part[] = [];
+    if (turn.text) parts.push({ text: turn.text });
+    if (turn.image) {
+      const imagePart = dataUrlToPart(turn.image);
+      if (turn.role === "model" && turn.thoughtSignature) imagePart.thoughtSignature = turn.thoughtSignature;
+      parts.push(imagePart);
+    }
+    if (parts.length) push(turn.role, parts);
+  }
+  push("user", [{ text: buildEditInstruction(input.instruction, aspectRatio) }]);
+  return contents;
+}
+
+export async function editImage(
+  ai: GoogleGenAI,
+  input: z.output<typeof EditImageInputSchema>,
+  opts: OperationOptions = {}
+): Promise<GeneratedImage> {
+  const setup = imageConfigFor(input, opts, opts.signal);
+  try {
+    return await generateImageWith(ai, buildEditContents(input, setup.aspectRatio), setup, opts.signal);
+  } catch (error) {
+    // 多輪歷史被拒（例如簽章失效）時，退回單輪：只送最新的圖 + 指令
+    const hasModelTurn = input.history.some((t) => t.role === "model");
+    if (!(error instanceof GeminiError) || error.code !== "INVALID_INPUT" || !hasModelTurn) throw error;
+    const latest = [...input.history].reverse().find((t) => t.image);
+    if (!latest?.image) throw error;
+    return generateImageWith(
+      ai,
+      buildEditContents({ ...input, history: [{ role: "user", image: latest.image }] }, setup.aspectRatio),
+      setup,
+      opts.signal
+    );
+  }
+}
