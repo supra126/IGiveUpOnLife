@@ -297,5 +297,16 @@
     "deleteLayer": "刪除圖層",
     "sampleTitle": "在這裡打標題",
     "sampleCopy": "補一句說明文案"
+  },
+  "progress": {
+    "elapsed": "已經 {seconds} 秒",
+    "received": "收到 {chars} 字",
+    "routes": "策略路線 {done} / {total}",
+    "sets": "內容方案 {done} / {total} 組",
+    "thinking": "小GG 現在在想",
+    "waiting": "等 Gemini 開口…",
+    "writing": "正在寫答案…",
+    "cancelNoteServer": "取消後畫面會停下，但已送出的請求仍會在伺服器跑完並計費。",
+    "cancelNoteStatic": "取消會立即中止請求。"
   }
 }

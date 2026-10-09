@@ -12,6 +12,7 @@ import { GeminiError } from "./errors";
 import { unwrap, type Result } from "./result";
 import { DEFAULT_IMAGE_MODEL, DEFAULT_TEXT_MODEL } from "./models";
 import type { GeneratedImage, OperationOptions } from "./operations";
+import type { StreamEvent } from "./stream";
 import type {
   AnalyzeInput,
   EditImageInput,
@@ -91,6 +92,41 @@ const staticCall: StaticRunner = async (run, call) => {
   return run(ops, ai, { signal: call.signal, ...STATIC_DEFAULTS });
 };
 
+/** 讀取 server action 回傳的事件串流；中止時取消讀取 */
+async function* readEventStream<T>(stream: ReadableStream<string>, signal?: AbortSignal): AsyncGenerator<StreamEvent<T>> {
+  const reader = stream.getReader();
+  const onAbort = () => void reader.cancel().catch(() => {});
+  signal?.addEventListener("abort", onAbort, { once: true });
+  try {
+    for (;;) {
+      if (signal?.aborted) throw new GeminiError("ABORTED");
+      const { value, done } = await reader.read();
+      if (done) return;
+      yield JSON.parse(value) as StreamEvent<T>;
+    }
+  } finally {
+    signal?.removeEventListener("abort", onAbort);
+    reader.releaseLock();
+  }
+}
+
+/**
+ * 消費事件串流：error 事件轉成例外，回傳最終結果
+ */
+export async function consumeStream<T>(
+  events: AsyncIterable<StreamEvent<T>>,
+  onEvent: (event: Exclude<StreamEvent<T>, { type: "result" | "error" }>) => void,
+  signal?: AbortSignal
+): Promise<T> {
+  for await (const event of events) {
+    if (signal?.aborted) throw new GeminiError("ABORTED");
+    if (event.type === "result") return event.data;
+    if (event.type === "error") throw new GeminiError(event.code, event.message, event.retryAfterMs);
+    onEvent(event);
+  }
+  throw new GeminiError(signal?.aborted ? "ABORTED" : "INVALID_RESPONSE", "Stream ended without result");
+}
+
 export const gemini = {
   async capabilities(): Promise<Capabilities> {
     if (IS_STATIC_BUILD) {
@@ -119,6 +155,48 @@ export const gemini = {
       );
     }
     return serverCall((a) => a.analyzeAction(input, call.apiKey), call);
+  },
+
+  /** 分析產品（串流：思考摘要與進度） */
+  async *analyzeStream(input: AnalyzeInput, call: CallOptions = {}): AsyncGenerator<StreamEvent<DirectorOutput>> {
+    if (IS_STATIC_BUILD) {
+      if (!call.apiKey) throw new GeminiError("API_KEY_MISSING");
+      const [{ GoogleGenAI }, ops, { AnalyzeInputSchema }] = await Promise.all([
+        import("@google/genai"),
+        import("./operations"),
+        import("./schemas"),
+      ]);
+      const ai = new GoogleGenAI({ apiKey: call.apiKey });
+      yield* ops.streamAnalyze(ai, ops.parseInput(AnalyzeInputSchema, input), { signal: call.signal, ...STATIC_DEFAULTS });
+      return;
+    }
+    if (!loadActions) throw new GeminiError("UNKNOWN");
+    const actions = await loadActions();
+    yield* readEventStream<DirectorOutput>(
+      await raceAbort(actions.analyzeStreamAction(input, call.apiKey), call.signal),
+      call.signal
+    );
+  },
+
+  /** 規劃內容（串流：思考摘要與完成組數） */
+  async *planStream(input: PlanInput, call: CallOptions = {}): AsyncGenerator<StreamEvent<ContentPlan>> {
+    if (IS_STATIC_BUILD) {
+      if (!call.apiKey) throw new GeminiError("API_KEY_MISSING");
+      const [{ GoogleGenAI }, ops, { PlanInputSchema }] = await Promise.all([
+        import("@google/genai"),
+        import("./operations"),
+        import("./schemas"),
+      ]);
+      const ai = new GoogleGenAI({ apiKey: call.apiKey });
+      yield* ops.streamPlan(ai, ops.parseInput(PlanInputSchema, input), { signal: call.signal, ...STATIC_DEFAULTS });
+      return;
+    }
+    if (!loadActions) throw new GeminiError("UNKNOWN");
+    const actions = await loadActions();
+    yield* readEventStream<ContentPlan>(
+      await raceAbort(actions.planStreamAction(input, call.apiKey), call.signal),
+      call.signal
+    );
   },
 
   plan(input: PlanInput, call: CallOptions = {}): Promise<ContentPlan> {

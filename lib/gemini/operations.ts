@@ -7,7 +7,7 @@
 import type {
   Content,
   GenerateContentConfig,
-  GenerateContentResponse,
+  GenerateContentParameters,
   GoogleGenAI,
   Part,
   ThinkingLevel,
@@ -45,6 +45,10 @@ import {
 } from "./prompts/image";
 import { buildSimilarInstruction, IMAGE_LABELS } from "./prompts/similar";
 import { buildEditInstruction } from "./prompts/edit";
+import { assertNotBlocked, extractImage, parseStructured } from "./responses";
+import { streamStructured, type StreamEvent } from "./stream";
+
+export { assertNotBlocked, extractImage, parseStructured };
 
 export interface OperationOptions {
   signal?: AbortSignal;
@@ -81,76 +85,6 @@ export function dataUrlToPart(dataUrl: string): Part {
   const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
   if (!match) throw new GeminiError("INVALID_INPUT", "Invalid image data URL");
   return { inlineData: { mimeType: match[1], data: match[2] } };
-}
-
-const BLOCKED_FINISH_REASONS = new Set([
-  "SAFETY",
-  "IMAGE_SAFETY",
-  "PROHIBITED_CONTENT",
-  "IMAGE_PROHIBITED_CONTENT",
-  "BLOCKLIST",
-  "SPII",
-  "RECITATION",
-  "IMAGE_RECITATION",
-]);
-
-function assertNotBlocked(response: GenerateContentResponse): void {
-  if (response.promptFeedback?.blockReason) {
-    throw new GeminiError("CONTENT_BLOCKED", String(response.promptFeedback.blockReason));
-  }
-  const reason = response.candidates?.[0]?.finishReason;
-  if (reason && BLOCKED_FINISH_REASONS.has(String(reason))) {
-    throw new GeminiError("CONTENT_BLOCKED", String(reason));
-  }
-}
-
-/** 取出最終圖片（略過 thought 過程圖），並檢查安全過濾 */
-export function extractImage(
-  response: GenerateContentResponse
-): Pick<GeneratedImage, "dataUrl" | "mimeType" | "thoughtSignature" | "text"> {
-  assertNotBlocked(response);
-  const parts = response.candidates?.[0]?.content?.parts ?? [];
-  const finalParts = parts.filter((p) => !p.thought);
-  const imagePart = [...finalParts].reverse().find((p) => p.inlineData?.data);
-  if (!imagePart?.inlineData?.data) {
-    const reason = response.candidates?.[0]?.finishReason;
-    throw new GeminiError("NO_IMAGE", reason ? String(reason) : undefined);
-  }
-  const mimeType = imagePart.inlineData.mimeType || "image/png";
-  const text = finalParts
-    .map((p) => p.text)
-    .filter(Boolean)
-    .join("\n")
-    .trim();
-  return {
-    dataUrl: `data:${mimeType};base64,${imagePart.inlineData.data}`,
-    mimeType,
-    thoughtSignature: imagePart.thoughtSignature,
-    text: text || undefined,
-  };
-}
-
-/** 解析結構化 JSON 回應並用 zod 驗證 */
-export function parseStructured<S extends z.ZodType>(response: GenerateContentResponse, schema: S): z.output<S> {
-  assertNotBlocked(response);
-  if (String(response.candidates?.[0]?.finishReason) === "MAX_TOKENS") {
-    throw new GeminiError("RESPONSE_TRUNCATED");
-  }
-  const text = response.text?.trim();
-  if (!text) throw new GeminiError("INVALID_RESPONSE", "Empty response");
-
-  let json: unknown;
-  try {
-    json = JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, ""));
-  } catch {
-    throw new GeminiError("INVALID_RESPONSE", "Response is not valid JSON");
-  }
-  const result = schema.safeParse(json);
-  if (!result.success) {
-    const issue = result.error.issues[0];
-    throw new GeminiError("INVALID_RESPONSE", issue ? `${issue.path.join(".")}: ${issue.message}` : undefined);
-  }
-  return result.data;
 }
 
 function toThinkingLevel(level: ThinkingLevelName | undefined): { thinkingLevel: ThinkingLevel } | undefined {
@@ -202,11 +136,10 @@ async function generateImageWith(
 
 // --- 完整企劃：分析 ---
 
-export async function analyzeProduct(
-  ai: GoogleGenAI,
+export function buildAnalyzeRequest(
   input: z.output<typeof AnalyzeInputSchema>,
   opts: OperationOptions = {}
-): Promise<DirectorOutput> {
+): GenerateContentParameters {
   const zh = input.locale === "zh";
   const lines = [
     `${zh ? "產品名稱" : "Product name"}: ${input.productName || (zh ? "未提供" : "Not provided")}`,
@@ -214,34 +147,53 @@ export async function analyzeProduct(
     input.productUrl ? `${zh ? "產品網址（僅供參考，無法開啟）" : "Product URL (reference only, not fetched)"}: ${input.productUrl}` : "",
   ].filter(Boolean);
 
-  const response = await withRetry(
-    () =>
-      ai.models.generateContent({
-        model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
-        contents: [
+  return {
+    model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
+    contents: [
+      {
+        role: "user",
+        parts: [
+          dataUrlToPart(input.image),
           {
-            role: "user",
-            parts: [
-              dataUrlToPart(input.image),
-              {
-                text: `${wrapUserInput("product_brief", lines.join("\n"))}\n\n${
-                  zh ? "請根據圖片與上述資訊執行分析任務。" : "Analyze the image and the brief above."
-                }`,
-              },
-            ],
+            text: `${wrapUserInput("product_brief", lines.join("\n"))}\n\n${
+              zh ? "請根據圖片與上述資訊執行分析任務。" : "Analyze the image and the brief above."
+            }`,
           },
         ],
-        config: {
-          systemInstruction: getDirectorSystemPrompt(input.locale),
-          responseMimeType: "application/json",
-          responseJsonSchema: DIRECTOR_OUTPUT_JSON_SCHEMA,
-          temperature: 1.0,
-          abortSignal: opts.signal,
-        },
-      }),
+      },
+    ],
+    config: {
+      systemInstruction: getDirectorSystemPrompt(input.locale),
+      responseMimeType: "application/json",
+      responseJsonSchema: DIRECTOR_OUTPUT_JSON_SCHEMA,
+      temperature: 1.0,
+    },
+  };
+}
+
+export async function analyzeProduct(
+  ai: GoogleGenAI,
+  input: z.output<typeof AnalyzeInputSchema>,
+  opts: OperationOptions = {}
+): Promise<DirectorOutput> {
+  const request = buildAnalyzeRequest(input, opts);
+  const response = await withRetry(
+    () => ai.models.generateContent({ ...request, config: { ...request.config, abortSignal: opts.signal } }),
     { signal: opts.signal }
   );
   return parseStructured(response, DirectorOutputSchema);
+}
+
+export function streamAnalyze(
+  ai: GoogleGenAI,
+  input: z.output<typeof AnalyzeInputSchema>,
+  opts: OperationOptions = {}
+): AsyncGenerator<StreamEvent<DirectorOutput>> {
+  return streamStructured(ai, buildAnalyzeRequest(input, opts), DirectorOutputSchema, {
+    signal: opts.signal,
+    total: 3,
+    countPattern: /"route_name"/g,
+  });
 }
 
 // --- 完整企劃：內容規劃 ---
@@ -251,14 +203,15 @@ const SIZE_LABELS = {
   en: { "1:1": "FB Post", "9:16": "Stories", "4:5": "IG Post", "16:9": "Landscape", "1:1-commercial": "Commercial" },
 } as const;
 
-export async function planContent(
-  ai: GoogleGenAI,
+type PlanFormat = keyof (typeof SIZE_LABELS)["zh"];
+
+export function buildPlanRequest(
   input: z.output<typeof PlanInputSchema>,
   opts: OperationOptions = {}
-): Promise<ContentPlan> {
+): GenerateContentParameters {
   const zh = input.locale === "zh";
   const labels = SIZE_LABELS[input.locale];
-  const formats = input.formats as (keyof typeof labels)[];
+  const formats = input.formats as PlanFormat[];
   const sizeList = formats.map((f) => `${f} (${labels[f]})`).join(", ");
   const brief = [
     `${zh ? "策略路線" : "Strategy route"}: ${input.route.route_name}`,
@@ -273,38 +226,36 @@ export async function planContent(
     `${zh ? "選定尺寸" : "Selected sizes"}: ${sizeList}`,
   ].filter(Boolean);
 
-  const response = await withRetry(
-    () =>
-      ai.models.generateContent({
-        model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
-        contents: [
+  return {
+    model: input.model || opts.textModel || DEFAULT_TEXT_MODEL,
+    contents: [
+      {
+        role: "user",
+        parts: [
           {
-            role: "user",
-            parts: [
-              {
-                text: `${wrapUserInput("campaign_brief", brief.join("\n"))}\n\n${
-                  zh ? "請為每個選定尺寸產生 3 組內容方案。" : "Generate 3 content sets for each selected size."
-                }`,
-              },
-            ],
+            text: `${wrapUserInput("campaign_brief", brief.join("\n"))}\n\n${
+              zh ? "請為每個選定尺寸產生 3 組內容方案。" : "Generate 3 content sets for each selected size."
+            }`,
           },
         ],
-        config: {
-          systemInstruction: getContentPlannerSystemPrompt(input.locale),
-          responseMimeType: "application/json",
-          responseJsonSchema: CONTENT_PLAN_JSON_SCHEMA,
-          temperature: 1.0,
-          maxOutputTokens: 32768,
-          abortSignal: opts.signal,
-        },
-      }),
-    { signal: opts.signal }
-  );
-  const plan = parseStructured(response, ContentPlanSchema) as ContentPlan;
-  // 只保留使用者選的尺寸，並確保 id 唯一
+      },
+    ],
+    config: {
+      systemInstruction: getContentPlannerSystemPrompt(input.locale),
+      responseMimeType: "application/json",
+      responseJsonSchema: CONTENT_PLAN_JSON_SCHEMA,
+      temperature: 1.0,
+      maxOutputTokens: 32768,
+    },
+  };
+}
+
+/** 只保留使用者選的尺寸，並確保 id 唯一 */
+export function finalizePlan(raw: z.output<typeof ContentPlanSchema>, formats: string[]): ContentPlan {
+  const plan = raw as ContentPlan;
   const seen = new Set<string>();
   plan.content_sets = plan.content_sets
-    .filter((set) => formats.includes(set.ratio as keyof typeof labels))
+    .filter((set) => formats.includes(set.ratio))
     .map((set) => {
       let id = set.id;
       while (seen.has(id)) id = `${id}_dup`;
@@ -313,6 +264,34 @@ export async function planContent(
     });
   if (plan.content_sets.length === 0) throw new GeminiError("INVALID_RESPONSE", "No content sets");
   return plan;
+}
+
+export async function planContent(
+  ai: GoogleGenAI,
+  input: z.output<typeof PlanInputSchema>,
+  opts: OperationOptions = {}
+): Promise<ContentPlan> {
+  const request = buildPlanRequest(input, opts);
+  const response = await withRetry(
+    () => ai.models.generateContent({ ...request, config: { ...request.config, abortSignal: opts.signal } }),
+    { signal: opts.signal }
+  );
+  return finalizePlan(parseStructured(response, ContentPlanSchema), input.formats);
+}
+
+export async function* streamPlan(
+  ai: GoogleGenAI,
+  input: z.output<typeof PlanInputSchema>,
+  opts: OperationOptions = {}
+): AsyncGenerator<StreamEvent<ContentPlan>> {
+  const events = streamStructured(ai, buildPlanRequest(input, opts), ContentPlanSchema, {
+    signal: opts.signal,
+    total: input.formats.length * 3,
+    countPattern: /"visual_prompt_en"\s*:\s*"(?:[^"\\]|\\.)*"/g,
+  });
+  for await (const event of events) {
+    yield event.type === "result" ? { type: "result", data: finalizePlan(event.data, input.formats) } : event;
+  }
 }
 
 // --- 完整企劃：重新生成 visual prompt ---

@@ -9,6 +9,7 @@ import { OutputSettings } from "@/components/workbench/OutputSettings";
 import { PanelSection } from "@/components/workbench/PanelSection";
 import { useAssetUpload } from "@/components/workbench/useAssetUpload";
 import { updateProject, useWorkspace } from "@/lib/project/store";
+import { useCampaignProgress } from "@/lib/workbench/progress";
 import { FORMAT_IDS, type FormatId } from "@/lib/gemini/formats";
 import type { CampaignState, CampaignStep } from "@/lib/project/types";
 import type { MarketingRoute } from "@/types";
@@ -27,6 +28,7 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
   const campaign = useWorkspace((s) => s.project?.campaign);
   const upload = useAssetUpload();
   const [busy, setBusy] = useState<"analyze" | "plan" | null>(null);
+  const progress = useCampaignProgress();
   if (!campaign) return null;
 
   const set = (patch: Partial<CampaignState>) =>
@@ -261,7 +263,14 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
           <div className="flex items-center gap-2">
             <div className="flex flex-1 items-center gap-2 text-xs text-fg-muted" aria-live="polite">
               <Loader2 size={14} className="animate-spin" />
-              {t(busy === "analyze" ? "campaign.analyzing" : "campaign.planning")}
+              <span className="truncate">
+                {progress?.total && progress.done !== undefined
+                  ? t(busy === "analyze" ? "progress.routes" : "progress.sets", {
+                      done: progress.done,
+                      total: progress.total,
+                    })
+                  : t(busy === "analyze" ? "campaign.analyzing" : "campaign.planning")}
+              </span>
             </div>
             <Button
               size="sm"

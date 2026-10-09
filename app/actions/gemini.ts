@@ -16,8 +16,11 @@ import {
   parseInput,
   planContent,
   regenerateVisualPrompt,
+  streamAnalyze,
+  streamPlan,
   type GeneratedImage,
 } from "@/lib/gemini/operations";
+import { catchStreamErrors, type StreamEvent } from "@/lib/gemini/stream";
 import {
   AnalyzeInputSchema,
   EditImageInputSchema,
@@ -98,5 +101,44 @@ export async function editImageAction(raw: EditImageInput, apiKey?: string): Pro
     const input = parseInput(EditImageInputSchema, raw);
     const { ai, imageModel } = await guard({ userApiKey: apiKey, kind: "image", model: input.model });
     return editImage(ai, input, { imageModel });
+  });
+}
+
+/**
+ * 把串流事件包成 ReadableStream 回傳（每個 chunk 是一個 JSON 字串）
+ * 驗證與 guard 失敗也以 error 事件回報，前端只需處理一種格式
+ */
+function toEventStream<T>(make: (signal: AbortSignal) => Promise<AsyncGenerator<StreamEvent<T>>>): ReadableStream<string> {
+  const controller = new AbortController();
+  let iterator: AsyncGenerator<StreamEvent<T>> | null = null;
+  return new ReadableStream<string>({
+    async pull(stream) {
+      iterator ??= catchStreamErrors(async function* () {
+        yield* await make(controller.signal);
+      });
+      const { value, done } = await iterator.next();
+      if (done) stream.close();
+      else stream.enqueue(JSON.stringify(value));
+    },
+    async cancel() {
+      controller.abort();
+      await iterator?.return(undefined);
+    },
+  });
+}
+
+export async function analyzeStreamAction(raw: AnalyzeInput, apiKey?: string): Promise<ReadableStream<string>> {
+  return toEventStream(async (signal) => {
+    const input = parseInput(AnalyzeInputSchema, raw);
+    const { ai, textModel } = await guard({ userApiKey: apiKey, kind: "text", model: input.model });
+    return streamAnalyze(ai, input, { textModel, signal });
+  });
+}
+
+export async function planStreamAction(raw: PlanInput, apiKey?: string): Promise<ReadableStream<string>> {
+  return toEventStream(async (signal) => {
+    const input = parseInput(PlanInputSchema, raw);
+    const { ai, textModel } = await guard({ userApiKey: apiKey, kind: "text", model: input.model });
+    return streamPlan(ai, input, { textModel, signal });
   });
 }

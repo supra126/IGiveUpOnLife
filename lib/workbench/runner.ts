@@ -4,7 +4,9 @@
  * 工作台的動作：把 store、佇列與 Gemini transport 串起來
  */
 import { useSyncExternalStore } from "react";
-import { gemini, type Capabilities } from "@/lib/gemini/transport";
+import { consumeStream, gemini, type Capabilities } from "@/lib/gemini/transport";
+import type { StreamEvent } from "@/lib/gemini/stream";
+import { endProgress, pushThought, startProgress, updateProgress } from "./progress";
 import { classifyError, GeminiError } from "@/lib/gemini/errors";
 import { FORMATS, type FormatId } from "@/lib/gemini/formats";
 import type { AspectRatio } from "@/lib/gemini/models";
@@ -367,6 +369,12 @@ function startCampaignRequest(): AbortController {
 export function cancelCampaignRequest(): void {
   campaignController?.abort();
   campaignController = null;
+  endProgress();
+}
+
+function onStreamEvent(event: Exclude<StreamEvent<unknown>, { type: "result" | "error" }>) {
+  if (event.type === "thought") pushThought(event.text);
+  else updateProgress(event);
 }
 
 /** 只套用仍是最新請求、且專案沒有被切換的結果 */
@@ -383,17 +391,22 @@ export async function runAnalyze(locale: Locale): Promise<boolean> {
     return false;
   }
   const controller = startCampaignRequest();
+  startProgress("analyze", 3);
   try {
-    const result = await gemini.analyze(
-      {
-        image,
-        productName: input.productName,
-        productInfo: input.productInfo,
-        productUrl: input.productUrl,
-        model: project.settings.textModel,
-        locale,
-      },
-      { apiKey: apiKey(), signal: controller.signal }
+    const result = await consumeStream(
+      gemini.analyzeStream(
+        {
+          image,
+          productName: input.productName,
+          productInfo: input.productInfo,
+          productUrl: input.productUrl,
+          model: project.settings.textModel,
+          locale,
+        },
+        { apiKey: apiKey(), signal: controller.signal }
+      ),
+      onStreamEvent,
+      controller.signal
     );
     if (!isCurrent(controller, project.id)) return false;
     updateProject((p) => ({
@@ -415,7 +428,10 @@ export async function runAnalyze(locale: Locale): Promise<boolean> {
     if (isCurrent(controller, project.id)) reportError(error);
     return false;
   } finally {
-    if (campaignController === controller) campaignController = null;
+    if (campaignController === controller) {
+      campaignController = null;
+      endProgress();
+    }
   }
 }
 
@@ -425,18 +441,23 @@ export async function runPlan(locale: Locale): Promise<boolean> {
   const route = routes[activeRouteIndex];
   if (!analysis || !route || formats.length === 0) return false;
   const controller = startCampaignRequest();
+  startProgress("plan", formats.length * 3);
   try {
-    const plan = await gemini.plan(
-      {
-        route,
-        analysis: analysis.product_analysis,
-        supplement: routeSupplements[activeRouteIndex] ?? "",
-        referenceCopy,
-        formats,
-        model: project.settings.textModel,
-        locale,
-      },
-      { apiKey: apiKey(), signal: controller.signal }
+    const plan = await consumeStream(
+      gemini.planStream(
+        {
+          route,
+          analysis: analysis.product_analysis,
+          supplement: routeSupplements[activeRouteIndex] ?? "",
+          referenceCopy,
+          formats,
+          model: project.settings.textModel,
+          locale,
+        },
+        { apiKey: apiKey(), signal: controller.signal }
+      ),
+      onStreamEvent,
+      controller.signal
     );
     if (!isCurrent(controller, project.id)) return false;
     updateProject((p) => ({
@@ -448,7 +469,10 @@ export async function runPlan(locale: Locale): Promise<boolean> {
     if (isCurrent(controller, project.id)) reportError(error);
     return false;
   } finally {
-    if (campaignController === controller) campaignController = null;
+    if (campaignController === controller) {
+      campaignController = null;
+      endProgress();
+    }
   }
 }
 

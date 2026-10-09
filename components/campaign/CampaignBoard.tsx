@@ -8,6 +8,8 @@ import { BrandMark } from "@/components/ui/BrandMark";
 import { GalleryCard } from "@/components/workbench/GalleryCard";
 import { Gallery } from "@/components/workbench/Gallery";
 import { useWorkspace } from "@/lib/project/store";
+import { useCampaignProgress } from "@/lib/workbench/progress";
+import { StreamProgress } from "./StreamProgress";
 import type { Generation } from "@/lib/project/types";
 import type { ContentSet } from "@/types";
 import {
@@ -150,6 +152,7 @@ export function CampaignBoard(props: BoardProps) {
   const { t } = useLocale();
   const campaign = useWorkspace((s) => s.project?.campaign);
   const generations = useWorkspace((s) => s.generations);
+  const progress = useCampaignProgress();
 
   const bySet = useMemo(() => {
     const map = new Map<string, Generation[]>();
@@ -161,6 +164,8 @@ export function CampaignBoard(props: BoardProps) {
   }, [generations]);
 
   if (!campaign) return null;
+
+  if (progress) return <StreamProgress />;
 
   if (campaign.step === "suite" && campaign.contentSets.length > 0) {
     const groups = new Map<string, ContentSet[]>();

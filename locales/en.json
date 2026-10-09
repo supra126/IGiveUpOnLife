@@ -297,5 +297,16 @@
     "deleteLayer": "Delete layer",
     "sampleTitle": "Your headline here",
     "sampleCopy": "A line of supporting copy"
+  },
+  "progress": {
+    "elapsed": "{seconds}s elapsed",
+    "received": "{chars} characters received",
+    "routes": "Routes {done} / {total}",
+    "sets": "Content sets {done} / {total}",
+    "thinking": "GG is thinking about",
+    "waiting": "Waiting for Gemini…",
+    "writing": "Writing the answer…",
+    "cancelNoteServer": "Cancelling stops the screen, but the request already sent finishes on the server and is billed.",
+    "cancelNoteStatic": "Cancelling stops the request immediately."
   }
 }
