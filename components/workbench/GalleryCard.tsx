@@ -40,7 +40,11 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
             aria-label={t("gallery.open")}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- object URL */}
-            <img src={url} alt={t("gallery.imageAlt", { ratio: g.aspectRatio })} className="size-full object-cover" />
+            <img
+              src={url}
+              alt={t("gallery.imageAlt", { ratio: g.aspectRatio })}
+              className="size-full object-cover"
+            />
           </button>
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-2 p-4 text-center">
@@ -53,10 +57,14 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
             {g.status === "error" && (
               <>
                 <TriangleAlert size={18} className="text-danger" />
-                <span className="text-xs text-danger">{t(`errors.${g.errorCode ?? "UNKNOWN"}`)}</span>
+                <span className="text-xs text-danger">
+                  {t(`errors.${g.errorCode ?? "UNKNOWN"}`)}
+                </span>
               </>
             )}
-            {g.status === "cancelled" && <span className="text-xs text-fg-subtle">{t("gallery.cancelled")}</span>}
+            {g.status === "cancelled" && (
+              <span className="text-xs text-fg-subtle">{t("gallery.cancelled")}</span>
+            )}
           </div>
         )}
         {g.source !== "similar" && g.source !== "campaign" && (
@@ -69,14 +77,7 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
             {t("gallery.withText")}
           </span>
         )}
-      </div>
-
-      <figcaption className="flex items-center justify-between gap-2 px-2.5 py-2">
-        <span className="min-w-0 truncate font-mono text-[11px] text-fg-subtle">
-          {g.aspectRatio} · {g.imageSize}
-          {g.similarity ? ` · ${t(`similar.levels.${g.similarity}`)}` : ""} · {modelLabel}
-        </span>
-        <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           {g.status === "done" && (
             <>
               <Button
@@ -129,8 +130,9 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
           {!busy && (
             <Button
               size="sm"
-              variant="danger"
+              variant="secondary"
               iconOnly
+              className="text-danger!"
               aria-label={t("gallery.delete")}
               title={t("gallery.delete")}
               onClick={() => removeGeneration(g.id)}
@@ -139,6 +141,13 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
             </Button>
           )}
         </div>
+      </div>
+
+      <figcaption className="px-2.5 py-2">
+        <span className="block truncate font-mono text-[11px] text-fg-subtle">
+          {g.aspectRatio} · {g.imageSize}
+          {g.similarity ? ` · ${t(`similar.levels.${g.similarity}`)}` : ""} · {modelLabel}
+        </span>
       </figcaption>
     </figure>
   );

@@ -111,7 +111,7 @@
   "gallery": {
     "count": "{count} 張完成",
     "downloadAll": "全部下載 (.zip)",
-    "download": "下載原圖",
+    "download": "下載",
     "open": "放大檢視",
     "openEdit": "檢視與修圖",
     "addText": "加文字",
@@ -252,5 +252,50 @@
     "globalErrorTitle": "應用程式錯誤",
     "globalErrorDescription": "抱歉，發生了嚴重的錯誤。請重新整理頁面或稍後再試。",
     "reload": "重新載入"
+  },
+  "editor": {
+    "title": "加文字",
+    "addText": "文字",
+    "addLogo": "Logo",
+    "replaceLogo": "換 Logo",
+    "logo": "Logo",
+    "templates": "版型",
+    "templateNames": {
+      "headline-top": "上方大標",
+      "bottom-band": "下方標題＋文案",
+      "center-statement": "置中大字",
+      "corner-caption": "角落小字"
+    },
+    "applyToGroup": "套用到同組 {count} 張",
+    "save": "儲存",
+    "saved": "已存好，下載時會附上含文字的版本。",
+    "saveFailed": "儲存失敗，再試一次。",
+    "applied": "已套用到 {count} 張。",
+    "layers": "圖層",
+    "noLayers": "還沒有圖層。加一段文字或套個版型。",
+    "text": "內容",
+    "font": "字型",
+    "weight": "字重",
+    "size": "字級",
+    "color": "顏色",
+    "opacity": "不透明度",
+    "align": "對齊",
+    "alignOptions": {
+      "left": "靠左",
+      "center": "置中",
+      "right": "靠右"
+    },
+    "lineHeight": "行高",
+    "letterSpacing": "字距",
+    "stroke": "描邊",
+    "strokeColor": "描邊顏色",
+    "strokeWidth": "描邊粗細",
+    "shadow": "陰影",
+    "bringForward": "上移一層",
+    "sendBackward": "下移一層",
+    "duplicate": "複製圖層",
+    "deleteLayer": "刪除圖層",
+    "sampleTitle": "在這裡打標題",
+    "sampleCopy": "補一句說明文案"
   }
 }

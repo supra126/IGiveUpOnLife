@@ -17,6 +17,7 @@ import { Gallery } from "./Gallery";
 import { Viewer } from "./Viewer";
 import { SettingsDialog } from "./SettingsDialog";
 import { Toasts } from "./Toasts";
+import { EditorDialog } from "@/components/editor/EditorDialog";
 
 function Welcome({ onNew }: { onNew: (kind: ProjectKind) => void }) {
   const { t } = useLocale();
@@ -58,6 +59,7 @@ export function Workbench() {
   const prefs = usePreferences();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [viewerId, setViewerId] = useState<string | null>(null);
+  const [editorId, setEditorId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<"setup" | "results">("setup");
 
   useEffect(() => {
@@ -104,6 +106,10 @@ export function Workbench() {
   );
 
   const openGeneration = useCallback((g: Generation) => setViewerId(g.id), []);
+  const editText = useCallback((g: Generation) => {
+    setViewerId(null);
+    setEditorId(g.id);
+  }, []);
 
   const retrySimilar = useCallback(
     (g: Generation) => {
@@ -166,20 +172,25 @@ export function Workbench() {
                 <Gallery
                   generations={generations}
                   onOpen={openGeneration}
+                  onEditText={editText}
                   onRetry={retrySimilar}
                   onNeedKey={onNeedKey}
                   emptyTitle={t("similar.emptyTitle")}
                   emptyBody={t("similar.emptyBody")}
                 />
               ) : (
-                <CampaignBoard onOpen={openGeneration} onNeedKey={onNeedKey} />
+                <CampaignBoard onOpen={openGeneration} onEditText={editText} onNeedKey={onNeedKey} />
               )}
             </main>
           </div>
         </>
       )}
 
-      <Viewer generationId={viewerId} onSelect={setViewerId} onNeedKey={onNeedKey} />
+      <Viewer generationId={viewerId} onSelect={setViewerId} onEditText={editText} onNeedKey={onNeedKey} />
+      <EditorDialog
+        generation={generations.find((g) => g.id === editorId) ?? null}
+        onClose={() => setEditorId(null)}
+      />
       <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <Toasts />
     </div>

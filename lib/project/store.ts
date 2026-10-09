@@ -224,3 +224,15 @@ if (typeof window !== "undefined") {
     void flushSave();
   });
 }
+
+// --- 文字圖層 ---
+
+export async function loadLayerDoc(generationId: string) {
+  return safe(() => db.getLayerDoc(generationId), undefined);
+}
+
+export async function persistLayerDoc(generationId: string, doc: import("@/lib/editor/model").LayerDoc) {
+  const projectId = state.project?.id;
+  if (!projectId) return;
+  await safe(() => db.saveLayerDoc(generationId, projectId, doc), undefined);
+}

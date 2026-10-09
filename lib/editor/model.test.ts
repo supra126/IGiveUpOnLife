@@ -37,3 +37,28 @@ describe("圖層座標", () => {
     expect(px.cx - px.width / 2).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe("版型範本", async () => {
+  const { buildTemplate, TEMPLATE_IDS } = await import("./templates");
+  let n = 0;
+  const id = () => `l${n++}`;
+
+  it.each([
+    ["直式", 4 / 5],
+    ["方形", 1],
+    ["橫式", 16 / 9],
+  ])("%s：每個範本的文字都在畫布內", (_, aspect) => {
+    const size = aspect >= 1 ? { width: 1000 * aspect, height: 1000 } : { width: 1000, height: 1000 / aspect };
+    for (const template of TEMPLATE_IDS) {
+      const layers = buildTemplate(template, aspect, { title: "標題", copy: "文案" }, id);
+      expect(layers.length).toBeGreaterThan(0);
+      for (const layer of layers) {
+        const px = toPixels(layer, size);
+        expect(px.cx - px.width / 2).toBeGreaterThanOrEqual(-1);
+        expect(px.cx + px.width / 2).toBeLessThanOrEqual(size.width + 1);
+        expect(layer.y).toBeGreaterThan(0);
+        expect(layer.y).toBeLessThan(1);
+      }
+    }
+  });
+});

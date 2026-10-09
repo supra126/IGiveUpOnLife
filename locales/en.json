@@ -111,7 +111,7 @@
   "gallery": {
     "count": "{count} done",
     "downloadAll": "Download all (.zip)",
-    "download": "Download original",
+    "download": "Download",
     "open": "View larger",
     "openEdit": "View and edit",
     "addText": "Add text",
@@ -252,5 +252,50 @@
     "globalErrorTitle": "Application Error",
     "globalErrorDescription": "Sorry, a critical error occurred. Please refresh the page or try again later.",
     "reload": "Reload"
+  },
+  "editor": {
+    "title": "Add text",
+    "addText": "Text",
+    "addLogo": "Logo",
+    "replaceLogo": "Replace logo",
+    "logo": "Logo",
+    "templates": "Layouts",
+    "templateNames": {
+      "headline-top": "Headline on top",
+      "bottom-band": "Title + copy at bottom",
+      "center-statement": "Centered statement",
+      "corner-caption": "Corner caption"
+    },
+    "applyToGroup": "Apply to {count} in group",
+    "save": "Save",
+    "saved": "Saved. Downloads include the version with text.",
+    "saveFailed": "Couldn’t save. Try again.",
+    "applied": "Applied to {count} images.",
+    "layers": "Layers",
+    "noLayers": "No layers yet. Add text or pick a layout.",
+    "text": "Text",
+    "font": "Font",
+    "weight": "Weight",
+    "size": "Size",
+    "color": "Color",
+    "opacity": "Opacity",
+    "align": "Align",
+    "alignOptions": {
+      "left": "Left",
+      "center": "Center",
+      "right": "Right"
+    },
+    "lineHeight": "Line height",
+    "letterSpacing": "Letter spacing",
+    "stroke": "Outline",
+    "strokeColor": "Outline color",
+    "strokeWidth": "Outline width",
+    "shadow": "Shadow",
+    "bringForward": "Bring forward",
+    "sendBackward": "Send backward",
+    "duplicate": "Duplicate layer",
+    "deleteLayer": "Delete layer",
+    "sampleTitle": "Your headline here",
+    "sampleCopy": "A line of supporting copy"
   }
 }
