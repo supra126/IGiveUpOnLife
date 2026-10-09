@@ -37,9 +37,10 @@ const RESOLUTION_API_MAP: Record<ResolutionLevel, string> = {
   "4k": "4K",
 };
 
-function getImageConfig(resolution: ResolutionLevel = "4k") {
+function getImageConfig(resolution: ResolutionLevel = "2k", aspectRatio?: string) {
   return {
     imageSize: RESOLUTION_API_MAP[resolution],
+    aspectRatio: normalizeAspectRatio(aspectRatio),
   };
 }
 
@@ -75,7 +76,7 @@ export async function generateMarketingImageAction(
   }
 
   // Get image config for resolution
-  const imageConfig = getImageConfig(validatedInput.resolution || "4k");
+  const imageConfig = getImageConfig(validatedInput.resolution || "2k", validatedInput.aspectRatio);
 
   const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [
     { text: enhancedPrompt },
@@ -240,7 +241,7 @@ export async function generateImageFromReferenceAction(
   }
 
   // Get image config for resolution
-  const imageConfig = getImageConfig(validatedInput.resolution || "4k");
+  const imageConfig = getImageConfig(validatedInput.resolution || "2k", validatedInput.aspectRatio);
 
   const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [
     { text: prompt },

@@ -20,6 +20,7 @@ import {
   validateContentPlan,
 } from "@/lib/schemas";
 import { ZodError } from "zod";
+import { normalizeAspectRatio } from "@/lib/image-utils";
 
 // --- Server-side i18n for error messages ---
 
@@ -64,8 +65,8 @@ function getErrorMessage(key: keyof typeof errorMessages.en, locale: Locale = "e
 
 // --- Configuration ---
 
-const TEXT_MODEL = process.env.NEXT_PUBLIC_GEMINI_TEXT_MODEL || "gemini-3.1-pro-preview";
-const IMAGE_MODEL = process.env.NEXT_PUBLIC_GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
+const TEXT_MODEL = process.env.NEXT_PUBLIC_GEMINI_TEXT_MODEL || "gemini-3.8-flash";
+const IMAGE_MODEL = process.env.NEXT_PUBLIC_GEMINI_IMAGE_MODEL || "gemini-nano-banana-2.1";
 const THINKING_BUDGET = 2048;
 
 // Resolution types and helpers
@@ -78,9 +79,10 @@ const RESOLUTION_API_MAP: Record<ResolutionLevel, string> = {
   "4k": "4K",
 };
 
-function getImageConfig(resolution: ResolutionLevel = "4k") {
+function getImageConfig(resolution: ResolutionLevel = "2k", aspectRatio?: string) {
   return {
     imageSize: RESOLUTION_API_MAP[resolution],
+    aspectRatio: normalizeAspectRatio(aspectRatio),
   };
 }
 
@@ -508,18 +510,6 @@ export async function generateMarketingImageClient(
 
   const ai = new GoogleGenAI({ apiKey: input.apiKey });
 
-  const aspectRatio = input.aspectRatio || "1:1";
-  const _apiAspectRatio: "1:1" | "9:16" | "4:5" | "16:9" =
-    aspectRatio === "1:1-commercial"
-      ? "1:1"
-      : aspectRatio === "4:5"
-        ? "4:5"
-        : aspectRatio === "9:16"
-          ? "9:16"
-          : aspectRatio === "16:9"
-            ? "16:9"
-            : "1:1";
-
   let enhancedPrompt = input.prompt;
   if (input.secondaryImageBase64) {
     enhancedPrompt += `\n\nIMPORTANT - MULTI-PRODUCT COMPOSITION: This image features TWO products that must appear together naturally in the same scene.
@@ -531,7 +521,7 @@ export async function generateMarketingImageClient(
   }
 
   // Get image config for resolution
-  const imageConfig = getImageConfig(input.resolution || "4k");
+  const imageConfig = getImageConfig(input.resolution || "2k", input.aspectRatio);
 
   const parts: Array<
     { text: string } | { inlineData: { data: string; mimeType: string } }
@@ -779,7 +769,7 @@ CRITICAL TEXT RENDERING RULES:
   }
 
   // Get image config for resolution
-  const imageConfig = getImageConfig(input.resolution || "4k");
+  const imageConfig = getImageConfig(input.resolution || "2k", input.aspectRatio);
 
   const parts: Array<
     { text: string } | { inlineData: { data: string; mimeType: string } }

@@ -281,7 +281,7 @@ export const generateImageFromReference = async (
   titleWeight?: "regular" | "medium" | "bold" | "black",
   copyWeight?: "regular" | "medium" | "bold" | "black",
   secondaryProductBase64?: string | null,
-  resolution: ResolutionLevel = "4k",
+  resolution: ResolutionLevel = "2k",
   locale?: Locale
 ): Promise<string> => {
   await initModule();

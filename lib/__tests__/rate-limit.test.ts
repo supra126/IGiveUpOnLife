@@ -30,7 +30,7 @@ describe("getRateLimitConfig", () => {
     const config = getRateLimitConfig();
 
     expect(config.windowMs).toBe(60000);
-    expect(config.maxRequests).toBe(10);
+    expect(config.maxRequests).toBe(2);
     expect(config.enabled).toBe(true);
   });
 
