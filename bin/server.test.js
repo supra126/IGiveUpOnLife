@@ -48,6 +48,16 @@ describe("靜態伺服器", () => {
     expect(asset.headers.get("cache-control")).toContain("immutable");
   });
 
+  it("每個回應都帶 CSP（static 版沒有 next.config 的標頭可用），包含 404 與 403", async () => {
+    const urls = ["/", "/_next/static/app.js", "/_next/static/missing.js", "/link.txt"];
+    for (const url of urls) {
+      const res = await fetch(`${base}${url}`);
+      const csp = res.headers.get("content-security-policy");
+      expect(csp, url).toContain("connect-src 'self' https://generativelanguage.googleapis.com");
+      expect(csp, url).toContain("frame-ancestors 'none'");
+    }
+  });
+
   it("遺失的資源回 404，不回 HTML", async () => {
     const res = await fetch(`${base}/_next/static/missing.js`);
     expect(res.status).toBe(404);

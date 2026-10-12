@@ -4,6 +4,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { buildCsp } = require("./csp");
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -26,6 +27,7 @@ const MIME_TYPES = {
 };
 
 const SECURITY_HEADERS = {
+  "Content-Security-Policy": buildCsp(),
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
