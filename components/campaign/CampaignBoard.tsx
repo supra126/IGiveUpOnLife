@@ -236,7 +236,7 @@ export function CampaignBoard(props: BoardProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-      <BrandMark size={40} className="text-fg-subtle" />
+      <BrandMark size={40} motion="float" className="text-fg-subtle" />
       <h2 className="text-base font-semibold">{t("campaign.emptyTitle")}</h2>
       <p className="max-w-sm text-sm text-fg-muted">{t("campaign.emptyBody")}</p>
     </div>

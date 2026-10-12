@@ -62,7 +62,7 @@ const notoSansTC = Noto_Sans_TC({
  * 在首次繪製前套用主題與語系，避免閃爍
  * localStorage: theme = light | dark | system；locale = zh | en
  */
-const bootScript = `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";var l=localStorage.getItem("locale")||((navigator.language||"").indexOf("zh")===0?"zh":"en");document.documentElement.lang=l==="zh"?"zh-TW":"en";}catch(e){}})();`;
+const bootScript = `(function(){try{var t=localStorage.getItem("theme")||"dark";var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";var l=localStorage.getItem("locale")||((navigator.language||"").indexOf("zh")===0?"zh":"en");document.documentElement.lang=l==="zh"?"zh-TW":"en";}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

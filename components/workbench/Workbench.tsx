@@ -24,7 +24,7 @@ function Welcome({ onNew }: { onNew: (kind: ProjectKind) => void }) {
   return (
     <div className="flex h-full items-center justify-center p-6">
       <div className="w-full max-w-xl">
-        <BrandMark size={36} className="mb-4" />
+        <BrandMark size={36} motion="float" className="mb-4" />
         <h1 className="text-xl font-semibold">{t("welcome.title")}</h1>
         <p className="mt-1 text-sm text-fg-muted">{t("welcome.subtitle")}</p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -123,7 +123,7 @@ export function Workbench() {
   if (!ready) {
     return (
       <div className="flex h-dvh items-center justify-center text-fg-subtle">
-        <BrandMark size={32} className="animate-pulse" />
+        <BrandMark size={32} motion="busy" />
       </div>
     );
   }

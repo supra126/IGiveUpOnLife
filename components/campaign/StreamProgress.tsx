@@ -35,7 +35,7 @@ export function StreamProgress() {
     <div className="flex h-full items-center justify-center p-6">
       <div className="w-full max-w-lg" aria-live="polite">
         <div className="mb-4 flex items-center gap-3">
-          <BrandMark size={28} className="animate-pulse text-accent" />
+          <BrandMark size={28} motion="busy" className="text-accent" />
           <div>
             <h2 className="text-sm font-semibold">{t(kind === "analyze" ? "campaign.analyzing" : "campaign.planning")}</h2>
             <p className="font-mono text-[11px] text-fg-subtle">

@@ -65,7 +65,7 @@ export function Gallery({ generations, onOpen, onEditText, onRetry, onNeedKey, e
   if (generations.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-        <BrandMark size={40} className="text-fg-subtle" />
+        <BrandMark size={40} motion="float" className="text-fg-subtle" />
         <h2 className="text-base font-semibold">{emptyTitle}</h2>
         <p className="max-w-sm text-sm text-fg-muted">{emptyBody}</p>
       </div>

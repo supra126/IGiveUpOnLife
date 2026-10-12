@@ -18,7 +18,7 @@ export default function AppleIcon() {
         viewBox="0 0 36 36"
         xmlns="http://www.w3.org/2000/svg"
         style={{
-          background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
+          background: "#0a0a0a",
           borderRadius: "20%",
         }}
       >

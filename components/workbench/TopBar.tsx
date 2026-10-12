@@ -138,7 +138,7 @@ export function TopBar({ onNew, onSettings }: { onNew: (kind: ProjectKind) => vo
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b border-line bg-panel px-3">
       <div className="flex items-center gap-2 pr-2">
-        <BrandMark size={22} />
+        <BrandMark size={22} motion="idle" />
         <span className="hidden text-sm font-semibold sm:inline">{t("common.appName")}</span>
       </div>
       <span className="h-5 w-px bg-line" aria-hidden="true" />
