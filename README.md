@@ -102,7 +102,7 @@ See `.env.example` for the full list.
 
 ### API key rules (server version)
 
-- A key entered by the user is used first, without rate limiting or allowlists. It is relayed through your server.
+- A key entered by the user is used first, without rate limiting or allowlists. It is relayed through your server (never logged by this app, but visible to whoever operates the server) and kept in the browser's `localStorage`.
 - Without one, the server key is used with rate limiting and the model allowlist.
 - In the static version (`npx igiveup`) the browser talks to Google directly with the user's key.
 
@@ -246,7 +246,7 @@ pnpm typecheck && pnpm lint
 
 ### 金鑰規則（伺服器版）
 
-- 使用者自己輸入的金鑰優先使用，不限流、不受白名單限制；請求會經由你的伺服器轉送。
+- 使用者自己輸入的金鑰優先使用，不限流、不受白名單限制；請求會經由你的伺服器轉送（本程式不會記錄金鑰，但架站的人技術上看得到），金鑰存在瀏覽器的 `localStorage`。
 - 沒有輸入時才使用伺服器金鑰，並套用限流與模型白名單。
 - 靜態版（`npx igiveup`）由瀏覽器直接用使用者的金鑰連線 Google。
 

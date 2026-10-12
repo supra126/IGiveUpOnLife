@@ -22,6 +22,9 @@ beforeAll(async () => {
   fs.mkdirSync(`${root}2`, { recursive: true });
   fs.writeFileSync(path.join(`${root}2`, "secret.txt"), "secret");
 
+  // 指向 root 外部的 symlink
+  fs.symlinkSync(path.join(`${root}2`, "secret.txt"), path.join(root, "link.txt"));
+
   server = createStaticServer(root);
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   base = `http://127.0.0.1:${server.address().port}`;
@@ -49,6 +52,12 @@ describe("靜態伺服器", () => {
     const res = await fetch(`${base}/_next/static/missing.js`);
     expect(res.status).toBe(404);
     expect(res.headers.get("content-type")).toContain("text/plain");
+  });
+
+  it("阻擋指向 root 外部的 symlink", async () => {
+    const res = await fetch(`${base}/link.txt`);
+    expect(res.status).toBe(403);
+    expect(await res.text()).not.toContain("secret");
   });
 
   it("沒有副檔名的路徑回首頁（SPA fallback）", async () => {

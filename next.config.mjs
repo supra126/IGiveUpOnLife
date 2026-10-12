@@ -10,7 +10,8 @@
  * - No server-side rate limiting
  */
 const isStaticBuild = process.env.NEXT_PUBLIC_BUILD_MODE === "static";
-const projectRoot = new URL(".", import.meta.url).pathname;
+const isDev = process.env.NODE_ENV === "development";
+const projectRoot =new URL(".", import.meta.url).pathname;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -47,6 +48,24 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
+          {
+            // 使用者金鑰存在 localStorage：即使有 XSS，connect-src 也讓金鑰無法被送到其他網域。
+            // Next 的 inline 腳本需要 'unsafe-inline'；dev 的 React Refresh 另外需要 'unsafe-eval'。
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://generativelanguage.googleapis.com",
+              "worker-src 'self' blob:",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+            ].join("; "),
+          },
           {
             key: "X-Frame-Options",
             value: "DENY",

@@ -58,6 +58,7 @@ function resolveRequestPath(root, rawUrl) {
 
 function createStaticServer(distDir) {
   const root = path.resolve(distDir);
+  const realRoot = fs.realpathSync(root);
 
   return http.createServer((req, res) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
@@ -71,6 +72,17 @@ function createStaticServer(distDir) {
       res.writeHead(403, SECURITY_HEADERS);
       res.end("Forbidden");
       return;
+    }
+
+    // 路徑字串檢查擋不住 symlink：確認實際位置仍在 root 內才讀取
+    try {
+      if (!isInside(realRoot, fs.realpathSync(filePath))) {
+        res.writeHead(403, SECURITY_HEADERS);
+        res.end("Forbidden");
+        return;
+      }
+    } catch {
+      // 檔案不存在：字串檢查已通過，交給下面的 readFile 走 404 / SPA fallback
     }
 
     fs.readFile(filePath, (err, data) => {
