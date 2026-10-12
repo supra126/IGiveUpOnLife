@@ -102,7 +102,7 @@ function ProjectMenu({ onNew }: { onNew: (kind: ProjectKind) => void }) {
                   <ProjectThumb summary={p} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-xs">{p.name || t("project.untitled")}</span>
-                    <span className="block font-mono text-[10px] text-fg-subtle">
+                    <span className="block font-mono text-[11px] text-fg-subtle">
                       {t(`project.kind.${p.kind}`)} · {date.format(p.updatedAt)}
                     </span>
                   </span>
@@ -163,11 +163,6 @@ export function TopBar({ onNew, onSettings }: { onNew: (kind: ProjectKind) => vo
         <div className="flex min-w-0 items-center" onDoubleClick={() => project && setEditingName(true)}>
           <ProjectMenu onNew={onNew} />
         </div>
-      )}
-      {project && (
-        <span className="hidden rounded border border-line px-1.5 py-0.5 text-[10px] text-fg-muted md:inline">
-          {t(`project.kind.${project.kind}`)}
-        </span>
       )}
 
       <div className="ml-auto flex items-center gap-1">

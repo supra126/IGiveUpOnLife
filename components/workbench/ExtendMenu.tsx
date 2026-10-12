@@ -57,7 +57,7 @@ export function ExtendMenu({
           role="menu"
           className="absolute bottom-full right-0 z-20 mb-1 w-40 rounded-[var(--radius-control)] border border-line bg-panel p-1 shadow-lg"
         >
-          <p className="px-2 py-1 text-[11px] text-fg-subtle">{t("gallery.extendTo")}</p>
+          <p className="px-2 py-1 text-xs text-fg-subtle">{t("gallery.extendTo")}</p>
           {RATIOS.filter((r) => r !== generation.aspectRatio).map((ratio) => (
             <button
               key={ratio}

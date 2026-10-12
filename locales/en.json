@@ -138,7 +138,9 @@
     "edit": "Edit with one sentence",
     "editPlaceholder": "e.g. make the background light blue, remove the leaf on the right",
     "editHint": "⌘/Ctrl + Enter to send",
-    "apply": "Apply"
+    "apply": "Apply",
+    "prev": "Previous",
+    "next": "Next"
   },
   "campaign": {
     "steps": "Campaign steps",

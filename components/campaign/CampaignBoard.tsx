@@ -39,7 +39,7 @@ function ContentSetRow({
   return (
     <article className="grid gap-4 rounded-[var(--radius-panel)] border border-line bg-panel p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
       <div className="space-y-2.5">
-        <div className="font-mono text-[10px] text-fg-subtle">
+        <div className="font-mono text-[11px] text-fg-subtle">
           {set.ratio} · #{set.set_number}
         </div>
         <div>
@@ -215,7 +215,7 @@ export function CampaignBoard(props: BoardProps) {
                     i === campaign.activeRouteIndex ? "border-accent" : "border-line"
                   }`}
                 >
-                  <div className="font-mono text-[10px] text-fg-subtle">
+                  <div className="font-mono text-[11px] text-fg-subtle">
                     {String.fromCharCode(65 + i)} · {r.route_name}
                   </div>
                   <div className="mt-1 font-medium">{r.headline}</div>

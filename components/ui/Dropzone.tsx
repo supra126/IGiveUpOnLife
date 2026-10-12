@@ -52,7 +52,7 @@ export function Dropzone({ label, hint, assetId, onFile, onClear, required, clas
           {label}
           {required && <span className="ml-1 text-danger">*</span>}
         </span>
-        {hint && <span className="text-[11px] text-fg-subtle">{hint}</span>}
+        {hint && <span className="text-xs text-fg-subtle">{hint}</span>}
       </div>
       <div
         role="button"
@@ -88,7 +88,7 @@ export function Dropzone({ label, hint, assetId, onFile, onClear, required, clas
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-1.5 p-2 text-center text-fg-subtle">
             <ImagePlus size={18} />
-            <span className="text-[11px] leading-tight">{dragging ? t("upload.drop") : t("upload.prompt")}</span>
+            <span className="text-xs leading-tight">{dragging ? t("upload.drop") : t("upload.prompt")}</span>
           </div>
         )}
         {url && onClear && (
@@ -105,7 +105,7 @@ export function Dropzone({ label, hint, assetId, onFile, onClear, required, clas
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-[11px] text-danger">{error}</p>}
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
       <input
         ref={inputRef}
         type="file"

@@ -19,20 +19,24 @@ interface Props {
   onNeedKey: () => void;
 }
 
-const formatters = new Map<string, Intl.DateTimeFormat>();
-function timeFormatter(locale: string) {
+const formatters = new Map<string, { time: Intl.DateTimeFormat; full: Intl.DateTimeFormat }>();
+/** 今天的圖只顯示時間，較早的顯示日期；完整時間放在 tooltip */
+function formatCreated(locale: string, ts: number) {
   let f = formatters.get(locale);
   if (!f) {
-    f = new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en", {
-      month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+    const tag = locale === "zh" ? "zh-TW" : "en";
+    f = {
+      time: new Intl.DateTimeFormat(tag, { hour: "2-digit", minute: "2-digit", hour12: false }),
+      full: new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeStyle: "short" }),
+    };
     formatters.set(locale, f);
   }
-  return f;
+  const date = new Date(ts);
+  const today = new Date().toDateString() === date.toDateString();
+  return {
+    short: today ? f.time.format(date) : `${date.getMonth() + 1}/${date.getDate()}`,
+    full: f.full.format(date),
+  };
 }
 
 export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeedKey }: Props) {
@@ -40,7 +44,8 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
   const url = useAssetUrl(g.compositeAssetId ?? g.assetId);
   const [w, h] = g.aspectRatio.split(":").map(Number);
   const busy = g.status === "queued" || g.status === "running";
-  const modelLabel = getImageModelSpec(g.model).label;
+  const model = getImageModelSpec(g.model);
+  const created = formatCreated(locale, g.createdAt);
 
   return (
     <figure className="group flex flex-col overflow-hidden rounded-[var(--radius-panel)] border border-line bg-panel">
@@ -84,28 +89,18 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
           </div>
         )}
         {g.source !== "similar" && g.source !== "campaign" && (
-          <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+          <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[11px] font-medium text-white">
             {t(`gallery.source.${g.source}`)}
           </span>
         )}
         {g.compositeAssetId && (
-          <span className="absolute right-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+          <span className="absolute right-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[11px] font-medium text-white">
             {t("gallery.withText")}
           </span>
         )}
         <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           {g.status === "done" && (
             <>
-              <Button
-                size="sm"
-                variant="secondary"
-                iconOnly
-                aria-label={t("gallery.download")}
-                title={t("gallery.download")}
-                onClick={() => downloadGeneration(g)}
-              >
-                <Download size={14} />
-              </Button>
               <Button
                 size="sm"
                 variant="secondary"
@@ -159,14 +154,26 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
         </div>
       </div>
 
-      <figcaption className="flex items-baseline gap-2 px-2.5 py-2 font-mono text-[11px] text-fg-subtle">
-        <span className="min-w-0 flex-1 truncate">
+      <figcaption className="flex h-9 items-center gap-2 pl-2.5 pr-1 font-mono text-[11px] text-fg-muted">
+        <span className="min-w-0 flex-1 truncate" title={model.label}>
           {g.aspectRatio} · {g.imageSize}
-          {g.similarity ? ` · ${t(`similar.levels.${g.similarity}`)}` : ""} · {modelLabel}
+          {g.similarity ? ` · ${t(`similar.levels.${g.similarity}`)}` : ""} · {model.shortLabel}
         </span>
-        <time className="shrink-0" dateTime={new Date(g.createdAt).toISOString()}>
-          {timeFormatter(locale).format(g.createdAt)}
+        <time className="shrink-0 text-fg-subtle" dateTime={new Date(g.createdAt).toISOString()} title={created.full}>
+          {created.short}
         </time>
+        {g.status === "done" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            iconOnly
+            aria-label={t("gallery.download")}
+            title={t("gallery.download")}
+            onClick={() => downloadGeneration(g)}
+          >
+            <Download size={14} />
+          </Button>
+        )}
       </figcaption>
     </figure>
   );

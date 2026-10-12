@@ -184,7 +184,7 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
                         : "border-line hover:border-line-strong",
                     ].join(" ")}
                   >
-                    <span className="block font-mono text-[10px] text-fg-subtle">
+                    <span className="block font-mono text-[11px] text-fg-subtle">
                       {String.fromCharCode(65 + index)} · {r.route_name}
                     </span>
                     <span className="block text-xs">{r.headline}</span>

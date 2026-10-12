@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Minus, Plus, Sparkles } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Dropzone } from "@/components/ui/Dropzone";
@@ -17,12 +17,29 @@ import type { SimilarInputs } from "@/lib/project/types";
 import { runSimilar, hasUsableKey } from "@/lib/workbench/runner";
 
 const MAX_COUNT = 8;
+const SHORTCUT_LABEL =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘↵" : "Ctrl↵";
 
 export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
   const { t } = useLocale();
   const similar = useWorkspace((s) => s.project?.similar);
   const imageModel = useWorkspace((s) => s.project?.settings.imageModel);
   const upload = useAssetUpload();
+  const canGenerate = Boolean(similar?.referenceAssetId && similar?.productAssetId);
+
+  // ⌘/Ctrl + Enter 直接生成（在補充指示裡打完字也能用）
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey) || !canGenerate) return;
+      if (document.querySelector("[role=dialog]")) return;
+      event.preventDefault();
+      if (!hasUsableKey()) onNeedKey();
+      else void runSimilar();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canGenerate, onNeedKey]);
+
   if (!similar) return null;
 
   const set = (patch: Partial<SimilarInputs>) =>
@@ -165,8 +182,11 @@ export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
         <Button variant="primary" size="lg" className="w-full" disabled={!ready} onClick={generate}>
           <Sparkles size={15} />
           {t("similar.generate", { count: similar.count })}
+          <kbd className="ml-1 hidden rounded border border-current/30 px-1 font-mono text-[11px] leading-4 opacity-70 sm:inline">
+            {SHORTCUT_LABEL}
+          </kbd>
         </Button>
-        <p className="mt-2 text-center text-[11px] text-fg-subtle">
+        <p className="mt-2 text-center text-xs text-fg-subtle">
           {ready ? t("similar.readyHint") : t("similar.notReadyHint")}
         </p>
       </div>

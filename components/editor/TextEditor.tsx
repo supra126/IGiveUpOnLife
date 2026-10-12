@@ -594,7 +594,7 @@ export default function TextEditor({ generation, onClose }: Props) {
         {project?.logoAssetId && (
           <button
             type="button"
-            className="text-[11px] text-fg-subtle underline-offset-2 hover:text-fg hover:underline"
+            className="text-xs text-fg-subtle underline-offset-2 hover:text-fg hover:underline"
             onClick={() => logoInputRef.current?.click()}
           >
             {t("editor.replaceLogo")}

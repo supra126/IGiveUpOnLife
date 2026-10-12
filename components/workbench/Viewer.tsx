@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Download, Send, Type } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Download, Send, Type } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
@@ -72,6 +72,31 @@ export function Viewer({ generationId, onSelect, onEditText, onNeedKey }: Props)
     return result;
   }, [current, generations]);
 
+  // 與畫廊相同的順序（新到舊），修圖版本在版本列切換，不放進左右切換
+  const sequence = useMemo(
+    () => generations.filter((g) => g.source !== "edit").sort((a, b) => b.createdAt - a.createdAt),
+    [generations]
+  );
+  const rootId = versions[0]?.id;
+  const index = sequence.findIndex((g) => g.id === rootId);
+  const prev = index > 0 ? sequence[index - 1] : undefined;
+  const next = index >= 0 && index < sequence.length - 1 ? sequence[index + 1] : undefined;
+
+  useEffect(() => {
+    if (!current) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      // 輸入框有內容時方向鍵用來移動游標；空的時候拿來切換圖片
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        if (target.value) return;
+      } else if (target?.tagName === "SELECT") return;
+      if (event.key === "ArrowLeft" && prev) onSelect(prev.id);
+      if (event.key === "ArrowRight" && next) onSelect(next.id);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [current, prev, next, onSelect]);
+
   if (!current) return null;
 
   const submit = (event: React.FormEvent) => {
@@ -88,7 +113,31 @@ export function Viewer({ generationId, onSelect, onEditText, onNeedKey }: Props)
   return (
     <Dialog open onClose={() => onSelect(null)} title={t("viewer.title")} size="full">
       <div className="flex h-full min-h-0 flex-col lg:flex-row">
-        <div className="flex min-h-[40vh] flex-1 items-center justify-center bg-sunken p-4">
+        <div className="relative flex min-h-[40vh] flex-1 items-center justify-center bg-sunken p-4 sm:px-14">
+          {prev && (
+            <Button
+              variant="secondary"
+              iconOnly
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+              aria-label={t("viewer.prev")}
+              title={`${t("viewer.prev")} (←)`}
+              onClick={() => onSelect(prev.id)}
+            >
+              <ChevronLeft size={16} />
+            </Button>
+          )}
+          {next && (
+            <Button
+              variant="secondary"
+              iconOnly
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              aria-label={t("viewer.next")}
+              title={`${t("viewer.next")} (→)`}
+              onClick={() => onSelect(next.id)}
+            >
+              <ChevronRight size={16} />
+            </Button>
+          )}
           {url && current.status === "done" ? (
             // eslint-disable-next-line @next/next/no-img-element -- object URL
             <img
@@ -113,6 +162,7 @@ export function Viewer({ generationId, onSelect, onEditText, onNeedKey }: Props)
           <div className="space-y-1 border-b border-line p-4 font-mono text-[11px] text-fg-muted">
             <div>
               {current.aspectRatio} · {current.imageSize} · {getImageModelSpec(current.model).label}
+              {index >= 0 && <span className="float-right text-fg-subtle">{index + 1} / {sequence.length}</span>}
             </div>
             {current.similarity && <div>{t(`similar.levels.${current.similarity}`)}</div>}
           </div>
@@ -148,7 +198,7 @@ export function Viewer({ generationId, onSelect, onEditText, onNeedKey }: Props)
               }}
             />
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-[11px] text-fg-subtle">{t("viewer.editHint")}</span>
+              <span className="text-xs text-fg-subtle">{t("viewer.editHint")}</span>
               <Button type="submit" size="sm" variant="primary" disabled={!instruction.trim() || current.status !== "done"}>
                 <Send size={13} />
                 {t("viewer.apply")}

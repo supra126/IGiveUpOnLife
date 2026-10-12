@@ -88,7 +88,7 @@ export function StreamProgress() {
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-[11px] text-fg-subtle">
+          <p className="text-xs text-fg-subtle">
             {capabilities?.mode === "server" ? t("progress.cancelNoteServer") : t("progress.cancelNoteStatic")}
           </p>
           <Button size="sm" variant="secondary" onClick={cancelCampaignRequest}>

@@ -30,7 +30,7 @@ export function AspectRatioPicker({ value, onChange, label, allowed }: Props) {
             disabled={disabled}
             onClick={() => onChange(ratio)}
             className={[
-              "flex h-12 flex-col items-center justify-center gap-1 rounded-[var(--radius-control)] border text-[10px] transition-colors disabled:opacity-35",
+              "flex h-12 flex-col items-center justify-center gap-1 rounded-[var(--radius-control)] border text-[11px] transition-colors disabled:opacity-35",
               active
                 ? "border-accent bg-accent-soft text-fg"
                 : "border-line text-fg-muted hover:border-line-strong hover:text-fg",

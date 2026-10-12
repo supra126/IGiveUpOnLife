@@ -30,6 +30,8 @@ export type ModelStability = "stable" | "preview";
 export interface ImageModelSpec {
   id: string;
   label: string;
+  /** 空間有限時（圖卡資訊列）使用 */
+  shortLabel: string;
   /** i18n key 後綴：models.<descKey> */
   descKey: string;
   tier: "lite" | "standard" | "pro";
@@ -52,6 +54,7 @@ export const IMAGE_MODELS: readonly ImageModelSpec[] = [
   {
     id: "gemini-nano-banana-2.1",
     label: "Nano Banana 2.1",
+    shortLabel: "NB 2.1",
     descKey: "nanoBanana21",
     tier: "standard",
     sizes: ["1K", "2K", "4K"],
@@ -64,6 +67,7 @@ export const IMAGE_MODELS: readonly ImageModelSpec[] = [
   {
     id: "gemini-3-pro-image",
     label: "Nano Banana Pro",
+    shortLabel: "NB Pro",
     descKey: "nanoBananaPro",
     tier: "pro",
     sizes: ["1K", "2K", "4K"],
@@ -75,6 +79,7 @@ export const IMAGE_MODELS: readonly ImageModelSpec[] = [
   {
     id: "gemini-3.1-flash-lite-image",
     label: "Nano Banana 2 Lite",
+    shortLabel: "NB Lite",
     descKey: "nanoBananaLite",
     tier: "lite",
     sizes: ["1K"],
@@ -112,6 +117,7 @@ function fallbackImageSpec(id: string): ImageModelSpec {
   return {
     id,
     label: id,
+    shortLabel: id.replace(/^gemini-/, ""),
     descKey: "custom",
     tier: "standard",
     sizes: IMAGE_SIZES,
