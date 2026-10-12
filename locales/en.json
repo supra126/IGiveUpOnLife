@@ -82,7 +82,8 @@
     "notReadyHint": "Add a reference and a product image first.",
     "missingImages": "A reference and a product image are required",
     "emptyTitle": "Nothing here yet",
-    "emptyBody": "Add a reference and a product image on the left, pick a similarity, then zone out."
+    "emptyBody": "Add a reference and a product image on the left, pick a similarity, then zone out.",
+    "directionNone": "None"
   },
   "output": {
     "title": "Output",

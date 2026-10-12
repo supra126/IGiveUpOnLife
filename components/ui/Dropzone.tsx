@@ -13,6 +13,8 @@ interface DropzoneProps {
   onClear?: () => void;
   required?: boolean;
   className?: string;
+  /** 單行樣式：用於選填的圖片槽，避免佔用一整塊空間 */
+  compact?: boolean;
 }
 
 const ACCEPT = "image/png,image/jpeg,image/webp,image/heic,image/heif,image/avif";
@@ -21,7 +23,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
 /**
  * 圖片槽：點擊、拖放或在聚焦時貼上（Cmd/Ctrl+V）
  */
-export function Dropzone({ label, hint, assetId, onFile, onClear, required, className = "" }: DropzoneProps) {
+export function Dropzone({ label, hint, assetId, onFile, onClear, required, className = "", compact = false }: DropzoneProps) {
   const { t } = useLocale();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -47,7 +49,7 @@ export function Dropzone({ label, hint, assetId, onFile, onClear, required, clas
 
   return (
     <div className={className}>
-      <div className="mb-1.5 flex items-baseline justify-between">
+      <div className={compact ? "sr-only" : "mb-1.5 flex items-baseline justify-between"}>
         <span className="label mb-0">
           {label}
           {required && <span className="ml-1 text-danger">*</span>}
@@ -77,12 +79,29 @@ export function Dropzone({ label, hint, assetId, onFile, onClear, required, clas
           accept(e.dataTransfer.files[0]);
         }}
         className={[
-          "group relative aspect-square w-full cursor-pointer overflow-hidden rounded-[var(--radius-control)] border transition-colors",
+          "group relative w-full cursor-pointer overflow-hidden rounded-[var(--radius-control)] border transition-colors",
+          compact ? "flex h-12 items-center gap-3 pr-9" : "aspect-square",
           dragging ? "border-accent bg-accent-soft" : url ? "border-line" : "border-dashed border-line-strong hover:border-accent",
-          url ? "checker" : "bg-sunken",
+          compact ? "bg-sunken" : url ? "checker" : "bg-sunken",
         ].join(" ")}
       >
-        {url ? (
+        {compact ? (
+          <>
+            <span className="checker grid h-full w-12 shrink-0 place-items-center border-r border-line text-fg-subtle">
+              {url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- object URL 不適用 next/image
+                <img src={url} alt="" className="size-full object-contain" />
+              ) : (
+                <ImagePlus size={16} />
+              )}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-left text-xs">
+              <span className="font-medium text-fg">{label}</span>
+              {hint && <span className="ml-1.5 text-fg-subtle">{hint}</span>}
+              {!url && <span className="block text-fg-subtle">{dragging ? t("upload.drop") : t("upload.prompt")}</span>}
+            </span>
+          </>
+        ) : url ? (
           // eslint-disable-next-line @next/next/no-img-element -- object URL 不適用 next/image
           <img src={url} alt={label} className="size-full object-contain" />
         ) : (
@@ -99,7 +118,11 @@ export function Dropzone({ label, hint, assetId, onFile, onClear, required, clas
               e.stopPropagation();
               onClear();
             }}
-            className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+            className={
+              compact
+                ? "absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-fg-muted hover:bg-raised hover:text-fg"
+                : "absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+            }
           >
             <X size={13} />
           </button>

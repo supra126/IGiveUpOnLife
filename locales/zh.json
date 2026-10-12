@@ -82,7 +82,8 @@
     "notReadyHint": "先放參考圖和產品圖。",
     "missingImages": "需要參考圖和產品圖",
     "emptyTitle": "這裡還空空的",
-    "emptyBody": "在左邊放好參考圖和產品圖，選相似度，然後放空等結果。"
+    "emptyBody": "在左邊放好參考圖和產品圖，選相似度，然後放空等結果。",
+    "directionNone": "未設定"
   },
   "output": {
     "title": "輸出",

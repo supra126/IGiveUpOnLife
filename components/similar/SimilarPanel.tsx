@@ -24,6 +24,7 @@ export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
   const { t } = useLocale();
   const similar = useWorkspace((s) => s.project?.similar);
   const imageModel = useWorkspace((s) => s.project?.settings.imageModel);
+  const imageSize = useWorkspace((s) => s.project?.settings.imageSize);
   const upload = useAssetUpload();
   const canGenerate = Boolean(similar?.referenceAssetId && similar?.productAssetId);
 
@@ -85,7 +86,8 @@ export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
             />
           </div>
           <Dropzone
-            className="mt-3 w-1/2 pr-1.5"
+            compact
+            className="mt-3"
             label={t("similar.secondary")}
             hint={t("common.optional")}
             assetId={similar.secondaryAssetId}
@@ -116,7 +118,20 @@ export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
           />
         </PanelSection>
 
-        <PanelSection title={t("similar.direction")}>
+        <PanelSection
+          id="similar-direction"
+          collapsible
+          defaultOpen={false}
+          title={t("similar.direction")}
+          summary={
+            [
+              similar.instructions.trim() ? similar.instructions.trim() : null,
+              similar.copySpace !== "none" ? t(`similar.copySpaceOptions.${similar.copySpace}`) : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || t("similar.directionNone")
+          }
+        >
           <label className="label" htmlFor="similar-instructions">
             {t("similar.instructions")}
           </label>
@@ -145,7 +160,13 @@ export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
           </select>
         </PanelSection>
 
-        <PanelSection title={t("output.title")}>
+        <PanelSection
+          id="similar-output"
+          collapsible
+          defaultOpen={false}
+          title={t("output.title")}
+          summary={`${spec.shortLabel} · ${imageSize ?? ""}`}
+        >
           <OutputSettings />
         </PanelSection>
       </div>

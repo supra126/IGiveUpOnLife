@@ -6,6 +6,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { Dropzone } from "@/components/ui/Dropzone";
 import { Button } from "@/components/ui/Button";
 import { OutputSettings } from "@/components/workbench/OutputSettings";
+import { getImageModelSpec } from "@/lib/gemini/models";
 import { PanelSection } from "@/components/workbench/PanelSection";
 import { useAssetUpload } from "@/components/workbench/useAssetUpload";
 import { updateProject, useWorkspace } from "@/lib/project/store";
@@ -29,7 +30,9 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
   const upload = useAssetUpload();
   const [busy, setBusy] = useState<"analyze" | "plan" | null>(null);
   const progress = useCampaignProgress();
+  const settings = useWorkspace((s) => s.project?.settings);
   if (!campaign) return null;
+  const outputSummary = settings ? `${getImageModelSpec(settings.imageModel).shortLabel} · ${settings.imageSize}` : undefined;
 
   const set = (patch: Partial<CampaignState>) =>
     updateProject((p) => ({ ...p, campaign: { ...p.campaign, ...patch } }));
@@ -160,7 +163,7 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
                 </div>
               </div>
             </PanelSection>
-            <PanelSection title={t("output.title")}>
+            <PanelSection id="campaign-output" collapsible defaultOpen={false} title={t("output.title")} summary={outputSummary}>
               <OutputSettings showTextModel />
             </PanelSection>
           </>
@@ -252,7 +255,7 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
         )}
 
         {campaign.step === "suite" && (
-          <PanelSection title={t("output.title")}>
+          <PanelSection id="campaign-output" collapsible defaultOpen={false} title={t("output.title")} summary={outputSummary}>
             <OutputSettings />
           </PanelSection>
         )}
