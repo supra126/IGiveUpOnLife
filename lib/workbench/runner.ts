@@ -20,6 +20,7 @@ import {
   getAssetRecord,
   getState,
   patchGeneration,
+  removeGeneration,
   setGenerationActive,
   updateProject,
   upsertGeneration,
@@ -642,6 +643,47 @@ export async function runCampaignImages(contentSets: ContentSet[]): Promise<void
       })
     )
   );
+}
+
+// --- 重試 ---
+
+/**
+ * 重試失敗或已取消的生成。依來源重做同一件事，而不是一律當成相似圖：
+ * - extend / edit：以原圖重新延伸成同樣的比例、用同樣的指令重新修圖
+ * - campaign：只重生該內容組
+ * - similar：用專案目前的設定重新生成一張
+ * 前置條件不成立（原圖或內容組不見了、圖片被移除）時保留失敗卡片，讓使用者知道發生了什麼事。
+ * 呼叫前由呼叫端檢查金鑰。
+ */
+export async function retryGeneration(g: Generation): Promise<void> {
+  const project = requireProject();
+
+  if (g.source === "extend" || g.source === "edit") {
+    const parent = getState().generations.find((x) => x.id === g.parentId && x.status === "done" && x.assetId);
+    if (!parent) {
+      showToast("error", "errors.NO_IMAGE");
+      return;
+    }
+    await removeGeneration(g.id);
+    if (g.source === "extend") await runExtend(parent, g.aspectRatio);
+    else await runEdit(parent, g.prompt ?? "");
+    return;
+  }
+
+  if (g.source === "campaign") {
+    const set = project.campaign.contentSets.find((s) => s.id === g.contentSetId);
+    if (!set || isPlanStale(project.campaign)) return;
+    await removeGeneration(g.id);
+    await runCampaignImages([set]);
+    return;
+  }
+
+  if (!project.similar.referenceAssetId || !project.similar.productAssetId) {
+    showToast("error", "similar.missingImages");
+    return;
+  }
+  await removeGeneration(g.id);
+  await runSimilar(1);
 }
 
 // --- 下載 ---

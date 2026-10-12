@@ -7,10 +7,10 @@ import { BrandMark } from "@/components/ui/BrandMark";
 import { SimilarPanel } from "@/components/similar/SimilarPanel";
 import { CampaignPanel } from "@/components/campaign/CampaignPanel";
 import { CampaignBoard } from "@/components/campaign/CampaignBoard";
-import { initWorkspace, newProject, removeGeneration, useWorkspace } from "@/lib/project/store";
+import { initWorkspace, newProject, useWorkspace } from "@/lib/project/store";
 import type { Generation, ProjectKind } from "@/lib/project/types";
 import { applyTheme, getPreferences, usePreferences } from "@/lib/preferences";
-import { loadCapabilities, resolveNewProjectSettings, runSimilar } from "@/lib/workbench/runner";
+import { hasUsableKey, loadCapabilities, resolveNewProjectSettings, retryGeneration } from "@/lib/workbench/runner";
 import { showToast } from "@/lib/workbench/toast";
 import { TopBar } from "./TopBar";
 import { Gallery } from "./Gallery";
@@ -116,13 +116,13 @@ export function Workbench() {
     setEditorId(g.id);
   }, []);
 
-  const retrySimilar = useCallback(
+  const retry = useCallback(
     (g: Generation) => {
       if (!project) return;
-      void removeGeneration(g.id);
-      void runSimilar(1);
+      if (!hasUsableKey()) return onNeedKey();
+      void retryGeneration(g);
     },
-    [project]
+    [project, onNeedKey]
   );
 
   if (!ready) {
@@ -178,7 +178,7 @@ export function Workbench() {
                   generations={generations}
                   onOpen={openGeneration}
                   onEditText={editText}
-                  onRetry={retrySimilar}
+                  onRetry={retry}
                   onNeedKey={onNeedKey}
                   emptyTitle={t("similar.emptyTitle")}
                   emptyBody={t("similar.emptyBody")}

@@ -14,6 +14,7 @@ import { isFromCurrentPlan, type Generation } from "@/lib/project/types";
 import type { ContentSet } from "@/types";
 import {
   hasUsableKey,
+  retryGeneration,
   runCampaignImages,
   runRegeneratePrompt,
   updateContentSet,
@@ -121,7 +122,10 @@ function ContentSetRow({
                 generation={g}
                 onOpen={onOpen}
                 onEditText={onEditText}
-                onRetry={() => runCampaignImages([set])}
+                onRetry={(failed) => {
+                  if (!hasUsableKey()) return onNeedKey();
+                  void retryGeneration(failed);
+                }}
                 onNeedKey={onNeedKey}
               />
             ))}
