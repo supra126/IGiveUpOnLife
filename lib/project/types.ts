@@ -103,6 +103,7 @@ export interface Generation {
   assetId?: string;
   /** 加上文字圖層後的合成圖 */
   compositeAssetId?: string;
+  /** @deprecated 不再寫入也不再送出（簽章和圖片一樣大）；只為了讀舊紀錄時型別相容 */
   thoughtSignature?: string;
   status: GenerationStatus;
   errorCode?: string;

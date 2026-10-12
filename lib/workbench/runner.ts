@@ -171,7 +171,6 @@ interface ImageJob {
   generation: Generation;
   run: (signal: AbortSignal) => Promise<{
     dataUrl: string;
-    thoughtSignature?: string;
     model: string;
     imageSize: string;
     aspectRatio: string;
@@ -226,7 +225,6 @@ function runImageJob({ generation, run }: ImageJob): Promise<void> {
     patchGeneration(generation.id, {
       status: "done",
       assetId,
-      thoughtSignature: result.thoughtSignature,
       model: result.model,
       imageSize: result.imageSize as Generation["imageSize"],
       aspectRatio: result.aspectRatio as AspectRatio,
@@ -377,46 +375,22 @@ export async function runExtend(source: Generation, aspectRatio: AspectRatio): P
 
 // --- 對話式修圖 ---
 
-interface EditTurn {
-  role: "user" | "model";
-  image?: string;
-  text?: string;
-  thoughtSignature?: string;
-}
-
-/** 由上一版往回追溯，組出修圖歷史 */
-function editChain(target: Generation): Generation[] {
-  const byId = new Map(getState().generations.map((g) => [g.id, g]));
-  const chain: Generation[] = [];
-  let current: Generation | undefined = target;
-  while (current) {
-    chain.unshift(current);
-    current = current.source === "edit" && current.parentId ? byId.get(current.parentId) : undefined;
-  }
-  return chain;
-}
-
+/**
+ * 修圖一律單輪：只送最新那張圖 + 指令，每個版本都以上一版的成品為起點。
+ *
+ * 不帶多輪歷史與 thoughtSignature。簽章和圖片一樣大（1K 約 1.4M 字元、4K 約 12.7M），
+ * 帶著它會超過 schema 的 100,000 字元上限與 server action 的請求大小上限，連續修圖第二次就會失敗。
+ * 實測（1K，同一組圖與指令各跑 4 次，量上一輪改的牆色是否保留）：
+ * 多輪歷史不帶簽章 1/4、單輪 4/4、多輪帶簽章 4/4。
+ */
 export async function runEdit(target: Generation, instruction: string): Promise<void> {
   const project = requireProject();
-  const chain = editChain(target);
-  // 歷史只帶原圖 + 最近兩輪，太長就只送目前這張
-  const steps: Promise<EditTurn>[] =
-    chain.length <= 3
-      ? chain.flatMap((g, index): Promise<EditTurn>[] =>
-          index === 0
-            ? [assetDataUrl(g.assetId).then((image) => ({ role: "user", image }))]
-            : [
-                Promise.resolve({ role: "user", text: g.prompt ?? "" }),
-                assetDataUrl(g.assetId).then((image) => ({ role: "model", image, thoughtSignature: g.thoughtSignature })),
-              ]
-        )
-      : [assetDataUrl(target.assetId).then((image) => ({ role: "user", image }))];
-  const history = await Promise.all(steps);
-
-  if (history.some((turn) => turn.text === undefined && !turn.image)) {
+  const image = await assetDataUrl(target.assetId);
+  if (!image) {
     showToast("error", "errors.NO_IMAGE");
     return;
   }
+  const history = [{ role: "user" as const, image }];
 
   await runImageJob({
     generation: baseGeneration(project, {

@@ -59,8 +59,6 @@ export interface OperationOptions {
 export interface GeneratedImage {
   dataUrl: string;
   mimeType: string;
-  /** 多輪修圖需要原封送回的簽章 */
-  thoughtSignature?: string;
   /** 模型額外回傳的文字（若有） */
   text?: string;
   model: string;
@@ -126,8 +124,12 @@ async function generateImageWith(
     () => ai.models.generateContent({ model: setup.model, contents, config: setup.config }),
     { signal }
   );
+  // thoughtSignature 和圖片一樣大（1K 約 1.4M 字元、4K 約 12.7M），不往外傳：
+  // 帶著它會讓 server action 的回應與每筆紀錄暴增，下一輪修圖再送回時也會超過 schema 與請求大小上限。
+  // 多輪修圖只靠圖片與指令，實測沒有簽章品質相當
+  const { thoughtSignature: _signature, ...image } = extractImage(response);
   return {
-    ...extractImage(response),
+    ...image,
     model: setup.model,
     aspectRatio: setup.aspectRatio,
     imageSize: setup.imageSize,

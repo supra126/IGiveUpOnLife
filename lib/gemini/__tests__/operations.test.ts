@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import type { GenerateContentResponse } from "@google/genai";
+import { describe, it, expect, vi } from "vitest";
+import type { GenerateContentResponse, GoogleGenAI } from "@google/genai";
 import {
+  editImage,
   buildEditContents,
   buildSimilarParts,
   extractImage,
@@ -182,5 +183,27 @@ describe("clampImageOptions", () => {
   it("不支援的 thinking level 會被移除", () => {
     const pro = getImageModelSpec("gemini-3-pro-image");
     expect(clampImageOptions(pro, { thinkingLevel: "high" }).thinkingLevel).toBeUndefined();
+  });
+});
+
+describe("生圖結果不帶 thoughtSignature", () => {
+  // 簽章和圖片一樣大（1K 約 1.4M 字元，4K 約 12.7M），送回前端會讓回應與每筆紀錄暴增，
+  // 而且下一輪修圖若再送回，會被 schema 的長度上限擋下
+  it("editImage 的回傳值只有圖片與設定，沒有簽章", async () => {
+    const generateContent = vi.fn(async () =>
+      response({
+        candidates: [
+          { content: { parts: [{ inlineData: { data: "final", mimeType: "image/jpeg" }, thoughtSignature: "S".repeat(5000) }] } },
+        ],
+      })
+    );
+    const ai = { models: { generateContent } } as unknown as GoogleGenAI;
+    const input = parseInput(EditImageInputSchema, { history: [{ role: "user", image: IMG }], instruction: "make it blue" });
+
+    const result = await editImage(ai, input);
+
+    expect(result.dataUrl).toBe("data:image/jpeg;base64,final");
+    expect(result).not.toHaveProperty("thoughtSignature");
+    expect(JSON.stringify(result)).not.toContain("SSSSS");
   });
 });
