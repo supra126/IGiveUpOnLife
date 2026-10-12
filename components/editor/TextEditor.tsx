@@ -78,15 +78,26 @@ function TextNode({ layer, size, onSelect, onChange, registerNode, fontTick }: N
     node.getLayer()?.batchDraw();
   });
 
-  useEffect(() => {
-    registerNode(layer.id, ref.current);
-    return () => registerNode(layer.id, null);
-  }, [layer.id, registerNode]);
+  // 字型晚一步載入時，在原節點上重新量測文字。不重建節點，否則正在進行的拖曳和選取框會失效
+  useLayoutEffect(() => {
+    const node = ref.current as (Konva.Text & { _setTextData?: () => void }) | null;
+    if (!node || fontTick === 0) return;
+    node._setTextData?.();
+    node.offsetY(node.height() / 2);
+    node.getLayer()?.batchDraw();
+  }, [fontTick]);
+
+  const setRef = useCallback(
+    (node: Konva.Text | null) => {
+      ref.current = node;
+      registerNode(layer.id, node);
+    },
+    [layer.id, registerNode]
+  );
 
   return (
     <KonvaText
-      key={fontTick}
-      ref={ref}
+      ref={setRef}
       name="layer"
       draggable
       x={px.cx}
@@ -128,15 +139,18 @@ function ImageNode({ layer, size, onSelect, onChange, registerNode }: NodeProps<
   const px = toPixels(layer, size);
   const height = px.width * layer.aspect;
 
-  useEffect(() => {
-    registerNode(layer.id, ref.current);
-    return () => registerNode(layer.id, null);
-  }, [layer.id, registerNode, image]);
+  const setRef = useCallback(
+    (node: Konva.Image | null) => {
+      ref.current = node;
+      registerNode(layer.id, node);
+    },
+    [layer.id, registerNode]
+  );
 
   if (!image) return null;
   return (
     <KonvaImage
-      ref={ref}
+      ref={setRef}
       name="layer"
       image={image}
       draggable
@@ -412,7 +426,9 @@ export default function TextEditor({ generation, onClose }: Props) {
     const transformer = transformerRef.current;
     if (!transformer) return;
     const node = selectedId ? nodes.current.get(selectedId) : undefined;
-    transformer.nodes(node ? [node] : []);
+    if (transformer.nodes()[0] !== node) transformer.nodes(node ? [node] : []);
+    // 文字內容或字型改變後尺寸會變，讓選取框跟著更新
+    transformer.forceUpdate();
     transformer.getLayer()?.batchDraw();
   });
 
