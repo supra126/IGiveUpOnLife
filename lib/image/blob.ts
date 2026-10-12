@@ -108,12 +108,52 @@ export function downloadBlob(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+const SVG_MIN_EDGE = 1024;
+const SVG_MAX_EDGE = 2048;
+
+/** SVG 轉成點陣圖時的尺寸：最長邊落在 1024–2048，保留比例；解不出尺寸時退回方形 */
+export function svgRasterSize(width: number, height: number): { width: number; height: number } {
+  if (!(width > 0) || !(height > 0)) return { width: SVG_MIN_EDGE, height: SVG_MIN_EDGE };
+  const longest = Math.max(width, height);
+  const scale = longest < SVG_MIN_EDGE ? SVG_MIN_EDGE / longest : longest > SVG_MAX_EDGE ? SVG_MAX_EDGE / longest : 1;
+  return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
+}
+
 /**
- * 上傳的圖統一轉成瀏覽器與 Gemini 都能處理的格式（AVIF、HEIC 等轉 PNG），
+ * Chrome 的 createImageBitmap 不支援 SVG Blob，改用 <img> 解碼再畫到 canvas。
+ * <img> 載入的 SVG 不會執行腳本，也不會載入外部資源
+ */
+async function rasterizeSvg(file: Blob): Promise<Blob> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("SVG decode failed"));
+      el.src = url;
+    });
+    const { width, height } = svgRasterSize(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas unavailable");
+    ctx.drawImage(img, 0, 0, width, height);
+    return await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Encode failed"))), "image/png")
+    );
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
+ * 上傳的圖統一轉成瀏覽器與 Gemini 都能處理的格式（AVIF、HEIC、SVG 等轉 PNG），
  * 無法解碼時丟出錯誤
  */
 export async function normalizeUpload(file: Blob): Promise<Blob> {
   if (API_FRIENDLY.has(file.type)) return file;
+  if (file.type === "image/svg+xml") return rasterizeSvg(file);
   const bitmap = await createImageBitmap(file);
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
