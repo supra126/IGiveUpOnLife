@@ -100,6 +100,11 @@ export interface Generation {
   thoughtSignature?: string;
   status: GenerationStatus;
   errorCode?: string;
+  /** 使用者標記為收藏 */
+  starred?: boolean;
+  /** 相似圖生成時使用的參考圖與產品圖，供檢視器對照 */
+  referenceAssetId?: string;
+  productAssetId?: string;
   createdAt: number;
 }
 

@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { TriangleAlert, Download, Maximize2, RotateCcw, Trash, Type } from "lucide-react";
+import { TriangleAlert, Download, Maximize2, RotateCcw, Star, Trash, Type } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Button } from "@/components/ui/Button";
 import { useAssetUrl } from "@/lib/project/asset-url";
 import { getImageModelSpec } from "@/lib/gemini/models";
 import type { Generation } from "@/lib/project/types";
 import { removeGeneration } from "@/lib/project/store";
-import { downloadGeneration } from "@/lib/workbench/runner";
+import { downloadGeneration, toggleStar } from "@/lib/workbench/runner";
 import { ExtendMenu } from "./ExtendMenu";
 
 interface Props {
@@ -19,24 +19,14 @@ interface Props {
   onNeedKey: () => void;
 }
 
-const formatters = new Map<string, { time: Intl.DateTimeFormat; full: Intl.DateTimeFormat }>();
-/** 今天的圖只顯示時間，較早的顯示日期；完整時間放在 tooltip */
+const formatters = new Map<string, Intl.DateTimeFormat>();
 function formatCreated(locale: string, ts: number) {
   let f = formatters.get(locale);
   if (!f) {
-    const tag = locale === "zh" ? "zh-TW" : "en";
-    f = {
-      time: new Intl.DateTimeFormat(tag, { hour: "2-digit", minute: "2-digit", hour12: false }),
-      full: new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeStyle: "short" }),
-    };
+    f = new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en", { dateStyle: "medium", timeStyle: "short" });
     formatters.set(locale, f);
   }
-  const date = new Date(ts);
-  const today = new Date().toDateString() === date.toDateString();
-  return {
-    short: today ? f.time.format(date) : `${date.getMonth() + 1}/${date.getDate()}`,
-    full: f.full.format(date),
-  };
+  return { full: f.format(ts) };
 }
 
 export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeedKey }: Props) {
@@ -154,14 +144,25 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
         </div>
       </div>
 
-      <figcaption className="flex h-9 items-center gap-2 pl-2.5 pr-1 font-mono text-[11px] text-fg-muted">
-        <span className="min-w-0 flex-1 truncate" title={model.label}>
+      <figcaption className="flex h-9 items-center gap-1.5 pl-2.5 pr-1 font-mono text-[11px] text-fg-muted">
+        <span className="min-w-0 flex-1 truncate" title={`${model.label} · ${created.full}`}>
           {g.aspectRatio} · {g.imageSize}
           {g.similarity ? ` · ${t(`similar.levels.${g.similarity}`)}` : ""} · {model.shortLabel}
         </span>
-        <time className="shrink-0 text-fg-subtle" dateTime={new Date(g.createdAt).toISOString()} title={created.full}>
-          {created.short}
-        </time>
+        {g.status === "done" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            iconOnly
+            aria-pressed={Boolean(g.starred)}
+            aria-label={g.starred ? t("gallery.unstar") : t("gallery.star")}
+            title={g.starred ? t("gallery.unstar") : t("gallery.star")}
+            className={g.starred ? "text-warning!" : ""}
+            onClick={() => toggleStar(g)}
+          >
+            <Star size={14} fill={g.starred ? "currentColor" : "none"} />
+          </Button>
+        )}
         {g.status === "done" && (
           <Button
             size="sm"

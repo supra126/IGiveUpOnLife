@@ -191,6 +191,25 @@ function baseGeneration(project: Project, patch: Partial<Generation>): Generatio
   };
 }
 
+// --- 收藏與迭代 ---
+
+export function toggleStar(generation: Generation): void {
+  patchGeneration(generation.id, { starred: !generation.starred });
+}
+
+/**
+ * 把生成結果設為新的參考圖，繼續往下迭代。
+ * 複製一份 asset，避免之後刪掉這張圖時連參考圖一起被刪。
+ */
+export async function setAsReference(generation: Generation): Promise<void> {
+  const assetId = generation.compositeAssetId ?? generation.assetId;
+  const record = assetId ? await getAssetRecord(assetId) : undefined;
+  if (!record) return;
+  const copy = await addAsset(record.blob, "reference");
+  updateProject((p) => ({ ...p, similar: { ...p.similar, referenceAssetId: copy } }));
+  showToast("success", "viewer.referenceSet");
+}
+
 // --- 相似圖 ---
 
 export async function runSimilar(count?: number): Promise<void> {
@@ -221,6 +240,8 @@ export async function runSimilar(count?: number): Promise<void> {
       aspectRatio: inputs.aspectRatio,
       similarity: inputs.similarity,
       prompt: inputs.instructions || undefined,
+      referenceAssetId: inputs.referenceAssetId,
+      productAssetId: inputs.productAssetId,
     });
     jobs.push(
       runImageJob({

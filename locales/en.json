@@ -129,7 +129,14 @@
       "extend": "Extended",
       "similar": "Similar",
       "campaign": "Campaign"
-    }
+    },
+    "star": "Star",
+    "unstar": "Unstar",
+    "filter": "Filter",
+    "filterAll": "All {count}",
+    "filterStarred": "Starred {count}",
+    "downloadStarred": "Download starred (.zip)",
+    "noStarred": "Nothing starred yet. Star the ones you like."
   },
   "viewer": {
     "title": "View",
@@ -140,7 +147,14 @@
     "editHint": "⌘/Ctrl + Enter to send",
     "apply": "Apply",
     "prev": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "compare": "Compare with reference",
+    "compareOff": "Hide comparison",
+    "reference": "Reference",
+    "result": "Result",
+    "useAsReference": "Use as reference",
+    "useAsReferenceHint": "Make this the new reference and keep iterating",
+    "referenceSet": "Set as reference. Ready for another round."
   },
   "campaign": {
     "steps": "Campaign steps",
