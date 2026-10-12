@@ -5,7 +5,7 @@
 
 /*
  * 設計 token
- * 中性石墨色表面 + 單一重點色（降低彩度的藍），oklch 定義以維持深淺色的一致明度
+ * 中性石墨色表面 + 黑白單色重點（深色用白、淺色用近黑）；彩色只留給狀態：紅＝錯誤、黃＝收藏
  */
 @theme {
   --font-sans: var(--font-plex-sans), var(--font-noto-sans-tc), "PingFang TC", "Microsoft JhengHei", sans-serif;
@@ -44,9 +44,9 @@
     --fg: oklch(0.22 0.01 260);
     --fg-muted: oklch(0.45 0.01 260);
     --fg-subtle: oklch(0.5 0.01 260);
-    --accent: oklch(0.55 0.15 255);
+    --accent: oklch(0.21 0.006 260);
     --accent-fg: oklch(0.99 0 0);
-    --accent-soft: oklch(0.55 0.15 255 / 0.1);
+    --accent-soft: oklch(0.21 0.006 260 / 0.07);
     --danger: oklch(0.55 0.18 25);
     --danger-soft: oklch(0.55 0.18 25 / 0.1);
     --success: oklch(0.58 0.13 155);
@@ -65,9 +65,9 @@
     --fg: oklch(0.94 0.004 260);
     --fg-muted: oklch(0.72 0.008 260);
     --fg-subtle: oklch(0.66 0.008 260);
-    --accent: oklch(0.68 0.13 255);
-    --accent-fg: oklch(0.16 0.01 260);
-    --accent-soft: oklch(0.68 0.13 255 / 0.14);
+    --accent: oklch(0.95 0.003 260);
+    --accent-fg: oklch(0.17 0.005 260);
+    --accent-soft: oklch(0.95 0.003 260 / 0.1);
     --danger: oklch(0.68 0.16 25);
     --danger-soft: oklch(0.68 0.16 25 / 0.14);
     --success: oklch(0.72 0.13 155);

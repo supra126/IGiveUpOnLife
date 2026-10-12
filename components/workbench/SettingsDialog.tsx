@@ -93,7 +93,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
           <p className="mt-1 text-xs text-fg-subtle">
             {isStatic ? t("settings.keyHelpStatic") : t("settings.keyHelpServer")}{" "}
             <a
-              className="text-accent underline-offset-2 hover:underline"
+              className="font-medium text-fg underline underline-offset-2 hover:text-fg-muted"
               href="https://aistudio.google.com/apikey"
               target="_blank"
               rel="noreferrer"
