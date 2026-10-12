@@ -203,7 +203,10 @@
     "generateOne": "Generate",
     "generateAnother": "Generate another",
     "emptyTitle": "Show GG your product first",
-    "emptyBody": "Upload a product image on the left, add some info and press “Analyze product”."
+    "emptyBody": "Upload a product image on the left, add some info and press “Analyze product”.",
+    "otherImages": "Other images",
+    "otherImagesHint": "Images from earlier plans or edits. They are not part of the current plan.",
+    "planStale": "You picked a different route. The current plan was made for route {route}. Plan again to open the suite."
   },
   "formats": {
     "1:1": "Facebook post",

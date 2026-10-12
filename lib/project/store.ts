@@ -187,6 +187,23 @@ export function updateProject(mutator: (project: Project) => Project): void {
   scheduleSave();
 }
 
+/**
+ * 更新指定專案；不是目前開著的專案時，直接改暫存或資料庫裡的版本
+ * （例如上傳轉檔期間使用者切換了專案）
+ */
+export async function updateProjectById(id: string, mutator: (project: Project) => Project): Promise<void> {
+  if (state.project?.id === id) {
+    updateProject(mutator);
+    return;
+  }
+  const stored = memoryProjects.get(id) ?? (await safe(() => db.getProject(id), undefined));
+  if (!stored) return;
+  const next = { ...mutator(stored), updatedAt: Date.now() };
+  if (memoryProjects.has(id)) memoryProjects.set(id, next);
+  else await safe(() => db.saveProject(next), undefined);
+  setState({ projects: state.projects.map((p) => (p.id === id ? toSummary(next) : p)) });
+}
+
 // --- 圖片資產 ---
 
 export async function addAsset(blob: Blob, role: AssetRole, projectId = state.project?.id): Promise<string> {

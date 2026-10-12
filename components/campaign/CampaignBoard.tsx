@@ -10,7 +10,7 @@ import { Gallery } from "@/components/workbench/Gallery";
 import { useWorkspace } from "@/lib/project/store";
 import { useCampaignProgress } from "@/lib/workbench/progress";
 import { StreamProgress } from "./StreamProgress";
-import type { Generation } from "@/lib/project/types";
+import { isFromCurrentPlan, type Generation } from "@/lib/project/types";
 import type { ContentSet } from "@/types";
 import {
   hasUsableKey,
@@ -154,14 +154,16 @@ export function CampaignBoard(props: BoardProps) {
   const generations = useWorkspace((s) => s.generations);
   const progress = useCampaignProgress();
 
-  const bySet = useMemo(() => {
+  // 只把這次規劃生的圖放進對應的內容組；先前規劃或沒有內容組的圖放到「其他圖片」
+  const { bySet, others } = useMemo(() => {
     const map = new Map<string, Generation[]>();
+    const rest: Generation[] = [];
     for (const g of generations) {
-      if (!g.contentSetId) continue;
-      map.set(g.contentSetId, [...(map.get(g.contentSetId) ?? []), g]);
+      if (campaign && isFromCurrentPlan(g, campaign)) map.set(g.contentSetId!, [...(map.get(g.contentSetId!) ?? []), g]);
+      else rest.push(g);
     }
-    return map;
-  }, [generations]);
+    return { bySet: map, others: rest };
+  }, [generations, campaign]);
 
   if (!campaign) return null;
 
@@ -174,7 +176,9 @@ export function CampaignBoard(props: BoardProps) {
       <div className="h-full overflow-y-auto p-4">
         <header className="mb-4">
           <h2 className="text-base font-semibold">{campaign.plan?.plan_name}</h2>
-          <p className="text-xs text-fg-muted">{campaign.routes[campaign.activeRouteIndex]?.headline}</p>
+          <p className="text-xs text-fg-muted">
+            {campaign.routes[campaign.planRouteIndex ?? campaign.activeRouteIndex]?.headline}
+          </p>
         </header>
         <div className="space-y-8">
           {[...groups.entries()].map(([ratio, sets]) => (
@@ -189,6 +193,15 @@ export function CampaignBoard(props: BoardProps) {
               </div>
             </section>
           ))}
+          {others.length > 0 && (
+            <section>
+              <h3 className="section-title mb-1">{t("campaign.otherImages")}</h3>
+              <p className="mb-3 text-xs text-fg-muted">{t("campaign.otherImagesHint")}</p>
+              <div className="h-[480px] overflow-hidden rounded-[var(--radius-panel)] border border-line">
+                <Gallery generations={others} {...props} emptyTitle="" emptyBody="" />
+              </div>
+            </section>
+          )}
         </div>
       </div>
     );
@@ -226,8 +239,8 @@ export function CampaignBoard(props: BoardProps) {
               ))}
             </div>
           </section>
-          {generations.some((g) => !g.contentSetId) && (
-            <Gallery generations={generations.filter((g) => !g.contentSetId)} {...props} emptyTitle="" emptyBody="" />
+          {others.length > 0 && (
+            <Gallery generations={others} {...props} emptyTitle="" emptyBody="" />
           )}
         </div>
       </div>

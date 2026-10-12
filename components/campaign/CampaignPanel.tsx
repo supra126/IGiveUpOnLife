@@ -12,7 +12,7 @@ import { useAssetUpload } from "@/components/workbench/useAssetUpload";
 import { updateProject, useWorkspace } from "@/lib/project/store";
 import { useCampaignProgress } from "@/lib/workbench/progress";
 import { FORMAT_IDS, type FormatId } from "@/lib/gemini/formats";
-import type { CampaignState, CampaignStep } from "@/lib/project/types";
+import { isPlanStale, type CampaignState, type CampaignStep } from "@/lib/project/types";
 import type { MarketingRoute } from "@/types";
 import {
   cancelCampaignRequest,
@@ -37,8 +37,9 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
   const set = (patch: Partial<CampaignState>) =>
     updateProject((p) => ({ ...p, campaign: { ...p.campaign, ...patch } }));
 
+  const planStale = isPlanStale(campaign);
   const reachable = (step: CampaignStep) =>
-    step === "input" || (step === "strategy" && Boolean(campaign.analysis)) || (step === "suite" && Boolean(campaign.plan));
+    step === "input" || (step === "strategy" && Boolean(campaign.analysis)) || (step === "suite" && Boolean(campaign.plan) && !planStale);
 
   const guarded = async (kind: "analyze" | "plan", fn: () => Promise<boolean>) => {
     if (!hasUsableKey()) return onNeedKey();
@@ -88,9 +89,20 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
                   required
                   assetId={campaign.productAssetId}
                   onFile={async (file) => {
-                    const id = await upload(file, "product");
                     // 換產品圖時清掉舊的分析結果，避免混用
-                    if (id) set({ productAssetId: id, analysis: undefined, routes: [], plan: undefined, contentSets: [] });
+                    await upload(file, "product", (p, id) => ({
+                      ...p,
+                      campaign: {
+                        ...p.campaign,
+                        productAssetId: id,
+                        analysis: undefined,
+                        routes: [],
+                        plan: undefined,
+                        planId: undefined,
+                        planRouteIndex: undefined,
+                        contentSets: [],
+                      },
+                    }));
                   }}
                   onClear={() => set({ productAssetId: undefined })}
                 />
@@ -99,8 +111,10 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
                   hint={t("common.optional")}
                   assetId={campaign.secondaryAssetId}
                   onFile={async (file) => {
-                    const id = await upload(file, "secondary");
-                    if (id) set({ secondaryAssetId: id });
+                    await upload(file, "secondary", (p, id) => ({
+                      ...p,
+                      campaign: { ...p.campaign, secondaryAssetId: id },
+                    }));
                   }}
                   onClear={() => set({ secondaryAssetId: undefined })}
                 />
@@ -171,6 +185,11 @@ export function CampaignPanel({ onNeedKey }: { onNeedKey: () => void }) {
 
         {campaign.step === "strategy" && route && (
           <>
+            {planStale && (
+              <p role="status" className="mx-4 mt-4 rounded-[var(--radius-control)] border border-warning/40 bg-warning/10 px-3 py-2 text-xs">
+                {t("campaign.planStale", { route: String.fromCharCode(65 + (campaign.planRouteIndex ?? 0)) })}
+              </p>
+            )}
             <PanelSection title={t("campaign.routes")}>
               <div role="radiogroup" aria-label={t("campaign.routes")} className="space-y-1.5">
                 {campaign.routes.map((r, index) => (

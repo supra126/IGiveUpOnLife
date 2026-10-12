@@ -48,8 +48,7 @@ export function SimilarPanel({ onNeedKey }: { onNeedKey: () => void }) {
 
   const setImage = async (file: File, key: "referenceAssetId" | "productAssetId" | "secondaryAssetId") => {
     const role = key === "referenceAssetId" ? "reference" : key === "productAssetId" ? "product" : "secondary";
-    const id = await upload(file, role);
-    if (id) set({ [key]: id });
+    await upload(file, role, (p, id) => ({ ...p, similar: { ...p.similar, [key]: id } }));
   };
 
   const ready = Boolean(similar.referenceAssetId && similar.productAssetId);

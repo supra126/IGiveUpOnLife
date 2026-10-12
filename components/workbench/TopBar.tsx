@@ -8,7 +8,7 @@ import { BrandMark } from "@/components/ui/BrandMark";
 import { useAssetUrl } from "@/lib/project/asset-url";
 import { deleteProject, openProject, updateProject, useWorkspace } from "@/lib/project/store";
 import type { ProjectKind, ProjectSummary } from "@/lib/project/types";
-import { cancelAll, usePendingCount } from "@/lib/workbench/runner";
+import { cancelAll, cancelProjectJobs, usePendingCount } from "@/lib/workbench/runner";
 import { setPreference, usePreferences } from "@/lib/preferences";
 
 function ProjectThumb({ summary }: { summary: ProjectSummary }) {
@@ -112,7 +112,10 @@ function ProjectMenu({ onNew }: { onNew: (kind: ProjectKind) => void }) {
                   aria-label={t("project.delete", { name: p.name || t("project.untitled") })}
                   className="grid size-7 place-items-center rounded text-fg-subtle opacity-0 hover:bg-danger-soft hover:text-danger focus:opacity-100 group-hover:opacity-100"
                   onClick={() => {
-                    if (window.confirm(t("project.deleteConfirm"))) void deleteProject(p.id);
+                    if (window.confirm(t("project.deleteConfirm"))) {
+                      cancelProjectJobs(p.id);
+                      void deleteProject(p.id);
+                    }
                   }}
                 >
                   <Trash size={13} />

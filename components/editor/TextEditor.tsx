@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { Segmented } from "@/components/ui/Segmented";
 import { useAssetUpload } from "@/components/workbench/useAssetUpload";
 import { useAssetUrl } from "@/lib/project/asset-url";
-import { getAssetRecord, loadLayerDoc, updateProject, useWorkspace } from "@/lib/project/store";
+import { getAssetRecord, loadLayerDoc, useWorkspace } from "@/lib/project/store";
 import { createId, type Generation } from "@/lib/project/types";
 import {
   emptyDoc,
@@ -585,9 +585,8 @@ export default function TextEditor({ generation, onClose }: Props) {
             const file = e.target.files?.[0];
             e.target.value = "";
             if (!file) return;
-            const id = await upload(file, "logo");
+            const id = await upload(file, "logo", (p, assetId) => ({ ...p, logoAssetId: assetId }));
             if (!id) return;
-            updateProject((p) => ({ ...p, logoAssetId: id }));
             await addLogo(id);
           }}
         />

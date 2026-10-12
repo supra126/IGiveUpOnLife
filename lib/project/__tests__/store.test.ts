@@ -10,9 +10,10 @@ import {
   patchGeneration,
   resetWorkspaceForTests,
   setGenerationActive,
+  updateProjectById,
   upsertGeneration,
 } from "../store";
-import type { Generation } from "../types";
+import { createProject, isFromCurrentPlan, isPlanStale, type Generation } from "../types";
 
 const settings = { imageModel: "m", textModel: "t", imageSize: "2K" as const };
 
@@ -116,5 +117,40 @@ describe("正常模式", () => {
     await newProject("similar", settings, "A");
     const assetId = await addAsset(new Blob(["png"], { type: "image/png" }), "generated");
     expect(await db.getAsset(assetId)).toBeDefined();
+  });
+});
+
+describe("updateProjectById", () => {
+  it("可以更新沒有開著的專案（上傳轉檔期間切換專案）", async () => {
+    const a = await newProject("similar", settings, "A");
+    await newProject("similar", settings, "B");
+    await updateProjectById(a.id, (p) => ({ ...p, similar: { ...p.similar, referenceAssetId: "ref-1" } }));
+
+    expect(getState().project?.name).toBe("B");
+    expect(getState().project?.similar.referenceAssetId).toBeUndefined();
+    expect((await db.getProject(a.id))?.similar.referenceAssetId).toBe("ref-1");
+  });
+});
+
+describe("完整企劃的規劃版本", () => {
+  const base = createProject("campaign", settings, "C").campaign;
+  const g = (patch: Partial<Generation>): Generation => ({ ...queued("p"), contentSetId: "1-1_set1", ...patch });
+
+  it("只有同一次規劃的圖算在目前內容組", () => {
+    const campaign = { ...base, planId: "plan-2" };
+    expect(isFromCurrentPlan(g({ planId: "plan-2" }), campaign)).toBe(true);
+    expect(isFromCurrentPlan(g({ planId: "plan-1" }), campaign)).toBe(false);
+    expect(isFromCurrentPlan(g({ planId: "plan-2", contentSetId: undefined }), campaign)).toBe(false);
+  });
+
+  it("舊資料兩邊都沒有規劃編號時仍視為同一份", () => {
+    expect(isFromCurrentPlan(g({}), base)).toBe(true);
+  });
+
+  it("規劃後改選別的路線，規劃就過期", () => {
+    const plan = { plan_name: "x", content_sets: [] } as unknown as NonNullable<typeof base.plan>;
+    expect(isPlanStale({ ...base, plan, planRouteIndex: 0, activeRouteIndex: 0 })).toBe(false);
+    expect(isPlanStale({ ...base, plan, planRouteIndex: 0, activeRouteIndex: 1 })).toBe(true);
+    expect(isPlanStale({ ...base, plan: undefined, planRouteIndex: 0, activeRouteIndex: 1 })).toBe(false);
   });
 });

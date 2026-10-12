@@ -24,7 +24,7 @@ import {
   updateProject,
   upsertGeneration,
 } from "@/lib/project/store";
-import { createId, type Generation, type Project, type ProjectSettings } from "@/lib/project/types";
+import { createId, isFromCurrentPlan, isPlanStale, type Generation, type Project, type ProjectSettings } from "@/lib/project/types";
 import { showToast } from "./toast";
 
 // --- 伺服器能力（模式、是否有伺服器金鑰、模型白名單） ---
@@ -177,13 +177,50 @@ interface ImageJob {
   }>;
 }
 
+/** 每個專案一個 AbortController，刪除專案時用來取消它的工作 */
+const projectControllers = new Map<string, AbortController>();
+
+function projectSignal(projectId: string): AbortSignal {
+  let controller = projectControllers.get(projectId);
+  if (!controller || controller.signal.aborted) {
+    controller = new AbortController();
+    projectControllers.set(projectId, controller);
+  }
+  return controller.signal;
+}
+
+/** 取消某個專案還在排隊或執行中的生成（刪除專案前呼叫） */
+export function cancelProjectJobs(projectId: string): void {
+  projectControllers.get(projectId)?.abort();
+  projectControllers.delete(projectId);
+}
+
+/** 合併兩個 signal：任一個中止就中止 */
+function anySignal(a: AbortSignal, b: AbortSignal): AbortSignal {
+  if (a.aborted || b.aborted) return AbortSignal.abort();
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  a.addEventListener("abort", abort, { once: true });
+  b.addEventListener("abort", abort, { once: true });
+  return controller.signal;
+}
+
+function projectExists(projectId: string): boolean {
+  return getState().projects.some((p) => p.id === projectId);
+}
+
 /** 建立 queued 紀錄 → 排入佇列 → 存圖並更新狀態 */
 function runImageJob({ generation, run }: ImageJob): Promise<void> {
   upsertGeneration(generation);
   setGenerationActive(generation.id, true);
-  return enqueue(async (signal) => {
+  const owner = projectSignal(generation.projectId);
+  return enqueue(async (queueSignal) => {
+    const signal = anySignal(queueSignal, owner);
+    if (signal.aborted) throw new GeminiError("ABORTED");
     patchGeneration(generation.id, { status: "running" });
     const result = await run(signal);
+    // 等待期間專案被刪掉了：不存圖，避免留下沒人引用的檔案
+    if (signal.aborted || !projectExists(generation.projectId)) throw new GeminiError("ABORTED");
     const assetId = await addAsset(dataUrlToBlob(result.dataUrl), "generated", generation.projectId);
     patchGeneration(generation.id, {
       status: "done",
@@ -315,6 +352,7 @@ export async function runExtend(source: Generation, aspectRatio: AspectRatio): P
       source: "extend",
       parentId: source.id,
       contentSetId: source.contentSetId,
+      planId: source.planId,
       aspectRatio,
       similarity: "high",
     }),
@@ -384,6 +422,7 @@ export async function runEdit(target: Generation, instruction: string): Promise<
       source: "edit",
       parentId: target.id,
       contentSetId: target.contentSetId,
+      planId: target.planId,
       aspectRatio: target.aspectRatio,
       similarity: target.similarity,
       prompt: instruction,
@@ -467,6 +506,8 @@ export async function runAnalyze(locale: Locale): Promise<boolean> {
         activeRouteIndex: 0,
         routeSupplements: result.marketing_routes.map(() => ""),
         plan: undefined,
+        planId: undefined,
+        planRouteIndex: undefined,
         contentSets: [],
       },
     }));
@@ -509,7 +550,14 @@ export async function runPlan(locale: Locale): Promise<boolean> {
     if (!isCurrent(controller, project.id)) return false;
     updateProject((p) => ({
       ...p,
-      campaign: { ...p.campaign, step: "suite", plan, contentSets: plan.content_sets },
+      campaign: {
+        ...p.campaign,
+        step: "suite",
+        plan,
+        planId: createId(),
+        planRouteIndex: activeRouteIndex,
+        contentSets: plan.content_sets,
+      },
     }));
     return true;
   } catch (error) {
@@ -556,6 +604,8 @@ export function updateContentSet(id: string, patch: Partial<ContentSet>): void {
 
 export async function runCampaignImages(contentSets: ContentSet[]): Promise<void> {
   const project = requireProject();
+  // 規劃後改了路線，這些內容組已不對應目前路線，不能拿來生圖
+  if (isPlanStale(project.campaign)) return;
   const [productImage, secondaryImage] = await Promise.all([
     assetDataUrl(project.campaign.productAssetId),
     assetDataUrl(project.campaign.secondaryAssetId),
@@ -572,6 +622,7 @@ export async function runCampaignImages(contentSets: ContentSet[]): Promise<void
           batchId,
           source: "campaign",
           contentSetId: set.id,
+          planId: project.campaign.planId,
           aspectRatio: FORMATS[set.ratio as FormatId]?.aspectRatio ?? "1:1",
           prompt: set.visual_prompt_en,
         }),
@@ -596,7 +647,9 @@ export async function runCampaignImages(contentSets: ContentSet[]): Promise<void
 // --- 下載 ---
 
 function generationName(g: Generation, index: number, project: Project): string {
-  const set = g.contentSetId ? project.campaign.contentSets.find((s) => s.id === g.contentSetId) : undefined;
+  const set = isFromCurrentPlan(g, project.campaign)
+    ? project.campaign.contentSets.find((s) => s.id === g.contentSetId)
+    : undefined;
   const parts = [
     String(index + 1).padStart(2, "0"),
     set ? `${set.ratio}_set${set.set_number}` : g.aspectRatio.replace(":", "x"),
@@ -616,9 +669,9 @@ export async function downloadGeneration(g: Generation, preferComposite = true):
 }
 
 function buildCopyMarkdown(project: Project): string | undefined {
-  const { contentSets, plan, routes, activeRouteIndex } = project.campaign;
+  const { contentSets, plan, routes, activeRouteIndex, planRouteIndex } = project.campaign;
   if (contentSets.length === 0) return undefined;
-  const route = routes[activeRouteIndex];
+  const route = routes[planRouteIndex ?? activeRouteIndex];
   const lines = [`# ${plan?.plan_name ?? project.name}`, ""];
   if (route) lines.push(`> ${route.route_name} — ${route.headline}`, "");
   for (const set of contentSets) {

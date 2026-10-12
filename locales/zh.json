@@ -203,7 +203,10 @@
     "generateOne": "生成",
     "generateAnother": "再生一張",
     "emptyTitle": "先讓小GG 看看你的產品",
-    "emptyBody": "左邊上傳產品圖、填一點資訊，按「分析產品」。"
+    "emptyBody": "左邊上傳產品圖、填一點資訊，按「分析產品」。",
+    "otherImages": "其他圖片",
+    "otherImagesHint": "先前規劃或修改產生的圖，不屬於目前這份規劃。",
+    "planStale": "已改選路線，目前的規劃是依路線 {route} 產生的。重新規劃後才能進入套件。"
   },
   "formats": {
     "1:1": "FB 貼文",

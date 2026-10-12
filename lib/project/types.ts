@@ -44,6 +44,10 @@ export interface CampaignState {
   routeSupplements: string[];
   formats: FormatId[];
   plan?: ContentPlan;
+  /** 每次規劃的編號；內容組 ID（如 1-1_set1）每次都一樣，要靠它分辨圖片屬於哪次規劃 */
+  planId?: string;
+  /** 規劃時使用的路線；之後改選別的路線，這份規劃就過期了 */
+  planRouteIndex?: number;
   contentSets: ContentSet[];
 }
 
@@ -86,6 +90,8 @@ export interface Generation {
   source: GenerationSource;
   /** 完整企劃流程對應的 content set */
   contentSetId?: string;
+  /** 產生這張圖時的規劃編號（見 CampaignState.planId） */
+  planId?: string;
   /** 修圖 / 延伸的上一版 */
   parentId?: string;
   aspectRatio: AspectRatio;
@@ -162,4 +168,14 @@ export function createProject(kind: ProjectKind, settings: ProjectSettings, name
       contentSets: [],
     },
   };
+}
+
+/** 這張圖是否屬於目前這份規劃（舊資料兩邊都沒有 planId 時視為同一份） */
+export function isFromCurrentPlan(generation: Generation, campaign: CampaignState): boolean {
+  return Boolean(generation.contentSetId) && generation.planId === campaign.planId;
+}
+
+/** 規劃後改選了別的路線，現有的內容組已不對應目前路線 */
+export function isPlanStale(campaign: CampaignState): boolean {
+  return Boolean(campaign.plan) && campaign.planRouteIndex !== undefined && campaign.planRouteIndex !== campaign.activeRouteIndex;
 }
