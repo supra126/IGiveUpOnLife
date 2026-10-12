@@ -19,8 +19,24 @@ interface Props {
   onNeedKey: () => void;
 }
 
+const formatters = new Map<string, Intl.DateTimeFormat>();
+function timeFormatter(locale: string) {
+  let f = formatters.get(locale);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    formatters.set(locale, f);
+  }
+  return f;
+}
+
 export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeedKey }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const url = useAssetUrl(g.compositeAssetId ?? g.assetId);
   const [w, h] = g.aspectRatio.split(":").map(Number);
   const busy = g.status === "queued" || g.status === "running";
@@ -143,11 +159,14 @@ export function GalleryCard({ generation: g, onOpen, onEditText, onRetry, onNeed
         </div>
       </div>
 
-      <figcaption className="px-2.5 py-2">
-        <span className="block truncate font-mono text-[11px] text-fg-subtle">
+      <figcaption className="flex items-baseline gap-2 px-2.5 py-2 font-mono text-[11px] text-fg-subtle">
+        <span className="min-w-0 flex-1 truncate">
           {g.aspectRatio} · {g.imageSize}
           {g.similarity ? ` · ${t(`similar.levels.${g.similarity}`)}` : ""} · {modelLabel}
         </span>
+        <time className="shrink-0" dateTime={new Date(g.createdAt).toISOString()}>
+          {timeFormatter(locale).format(g.createdAt)}
+        </time>
       </figcaption>
     </figure>
   );

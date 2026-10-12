@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Archive } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Button } from "@/components/ui/Button";
@@ -19,20 +19,46 @@ interface Props {
   emptyBody: string;
 }
 
-/** 依批次分組、最新的在上面 */
-export function Gallery({ generations, onOpen, onEditText, onRetry, onNeedKey, emptyTitle, emptyBody }: Props) {
-  const { t, locale } = useLocale();
+const MIN_COLUMN_WIDTH = 220;
+const GAP = 12;
+/** 卡片說明列的高度，換算成「寬度的倍數」前先以像素估計 */
+const CAPTION_HEIGHT = 30;
 
-  const groups = useMemo(() => {
-    const map = new Map<string, Generation[]>();
-    for (const g of generations) {
-      const key = g.batchId ?? g.id;
-      map.set(key, [...(map.get(key) ?? []), g]);
+/** 依容器寬度決定欄數（容器在空狀態時不存在，所以用 callback ref 傳入元素） */
+function useColumnCount(el: HTMLElement | null) {
+  const [count, setCount] = useState(1);
+  useEffect(() => {
+    if (!el) return;
+    const update = () => {
+      const width = el.clientWidth;
+      setCount(Math.max(1, Math.floor((width + GAP) / (MIN_COLUMN_WIDTH + GAP))));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [el]);
+  return count;
+}
+
+/** 瀑布流：最新的在最前面，每張依序放進目前最矮的那一欄（比例已知，不必等圖片載入） */
+export function Gallery({ generations, onOpen, onEditText, onRetry, onNeedKey, emptyTitle, emptyBody }: Props) {
+  const { t } = useLocale();
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const columnCount = useColumnCount(container);
+
+  const columns = useMemo(() => {
+    const sorted = [...generations].sort((a, b) => b.createdAt - a.createdAt);
+    const cols: Generation[][] = Array.from({ length: columnCount }, () => []);
+    const heights = new Array<number>(columnCount).fill(0);
+    for (const g of sorted) {
+      const [w, h] = g.aspectRatio.split(":").map(Number);
+      const target = heights.indexOf(Math.min(...heights));
+      cols[target].push(g);
+      heights[target] += (h && w ? h / w : 1) * MIN_COLUMN_WIDTH + CAPTION_HEIGHT + GAP;
     }
-    return [...map.entries()]
-      .map(([key, items]) => ({ key, items, createdAt: Math.min(...items.map((i) => i.createdAt)) }))
-      .sort((a, b) => b.createdAt - a.createdAt);
-  }, [generations]);
+    return cols;
+  }, [generations, columnCount]);
 
   const doneCount = generations.filter((g) => g.status === "done").length;
 
@@ -46,13 +72,6 @@ export function Gallery({ generations, onOpen, onEditText, onRetry, onNeedKey, e
     );
   }
 
-  const timeFormat = new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-11 shrink-0 items-center justify-between border-b border-line px-4">
@@ -63,23 +82,20 @@ export function Gallery({ generations, onOpen, onEditText, onRetry, onNeedKey, e
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <div className="space-y-6">
-          {groups.map((group) => (
-            <section key={group.key} aria-label={timeFormat.format(group.createdAt)}>
-              <h3 className="mb-2 font-mono text-[11px] text-fg-subtle">{timeFormat.format(group.createdAt)}</h3>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] items-start gap-3">
-                {group.items.map((g) => (
-                  <GalleryCard
-                    key={g.id}
-                    generation={g}
-                    onOpen={onOpen}
-                    onEditText={onEditText}
-                    onRetry={onRetry}
-                    onNeedKey={onNeedKey}
-                  />
-                ))}
-              </div>
-            </section>
+        <div ref={setContainer} className="flex items-start gap-3">
+          {columns.map((items, i) => (
+            <div key={i} className="flex min-w-0 flex-1 flex-col gap-3">
+              {items.map((g) => (
+                <GalleryCard
+                  key={g.id}
+                  generation={g}
+                  onOpen={onOpen}
+                  onEditText={onEditText}
+                  onRetry={onRetry}
+                  onNeedKey={onNeedKey}
+                />
+              ))}
+            </div>
           ))}
         </div>
       </div>
