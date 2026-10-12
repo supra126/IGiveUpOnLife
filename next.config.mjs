@@ -55,9 +55,10 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-              "style-src 'self' 'unsafe-inline'",
+              // 文字編輯器執行時才從 Google Fonts 載入 6 套字型（lib/editor/fonts.ts）
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob:",
-              "font-src 'self' data:",
+              "font-src 'self' data: https://fonts.gstatic.com",
               "connect-src 'self' https://generativelanguage.googleapis.com",
               "worker-src 'self' blob:",
               "object-src 'none'",
