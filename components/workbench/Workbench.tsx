@@ -10,7 +10,7 @@ import { CampaignBoard } from "@/components/campaign/CampaignBoard";
 import { initWorkspace, newProject, removeGeneration, useWorkspace } from "@/lib/project/store";
 import type { Generation, ProjectKind } from "@/lib/project/types";
 import { applyTheme, getPreferences, usePreferences } from "@/lib/preferences";
-import { loadCapabilities, runSimilar } from "@/lib/workbench/runner";
+import { loadCapabilities, resolveNewProjectSettings, runSimilar } from "@/lib/workbench/runner";
 import { showToast } from "@/lib/workbench/toast";
 import { TopBar } from "./TopBar";
 import { Gallery } from "./Gallery";
@@ -97,7 +97,12 @@ export function Workbench() {
       }).format(new Date());
       void newProject(
         kind,
-        { imageModel: p.imageModel, textModel: p.textModel, imageSize: p.imageSize, thinkingLevel: p.thinkingLevel },
+        resolveNewProjectSettings({
+          imageModel: p.imageModel,
+          textModel: p.textModel,
+          imageSize: p.imageSize,
+          thinkingLevel: p.thinkingLevel,
+        }),
         `${t(`project.kind.${kind}`)} ${stamp}`
       );
       setMobileTab("setup");

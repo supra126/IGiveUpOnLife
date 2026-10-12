@@ -9,7 +9,7 @@ import type { StreamEvent } from "@/lib/gemini/stream";
 import { endProgress, pushThought, startProgress, updateProgress } from "./progress";
 import { classifyError, GeminiError } from "@/lib/gemini/errors";
 import { FORMATS, type FormatId } from "@/lib/gemini/formats";
-import type { AspectRatio } from "@/lib/gemini/models";
+import { clampImageOptions, getImageModelSpec, type AspectRatio } from "@/lib/gemini/models";
 import { createQueue, type Queue } from "@/lib/queue";
 import { dataUrlToBlob, extensionFor, prepareImageForApi, downloadBlob } from "@/lib/image/blob";
 import { buildZip, type ZipImage } from "@/lib/export/zip";
@@ -20,10 +20,11 @@ import {
   getAssetRecord,
   getState,
   patchGeneration,
+  setGenerationActive,
   updateProject,
   upsertGeneration,
 } from "@/lib/project/store";
-import { createId, type Generation, type Project } from "@/lib/project/types";
+import { createId, type Generation, type Project, type ProjectSettings } from "@/lib/project/types";
 import { showToast } from "./toast";
 
 // --- 伺服器能力（模式、是否有伺服器金鑰、模型白名單） ---
@@ -57,6 +58,30 @@ export function useCapabilities(): Capabilities | null {
     () => capabilities,
     () => null
   );
+}
+
+/** 從清單挑出可用的模型：偏好 → 伺服器預設 → 白名單第一個 */
+export function pickAllowedModel(preferred: string, serverDefault: string, allowed: string[] | null): string {
+  if (!allowed || allowed.length === 0) return preferred;
+  if (allowed.includes(preferred)) return preferred;
+  if (serverDefault && allowed.includes(serverDefault)) return serverDefault;
+  return allowed[0];
+}
+
+/**
+ * 新專案的輸出設定。使用伺服器金鑰時要符合站方的模型白名單，
+ * 否則每次請求都會被擋（MODEL_NOT_ALLOWED）
+ */
+export function resolveNewProjectSettings(preferred: ProjectSettings): ProjectSettings {
+  const caps = capabilities;
+  if (!caps || caps.mode !== "server" || getPreferences().apiKey) return preferred;
+  const imageModel = pickAllowedModel(preferred.imageModel, caps.defaults.imageModel, caps.allowedImageModels);
+  const textModel = pickAllowedModel(preferred.textModel, caps.defaults.textModel, caps.allowedTextModels);
+  const clamped = clampImageOptions(getImageModelSpec(imageModel), {
+    size: preferred.imageSize,
+    thinkingLevel: preferred.thinkingLevel,
+  });
+  return { ...preferred, imageModel, textModel, imageSize: clamped.size, thinkingLevel: clamped.thinkingLevel };
 }
 
 /** 沒有可用金鑰時回傳 false，由 UI 開啟設定 */
@@ -155,6 +180,7 @@ interface ImageJob {
 /** 建立 queued 紀錄 → 排入佇列 → 存圖並更新狀態 */
 function runImageJob({ generation, run }: ImageJob): Promise<void> {
   upsertGeneration(generation);
+  setGenerationActive(generation.id, true);
   return enqueue(async (signal) => {
     patchGeneration(generation.id, { status: "running" });
     const result = await run(signal);
@@ -174,7 +200,7 @@ function runImageJob({ generation, run }: ImageJob): Promise<void> {
       errorCode: code === "ABORTED" ? undefined : code,
     });
     reportError(error);
-  });
+  }).finally(() => setGenerationActive(generation.id, false));
 }
 
 function baseGeneration(project: Project, patch: Partial<Generation>): Generation {

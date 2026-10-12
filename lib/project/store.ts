@@ -41,6 +41,13 @@ let state: WorkspaceState = {
 
 const listeners = new Set<() => void>();
 const memoryAssets = new Map<string, Asset>();
+/** 這個分頁裡仍在佇列或執行中的生成，切換專案時不能當成已中斷 */
+const activeGenerations = new Set<string>();
+
+export function setGenerationActive(id: string, active: boolean): void {
+  if (active) activeGenerations.add(id);
+  else activeGenerations.delete(id);
+}
 
 function setState(patch: Partial<WorkspaceState>) {
   state = { ...state, ...patch };
@@ -112,9 +119,11 @@ export async function openProject(id: string): Promise<void> {
   const project = await safe(() => db.getProject(id), undefined);
   if (!project) return;
   const generations = await safe(() => db.listGenerations(id), []);
-  // 上次關閉時還在跑的工作已經無法完成
+  // 上次關閉時還在跑的工作已經無法完成；這個分頁仍在跑的則保留，完成後會寫回
   const cleaned = generations.map((g) =>
-    g.status === "running" || g.status === "queued" ? { ...g, status: "cancelled" as const } : g
+    (g.status === "running" || g.status === "queued") && !activeGenerations.has(g.id)
+      ? { ...g, status: "cancelled" as const }
+      : g
   );
   setState({ project, generations: cleaned });
   await safe(() => db.setMeta("lastProjectId", id), undefined);
@@ -192,14 +201,27 @@ export function upsertGeneration(generation: Generation): void {
   setState({ generations });
   void safe(() => db.saveGeneration(generation), undefined);
 
-  if (generation.status === "done" && generation.assetId && state.project && !state.project.coverAssetId) {
+  if (
+    generation.status === "done" &&
+    generation.assetId &&
+    state.project?.id === generation.projectId &&
+    !state.project.coverAssetId
+  ) {
     updateProject((p) => ({ ...p, coverAssetId: generation.assetId }));
   }
 }
 
 export function patchGeneration(id: string, patch: Partial<Generation>): void {
   const current = state.generations.find((g) => g.id === id);
-  if (current) upsertGeneration({ ...current, ...patch });
+  if (current) {
+    upsertGeneration({ ...current, ...patch });
+    return;
+  }
+  // 使用者已切到其他專案：直接更新資料庫裡的紀錄，切回來時才看得到結果
+  void safe(async () => {
+    const stored = await db.getGeneration(id);
+    if (stored) await db.saveGeneration({ ...stored, ...patch });
+  }, undefined);
 }
 
 export async function removeGeneration(id: string): Promise<void> {
@@ -217,6 +239,7 @@ export async function removeGeneration(id: string): Promise<void> {
 export function resetWorkspaceForTests(): void {
   state = { ready: false, persistent: true, projects: [], project: null, generations: [] };
   memoryAssets.clear();
+  activeGenerations.clear();
 }
 
 if (typeof window !== "undefined") {

@@ -101,6 +101,10 @@ export async function listGenerations(projectId: string): Promise<Generation[]> 
   return all.sort((a, b) => a.createdAt - b.createdAt);
 }
 
+export async function getGeneration(id: string): Promise<Generation | undefined> {
+  return (await getDB()).get("generations", id);
+}
+
 export async function saveGeneration(generation: Generation): Promise<void> {
   await (await getDB()).put("generations", generation);
 }

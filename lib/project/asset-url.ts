@@ -4,7 +4,7 @@
  * assetId → object URL，依引用計數共用並在沒人使用時 revoke
  */
 import { useEffect, useState } from "react";
-import { getAsset } from "./db";
+import { getAssetRecord } from "./store";
 
 interface Entry {
   url: string | null;
@@ -18,11 +18,14 @@ function acquire(assetId: string): Entry {
   let entry = cache.get(assetId);
   if (!entry) {
     const created: Entry = { url: null, refs: 0, promise: Promise.resolve(null) };
-    created.promise = getAsset(assetId).then((asset) => {
-      if (!asset) return null;
-      created.url = URL.createObjectURL(asset.blob);
-      return created.url;
-    });
+    // 經由 store 讀取：IndexedDB 無法使用時會從記憶體暫存取得
+    created.promise = getAssetRecord(assetId)
+      .then((asset) => {
+        if (!asset) return null;
+        created.url = URL.createObjectURL(asset.blob);
+        return created.url;
+      })
+      .catch(() => null);
     cache.set(assetId, created);
     entry = created;
   }
