@@ -1,56 +1,70 @@
 #!/usr/bin/env node
 
 /**
- * I Give Up CLI (不想努力了)
+ * I Give Up CLI（不想努力了）
  *
- * Launch the static version of AI Marketing Content Generator locally
- * Users need to provide their own Gemini API Key
+ * 在本機啟動靜態版；使用者在介面輸入自己的 Gemini API 金鑰
  */
 
-const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { spawn } = require("child_process");
+const { createStaticServer } = require("./server");
 
-// i18n messages
 const messages = {
   zh: {
-    title: "不想努力了 - AI 行銷內容生成工具",
-    serverStarted: "伺服器已啟動",
+    title: "不想努力了 - AI 行銷素材工作台",
+    serverStarted: "已啟動",
     instructions: "使用說明",
-    step1: "在瀏覽器中開啟上方網址",
-    step2: "點擊「設定」輸入你的 Gemini API Key",
-    step3: "上傳產品圖片，開始生成行銷內容",
-    getApiKey: "取得 API Key",
-    pressCtrlC: "按 Ctrl+C 停止伺服器",
-    goodbye: "感謝使用，再見！",
-    errorNotFound: "錯誤: 找不到靜態檔案目錄",
+    step1: "在瀏覽器開啟上方網址",
+    step2: "點右上角「設定」輸入你的 Gemini API 金鑰",
+    step3: "放上參考圖和產品圖，開始生成",
+    getApiKey: "取得 API 金鑰",
+    pressCtrlC: "按 Ctrl+C 停止",
+    goodbye: "下次再一起不努力，掰～",
+    errorNotFound: "錯誤：找不到靜態檔案目錄",
     errorNotFoundHint: "請確認套件已正確安裝",
+    errorPort: "錯誤：埠號必須是 1–65535 的整數",
+    portInUse: "埠號 {port} 已被使用，改用 {next}",
+    portTaken: "埠號 {port} 已被使用，請用 --port 換一個",
+    portExhausted: "找不到可用的埠號，請用 --port 指定",
+    lanWarning: "注意：已對區域網路開放，同網路的人都能連線",
+    unknownOption: "未知的選項：{option}",
     helpUsage: "使用方式",
     helpOptions: "選項",
     helpOptPort: "指定埠號",
+    helpOptHost: "綁定的位址（預設只允許本機連線）",
     helpOptLang: "指定語言 (zh/en)",
+    helpOptNoOpen: "不要自動開啟瀏覽器",
     helpOptHelp: "顯示說明",
     helpOptVersion: "顯示版本",
     helpExamples: "範例",
     helpDefault: "預設",
   },
   en: {
-    title: "I Give Up - AI Marketing Content Generator",
-    serverStarted: "Server started",
+    title: "I Give Up - AI marketing asset workbench",
+    serverStarted: "Running at",
     instructions: "Instructions",
     step1: "Open the URL above in your browser",
-    step2: "Click 'Settings' to enter your Gemini API Key",
-    step3: "Upload product image and start generating marketing content",
-    getApiKey: "Get API Key",
-    pressCtrlC: "Press Ctrl+C to stop the server",
-    goodbye: "Thanks for using, goodbye!",
-    errorNotFound: "Error: Static files directory not found",
-    errorNotFoundHint: "Please ensure the package is installed correctly",
+    step2: "Click “Settings” (top right) and enter your Gemini API key",
+    step3: "Add a reference and a product image, then generate",
+    getApiKey: "Get an API key",
+    pressCtrlC: "Press Ctrl+C to stop",
+    goodbye: "See you next time we don't feel like trying.",
+    errorNotFound: "Error: static files directory not found",
+    errorNotFoundHint: "Please make sure the package is installed correctly",
+    errorPort: "Error: port must be an integer between 1 and 65535",
+    portInUse: "Port {port} is in use, trying {next}",
+    portTaken: "Port {port} is in use. Pick another with --port",
+    portExhausted: "No free port found. Use --port to choose one",
+    lanWarning: "Note: exposed to your local network; anyone on it can connect",
+    unknownOption: "Unknown option: {option}",
     helpUsage: "Usage",
     helpOptions: "Options",
-    helpOptPort: "Specify port",
-    helpOptLang: "Specify language (zh/en)",
+    helpOptPort: "Port",
+    helpOptHost: "Address to bind (default: this machine only)",
+    helpOptLang: "Language (zh/en)",
+    helpOptNoOpen: "Don't open the browser",
     helpOptHelp: "Show help",
     helpOptVersion: "Show version",
     helpExamples: "Examples",
@@ -58,37 +72,54 @@ const messages = {
   },
 };
 
-// Detect system locale, default to English if not Chinese
 function detectLocale() {
   try {
-    const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
-    return systemLocale.startsWith("zh") ? "zh" : "en";
+    return Intl.DateTimeFormat().resolvedOptions().locale.startsWith("zh") ? "zh" : "en";
   } catch {
     return "en";
   }
 }
 
-// Settings
-const DEFAULT_PORT = 3456;
-const args = process.argv.slice(2);
-
-// Parse language first (needed for help message)
-let lang = detectLocale();
-for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--lang" || args[i] === "-l") {
-    const requestedLang = args[i + 1];
-    lang = requestedLang === "zh" ? "zh" : "en";
-  }
+function format(text, vars) {
+  return text.replace(/\{(\w+)\}/g, (_, key) => String(vars[key]));
 }
-const t = messages[lang];
 
-// Parse other arguments
-let port = DEFAULT_PORT;
+const DEFAULT_PORT = 3456;
+const DEFAULT_HOST = "127.0.0.1";
+const MAX_PORT_ATTEMPTS = 10;
+
+const args = process.argv.slice(2);
+const options = { port: DEFAULT_PORT, portExplicit: false, host: DEFAULT_HOST, lang: detectLocale(), open: true };
+const known = new Set(["--port", "-p", "--host", "--lang", "-l", "--no-open", "--help", "-h", "--version", "-v"]);
+
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--port" || args[i] === "-p") {
-    port = parseInt(args[i + 1], 10) || DEFAULT_PORT;
+  if ((args[i] === "--lang" || args[i] === "-l") && args[i + 1]) options.lang = args[i + 1] === "zh" ? "zh" : "en";
+}
+const t = messages[options.lang];
+
+for (let i = 0; i < args.length; i++) {
+  const arg = args[i];
+  if (!known.has(arg)) {
+    // 選項的值由前一個參數處理
+    if (!["--port", "-p", "--host", "--lang", "-l"].includes(args[i - 1])) {
+      console.error(format(t.unknownOption, { option: arg }));
+      process.exit(1);
+    }
+    continue;
   }
-  if (args[i] === "--help" || args[i] === "-h") {
+  if (arg === "--port" || arg === "-p") {
+    const value = args[i + 1];
+    const port = Number(value);
+    if (!/^\d+$/.test(value || "") || port < 1 || port > 65535) {
+      console.error(t.errorPort);
+      process.exit(1);
+    }
+    options.port = port;
+    options.portExplicit = true;
+  }
+  if (arg === "--host") options.host = args[i + 1] || DEFAULT_HOST;
+  if (arg === "--no-open") options.open = false;
+  if (arg === "--help" || arg === "-h") {
     console.log(`
 ${t.title}
 
@@ -97,177 +128,103 @@ ${t.helpUsage}:
 
 ${t.helpOptions}:
   -p, --port <port>  ${t.helpOptPort} (${t.helpDefault}: ${DEFAULT_PORT})
+      --host <addr>  ${t.helpOptHost}
   -l, --lang <lang>  ${t.helpOptLang}
+      --no-open      ${t.helpOptNoOpen}
   -h, --help         ${t.helpOptHelp}
   -v, --version      ${t.helpOptVersion}
 
 ${t.helpExamples}:
   npx igiveup
   npx igiveup --port 8080
-  npx igiveup --lang en
+  npx igiveup --host 0.0.0.0 --no-open
 `);
     process.exit(0);
   }
-  if (args[i] === "--version" || args[i] === "-v") {
-    const pkg = require("../package.json");
-    console.log(pkg.version);
+  if (arg === "--version" || arg === "-v") {
+    console.log(require("../package.json").version);
     process.exit(0);
   }
 }
 
-// MIME 類型對照表
-const MIME_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".svg": "image/svg+xml",
-  ".ico": "image/x-icon",
-  ".webp": "image/webp",
-  ".woff": "font/woff",
-  ".woff2": "font/woff2",
-  ".ttf": "font/ttf",
-  ".eot": "application/vnd.ms-fontobject",
-  ".txt": "text/plain; charset=utf-8",
-  ".xml": "application/xml",
-};
-
-// 取得靜態檔案目錄
 const distDir = path.join(__dirname, "..", "dist");
-
-// 檢查 dist 目錄是否存在
 if (!fs.existsSync(distDir)) {
-  console.error(`❌ ${t.errorNotFound}`);
-  console.error(`   ${t.errorNotFoundHint}`);
+  console.error(`${t.errorNotFound}\n  ${t.errorNotFoundHint}`);
   process.exit(1);
 }
 
-// 建立 HTTP 伺服器
-const server = http.createServer((req, res) => {
-  // 解析 URL
-  let urlPath = req.url.split("?")[0];
-
-  // 處理根路徑
-  if (urlPath === "/") {
-    urlPath = "/index.html";
-  }
-
-  // 嘗試尋找檔案
-  let filePath = path.join(distDir, urlPath);
-
-  // 如果路徑不含副檔名，嘗試加上 .html
-  if (!path.extname(filePath)) {
-    if (fs.existsSync(filePath + ".html")) {
-      filePath = filePath + ".html";
-    } else if (fs.existsSync(path.join(filePath, "index.html"))) {
-      filePath = path.join(filePath, "index.html");
-    }
-  }
-
-  // 安全檢查：防止目錄遍歷攻擊
-  const resolvedPath = path.resolve(filePath);
-  if (!resolvedPath.startsWith(path.resolve(distDir))) {
-    res.writeHead(403);
-    res.end("Forbidden");
-    return;
-  }
-
-  // 讀取並回傳檔案
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      // 檔案不存在，回傳 index.html（SPA fallback）
-      const indexPath = path.join(distDir, "index.html");
-      fs.readFile(indexPath, (err2, indexData) => {
-        if (err2) {
-          res.writeHead(404);
-          res.end("Not Found");
-          return;
-        }
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(indexData);
-      });
-      return;
-    }
-
-    // 取得 MIME 類型
-    const ext = path.extname(filePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || "application/octet-stream";
-
-    res.writeHead(200, { "Content-Type": contentType });
-    res.end(data);
-  });
-});
-
-// 開啟瀏覽器
 function openBrowser(url) {
-  const platform = process.platform;
-  let command;
-
-  switch (platform) {
-    case "darwin": // macOS
-      command = `open "${url}"`;
-      break;
-    case "win32": // Windows
-      command = `start "" "${url}"`;
-      break;
-    default: // Linux 及其他
-      command = `xdg-open "${url}"`;
-  }
-
+  const [command, commandArgs] =
+    process.platform === "darwin"
+      ? ["open", [url]]
+      : process.platform === "win32"
+        ? ["cmd", ["/c", "start", "", url]]
+        : ["xdg-open", [url]];
   try {
-    execSync(command, { stdio: "ignore" });
+    // 不等待、不阻塞；headless 環境開不了也沒關係
+    const child = spawn(command, commandArgs, { stdio: "ignore", detached: true });
+    child.on("error", () => {});
+    child.unref();
   } catch {
-    // 忽略錯誤，瀏覽器可能無法開啟
+    // ignore
   }
 }
 
-// ANSI color codes
-const colors = {
-  reset: "\x1b[0m",
-  cyan: "\x1b[36m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  dim: "\x1b[2m",
-  bold: "\x1b[1m",
-};
+const colors = { reset: "\x1b[0m", cyan: "\x1b[36m", green: "\x1b[32m", yellow: "\x1b[33m", dim: "\x1b[2m", bold: "\x1b[1m" };
 
-// 啟動伺服器
-server.listen(port, () => {
-  const url = `http://localhost:${port}`;
-  const separator = "━".repeat(45);
+const server = createStaticServer(distDir);
+let attempts = 0;
 
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE" && !options.portExplicit && attempts < MAX_PORT_ATTEMPTS) {
+    attempts++;
+    const next = options.port + 1;
+    console.log(`${colors.yellow}${format(t.portInUse, { port: options.port, next })}${colors.reset}`);
+    options.port = next;
+    server.listen(options.port, options.host);
+    return;
+  }
+  if (error.code === "EADDRINUSE") {
+    console.error(options.portExplicit ? format(t.portTaken, { port: options.port }) : t.portExhausted);
+  } else {
+    console.error(error.message);
+  }
+  process.exit(1);
+});
+
+server.on("listening", () => {
+  const displayHost = options.host === "0.0.0.0" || options.host === "::" ? "localhost" : options.host;
+  const url = `http://${displayHost}:${options.port}`;
+  const separator = "─".repeat(45);
   console.log(`
-${colors.cyan}${colors.bold}🎨 ${t.title}${colors.reset}
+${colors.cyan}${colors.bold}${t.title}${colors.reset}
 ${colors.dim}${separator}${colors.reset}
 
-${colors.green}✓${colors.reset} ${t.serverStarted}: ${colors.cyan}${url}${colors.reset}
+${colors.green}●${colors.reset} ${t.serverStarted}: ${colors.cyan}${url}${colors.reset}
+${options.host !== DEFAULT_HOST && options.host !== "localhost" ? `${colors.yellow}${t.lanWarning}${colors.reset}\n` : ""}
+${colors.yellow}${t.instructions}:${colors.reset}
+  1. ${t.step1}
+  2. ${t.step2}
+  3. ${t.step3}
 
-${colors.yellow}📝 ${t.instructions}:${colors.reset}
-   1. ${t.step1}
-   2. ${t.step2}
-   3. ${t.step3}
-
-${colors.yellow}🔑 ${t.getApiKey}:${colors.reset}
-   ${colors.dim}https://aistudio.google.com/app/api-keys${colors.reset}
+${colors.yellow}${t.getApiKey}:${colors.reset}
+  ${colors.dim}https://aistudio.google.com/apikey${colors.reset}
 
 ${colors.dim}${separator}${colors.reset}
 ${colors.dim}${t.pressCtrlC}${colors.reset}
 `);
-
-  // 自動開啟瀏覽器
-  openBrowser(url);
+  if (options.open) openBrowser(url);
 });
 
-// 處理關閉信號
+server.listen(options.port, options.host);
+
+function shutdown(code) {
+  server.close(() => process.exit(code));
+  setTimeout(() => process.exit(code), 1000).unref();
+}
+
 process.on("SIGINT", () => {
-  console.log(`\n👋 ${t.goodbye}`);
-  process.exit(0);
+  console.log(`\n${t.goodbye}`);
+  shutdown(0);
 });
-
-process.on("SIGTERM", () => {
-  process.exit(0);
-});
+process.on("SIGTERM", () => shutdown(0));

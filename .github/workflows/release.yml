@@ -5,9 +5,57 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # release 觸發時，tag 必須和 package.json 版本一致（v1.2.3）
+      - name: Check tag matches package.json version
+        if: github.event_name == 'release'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "${{ github.event.release.tag_name }}" != "v${VERSION}" ]; then
+            echo "Tag ${{ github.event.release.tag_name }} does not match package.json version v${VERSION}"
+            exit 1
+          fi
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test:run
+
+      - name: Build (server)
+        run: pnpm build
+
+      - name: Build (static)
+        run: pnpm build:static
+
   docker:
     name: Publish to Docker Hub
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -43,8 +91,10 @@ jobs:
 
   npm:
     name: Publish to npm
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       id-token: write
     steps:
       - name: Checkout
@@ -62,9 +112,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build static
-        run: pnpm build:static
 
       - name: Check if version already published
         id: check

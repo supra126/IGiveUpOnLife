@@ -1,45 +1,45 @@
-# Build stage
+# syntax=docker/dockerfile:1
+
+# ---- Build stage ----
 FROM node:24.11.1-slim AS builder
 
-# 更新系統套件以修復已知漏洞
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
-
-# 安裝 pnpm
-RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
-
 WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# 複製 package files
+# pnpm 版本跟著 package.json 的 packageManager 欄位
+RUN corepack enable
+
 COPY package.json pnpm-lock.yaml ./
-
-# 安裝所有 dependencies (包含 devDependencies 用於 build)
 RUN pnpm install --frozen-lockfile
 
-# 複製原始碼
 COPY . .
 
-# Build Next.js 專案
+# NEXT_PUBLIC_* 在建置時寫入，執行時再設定不會生效
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+
 RUN pnpm build
 
-# Production stage
+# ---- Runtime stage ----
 FROM node:24.11.1-slim AS production
 
-# 更新系統套件以修復已知漏洞
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    HOSTNAME=0.0.0.0 \
+    PORT=8080
 
-# 設定環境變數
-ENV NODE_ENV=production
-ENV HOSTNAME="0.0.0.0"
+# standalone 輸出已包含需要的 node_modules
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+COPY --from=builder --chown=node:node /app/public ./public
 
-# 從 builder 複製 standalone 輸出
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+USER node
 
-# 暴露埠號（Railway 會使用動態 PORT）
+# Railway 等平台會注入自己的 PORT
 EXPOSE 8080
 
-# 啟動 Next.js server (standalone 會自動包含 node_modules)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||8080)+'/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
 CMD ["node", "server.js"]

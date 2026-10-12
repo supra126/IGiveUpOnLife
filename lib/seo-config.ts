@@ -10,12 +10,12 @@ export const SEO_CONFIG = {
 
   // 完整標題
   title: {
-    default: "I Give Up - AI Marketing Content Generator",
-    template: "%s | I Give Up",
+    default: "不想努力了 · I Give Up",
+    template: "%s · 不想努力了",
   },
 
   // 描述（純英文，SEO 友好）
-  description: "AI-powered product marketing content and image generator. Create professional marketing visuals, social media posts, and ad creatives with Google Gemini AI.",
+  description: "An AI image workbench for designers: drop in a reference and your product shot, pick a similarity level, and get clean, high-res product visuals with Google Gemini.",
 
   // 關鍵字
   keywords: [
@@ -32,11 +32,11 @@ export const SEO_CONFIG = {
   ],
 
   // OpenGraph 圖片 alt 文字
-  ogImageAlt: "I Give Up - AI Marketing Content Generator",
+  ogImageAlt: "不想努力了 · I Give Up — AI image workbench",
 
   // PWA Manifest
   manifest: {
-    name: "I Give Up - AI Marketing Content Generator",
+    name: "不想努力了 · I Give Up",
     shortName: "I Give Up",
     description: "AI-powered product marketing content and image generator. Create professional marketing visuals with Google Gemini AI.",
   },

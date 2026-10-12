@@ -1,25 +1,18 @@
-import "@testing-library/dom";
-
-// Mock localStorage for tests
-const localStorageMock = (() => {
+// jsdom 的 localStorage 在部分版本不可用，測試時提供一個記憶體版本
+if (typeof window !== "undefined") {
   let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value;
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: (key: string) => store[key] ?? null,
+      setItem: (key: string, value: string) => {
+        store[key] = value;
+      },
+      removeItem: (key: string) => {
+        delete store[key];
+      },
+      clear: () => {
+        store = {};
+      },
     },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
-
-Object.defineProperty(window, "localStorage", {
-  value: localStorageMock,
-});
-
-// Mock environment variables for tests
-process.env.GEMINI_API_KEY = "test-api-key";
+  });
+}

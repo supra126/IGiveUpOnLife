@@ -5,11 +5,6 @@ export interface ProductAnalysis {
   key_features: string;
 }
 
-export interface PromptData {
-  prompt_en: string;
-  summary: string;
-}
-
 export interface MarketingRoute {
   route_name: string;
   headline: string;
@@ -23,22 +18,11 @@ export interface DirectorOutput {
   marketing_routes: MarketingRoute[];
 }
 
-// --- PRO Version Types ---
-
-// Image ratio types
+// 完整企劃流程的輸出版型（"1:1-commercial" 是 1:1 加商業攝影規則）
 export type ImageRatio = '1:1' | '9:16' | '4:5' | '16:9' | '1:1-commercial';
 
 // 商業攝影排列方式
 export type ArrangementStyle = 'single' | 'fan' | 'grid' | 'stack' | 'custom';
-
-// Size selection state (multi-select checkboxes)
-export interface SizeSelection {
-  '1:1': boolean;      // FB 貼文
-  '9:16': boolean;     // 限時動態
-  '4:5': boolean;      // IG
-  '16:9': boolean;     // 橫式貼文
-  '1:1-commercial': boolean;  // 商業攝影
-}
 
 // New content set structure (3 sets per selected size)
 export interface ContentSet {
@@ -60,12 +44,5 @@ export interface ContentPlan {
   content_sets: ContentSet[];  // 3 sets per selected size
 }
 
-export enum AppState {
-  IDLE,
-  ANALYZING,
-  RESULTS, // Phase 1 Done (Routes visible)
-  SIZE_SELECTION, // Phase 2 Step 1: Select sizes
-  PLANNING, // Phase 2 Step 2: Generating content sets
-  SUITE_READY, // Phase 2 Script Ready (Review Mode)
-  ERROR
-}
+
+export type Locale = "zh" | "en";

@@ -2,246 +2,118 @@
 
 > Build a complete brand visual asset? Nope. I quit.
 
-An AI-powered marketing content design tool. Let your **AI minion** handle the grind—product identity, brand story, competitor strategy—while you just breathe.
+An AI image workbench for designers. Drop in a reference image and your product shot, pick a similarity level, and let **GG** do the grinding.
+
+[中文說明](#不想努力了)
 
 ---
 
 ## Try it now
 
-### Online Demo
-
-No setup needed. Just open and use.
+### Online demo
 
 **[igiveup.simoko.com](https://igiveup.simoko.com)**
 
-### Local Setup
+### Local (static, bring your own key)
 
 ```bash
 npx igiveup
 ```
 
-> One command to launch
->
-> Options: `--port 8080` `--lang en`
+Options: `--port 8080` `--host 0.0.0.0` `--lang en` `--no-open`
 
 ### Docker
 
 ```bash
 docker run -p 8080:8080 supra126/igiveup
 
-# With API Key (optional)
-docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
+# Provide a shared server key (optional)
+docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key -e TRUST_PROXY=1 supra126/igiveup
 ```
 
-> Open http://localhost:8080
+Open http://localhost:8080
 
 ### Railway
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/i-give-up?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
+Set `TRUST_PROXY=1` on Railway so rate limiting sees real client IPs.
+
 ---
 
 ## Features
 
-### Phase 1: Strategy Selection
+### Similar images (main mode)
 
-_The Grind Begins_
+- **Reference + product → new images**: the product is reproduced exactly; the reference only lends its style
+- **Similarity levels**
+  - **Low**: borrows only the color mood; composition, scene and lighting are reinvented
+  - **Medium**: keeps lighting, palette and scene style; new composition, angle and props
+  - **High**: near-replica of the reference with your product as the subject
+- 10 aspect ratios (1:1 to 21:9), 1–8 variations per run, optional secondary product, extra instructions, reserved space for text
 
-- **Smart Product Analysis**: Upload product image, AI decodes visual features & brand semantics
-- **3 Strategy Routes**: Instantly generate 3 distinct marketing directions
-- **Detailed Strategy Info**: Each route includes headline, visual style, target audience
-- **Fast Response**: Strategy analysis in ~3 seconds, no image generation wait
+### Full campaign (second mode)
 
-### Phase 2: Content Planning
+Product → analysis and 3 marketing routes → content plan per format (FB, Stories, IG, landscape, commercial photo) → generate every set. Titles, copy and prompts stay editable.
 
-_Still Grinding_
+### Shared tools
 
-#### Multi-Platform Sizes
-
-| Size               | Best For                           |
-| ------------------ | ---------------------------------- |
-| **1:1 Square**     | FB posts, IG carousel, e-commerce  |
-| **9:16 Vertical**  | Stories, Reels, full-screen mobile |
-| **4:5 Portrait**   | IG Feed, mobile-optimized          |
-| **16:9 Landscape** | Covers, ad banners                 |
-| **1:1 Commercial** | Professional product photography   |
-
-#### Content Planning
-
-- **3 Sets Per Size**
-  - Set 1: Feature-focused (emphasize product features)
-  - Set 2: Emotion-focused (emphasize lifestyle & feelings)
-  - Set 3: Data/Social proof (emphasize results & reviews)
-
-- **Dual Mode**
-  - **Roast This Content** (Script review mode)
-  - **Crunch Time** (Image generation mode)
-
-### Image Generation
-
-#### Prompt Mode & Reference Mode
-
-| Mode          | Description                          |
-| ------------- | ------------------------------------ |
-| **Prompt**    | Generate from AI visual prompts      |
-| **Reference** | Upload reference, control similarity |
-
-**Similarity Levels:**
-
-- Low: Creative freedom (only color tone & mood)
-- Medium: Moderate reference (lighting & colors, flexible composition)
-- High: Close match (composition, layout, style)
-
-#### Text & Visual Control
-
-- Overlay title & copy on images
-- 4 font weights (Noto Sans TC)
-- Brand logo placement
-- Live editing
-- Per-image settings
+- **Edit with a sentence**: "make the background light blue". Each edit becomes a version you can branch from
+- **Extend ratio**: re-compose a finished image for another aspect ratio
+- **Text & logo layers**: AI makes clean images; type is added in a layer editor (drag, scale, rotate, CJK web fonts, outline, shadow, layouts, apply to the whole group). Exports at original resolution
+- **Batch & zip**: parallel queue with cancel, one-click zip with originals, text versions, copy and metadata
+- **Model switching**: Nano Banana 2.1 (default), Nano Banana Pro, Nano Banana 2 Lite; Gemini 3.8 Flash or 3.1 Pro for text
+- **Projects**: everything is saved in the browser (IndexedDB) and survives reloads
+- Light/dark themes, Traditional Chinese and English
 
 ---
 
-## Tech Stack
+## Development
 
-| Category  | Technology                                                     |
-| --------- | -------------------------------------------------------------- |
-| Framework | Next.js 16 + React 19 + TypeScript                             |
-| AI Models | Google Gemini                                                  |
-|           | `gemini-3.1-pro-preview` (text analysis & content planning)    |
-|           | `gemini-3.1-flash-image-preview` (image generation)            |
-| Styling   | Tailwind CSS                                                   |
-| Fonts     | Inter + Playfair Display (UI), Noto Sans TC (generated images) |
-| Auth      | Cloudflare Zero Trust (optional)                               |
-
----
-
-## Installation
-
-### Requirements
-
-- Node.js 18+
-- pnpm (recommended) or npm
-
-### Quick Start
+Requires Node.js 20.9+ and pnpm.
 
 ```bash
-# Clone the repo
-git clone https://github.com/your-username/IGiveUpOnLife.git
+git clone https://github.com/supra126/IGiveUpOnLife.git
 cd IGiveUpOnLife
-
-# Install dependencies
 pnpm install
-
-# Copy environment variables
 cp .env.example .env.local
-
-# Start dev server
 pnpm dev
 ```
 
-### Build & Deploy
-
 ```bash
-# Server version (requires Node.js server)
-pnpm build
-pnpm start
-
-# Static version (GitHub Pages, Cloudflare Pages, etc.)
-pnpm build:static
-pnpm start:static  # Local test
-# Output: ./dist
+pnpm build          # server version (standalone, used by Docker)
+pnpm build:static   # static version → ./dist (used by npx igiveup)
+pnpm test:run       # unit tests
+pnpm typecheck && pnpm lint
 ```
 
-### Environment Variables
+### Environment variables
 
-Copy `.env.example` to `.env.local`:
+See `.env.example` for the full list.
 
-```bash
-# Gemini API Key (optional - if set, users get free access)
-GEMINI_API_KEY=your-api-key
+| Variable | Purpose |
+| --- | --- |
+| `GEMINI_API_KEY` | Shared server key. Optional; users can always enter their own |
+| `GEMINI_IMAGE_MODEL` / `GEMINI_TEXT_MODEL` | Default models (`gemini-nano-banana-2.1` / `gemini-3.8-flash`) |
+| `GEMINI_ALLOWED_IMAGE_MODELS` / `GEMINI_ALLOWED_TEXT_MODELS` | Comma-separated allowlist for the shared key (e.g. block Pro on a public demo) |
+| `RATE_LIMIT_MAX_REQUESTS` / `RATE_LIMIT_WINDOW_MS` | Shared-key rate limit (default 2 per 60s) |
+| `TRUST_PROXY` | `cloudflare`, or the number of trusted proxies (e.g. `1` on Railway). Unset = one shared bucket for everyone |
+| `NEXT_PUBLIC_GEMINI_*_MODEL` | Default models for the static build |
 
-# Gemini Model Settings (optional)
-GEMINI_TEXT_MODEL=gemini-3.1-pro-preview
-GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview
-GEMINI_THINKING_BUDGET=2048
+### API key rules (server version)
 
-# Rate Limiting (only when using server API key)
-RATE_LIMIT_WINDOW_MS=60000
-RATE_LIMIT_MAX_REQUESTS=10
-RATE_LIMIT_ENABLED=true
+- A key entered by the user is used first, without rate limiting or allowlists. It is relayed through your server (never logged by this app, but visible to whoever operates the server) and kept in the browser's `localStorage`.
+- Without one, the server key is used with rate limiting and the model allowlist.
+- In the static version (`npx igiveup`) the browser talks to Google directly with the user's key.
 
-# Cloudflare Zero Trust (optional - verified users bypass rate limit)
-CF_ACCESS_TEAM_NAME=your-team-name
-CF_ACCESS_AUD=your-application-aud
-```
+### Cloudflare Zero Trust
 
-> **Get Gemini API Key**: [Google AI Studio](https://aistudio.google.com/app/apikey)
-
-### Server vs Static Build
-
-| Feature       | Server                | Static             |
-| ------------- | --------------------- | ------------------ |
-| API Key       | Server-side supported | User must provide  |
-| Rate Limiting | Server-controlled     | None               |
-| Zero Trust    | Supported             | Not supported      |
-| Deployment    | Node.js server        | Any static hosting |
-| Output        | `.next/`              | `dist/`            |
-
----
-
-## Cloudflare Zero Trust Integration
-
-If your site is protected by Cloudflare Zero Trust, verified users can bypass rate limiting.
-
-### Setup
-
-1. Create Access Application in Cloudflare Zero Trust Dashboard
-2. Get Team Name and Application AUD
-3. Set in `.env.local`:
+Users verified by Cloudflare Access bypass the shared-key rate limit:
 
 ```bash
 CF_ACCESS_TEAM_NAME=your-team-name
 CF_ACCESS_AUD=your-application-aud
 ```
-
----
-
-## User Flow
-
-1. **Fill in Info**: Upload product image, product name, info, URL, reference copy
-2. **AI Analysis**: Click "Let's Hustle", wait ~3-5 seconds
-3. **Choose Strategy**: View 3 different strategy routes
-4. **Select Sizes**: Check the sizes you need
-5. **Auto-generate Scripts**: AI generates 3 content sets per size
-6. **Upload Assets**: Product image (required), brand logo (optional)
-7. **Review & Edit**: Switch to "Roast This Content" mode, edit content
-8. **Generate Images**: Switch to "Crunch Time" mode, generate & download
-9. **Export Report**: Click "Download Strategy Report"
-
----
-
-## Why This Exists
-
-### User Experience
-
-- Zero design skills needed
-- Fast response (~3 sec strategy)
-- Smooth UX with polished animations
-- Full control over AI-generated content
-
-### Marketing Expertise
-
-- Brand consistency based on story & features
-- Competitor insights from reference copy
-- Multi-angle strategies (feature, emotion, data)
-- Multi-platform support in one go
-
-### Technical Advantages
-
-- Cost-optimized - only generate what's needed
-- Flexible deployment - server or static
-- Enterprise-ready - Cloudflare Zero Trust integration
 
 ---
 
@@ -262,13 +134,9 @@ Don't want to work alone? Neither do we.
 | <a href="https://github.com/mag477"><img src="https://github.com/mag477.png" width="80" alt="mag477"/><br/><sub>@mag477</sub></a> | <a href="https://github.com/supra126"><img src="https://github.com/supra126.png" width="80" alt="supra126"/><br/><sub>@supra126</sub></a> |
 | :-------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 
----
-
 ## License
 
 MIT License
-
----
 
 <p align="center">
   <i>Built with coffee and the desire to never work hard again.</i>
@@ -280,7 +148,7 @@ MIT License
 
 > 打造完整品牌視覺資產？不用，我不想努力了。
 
-一個由 AI 驅動的產品行銷內容設計工具，讓 **小GG（AI 總監）** 幫你結合產品識別、品牌故事與競品策略，生成專業的廣告海報概念與視覺素材。你只需要負責呼吸就好。
+給設計師用的 AI 生圖工作台。丟一張參考圖和你的產品圖，選相似度，剩下的交給 **小GG**。
 
 ---
 
@@ -288,238 +156,108 @@ MIT License
 
 ### 線上試用
 
-免安裝，打開即用。
-
 **[igiveup.simoko.com](https://igiveup.simoko.com)**
 
-### 本地試用
+### 本機（靜態版，使用自己的金鑰）
 
 ```bash
 npx igiveup
 ```
 
-> 一行指令啟動
->
-> 選項: `--port 8080` `--lang zh`
+選項：`--port 8080` `--host 0.0.0.0` `--lang zh` `--no-open`
 
 ### Docker
 
 ```bash
 docker run -p 8080:8080 supra126/igiveup
 
-# 帶 API Key（可選）
-docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key supra126/igiveup
+# 提供共用的伺服器金鑰（選填）
+docker run -p 8080:8080 -e GEMINI_API_KEY=your-api-key -e TRUST_PROXY=1 supra126/igiveup
 ```
 
-> 開啟 http://localhost:8080
+開啟 http://localhost:8080
 
 ### Railway
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/i-give-up?referralCode=EnYHPz&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
----
-
-## 功能特色
-
-### 第一階段：視覺策略選擇
-
-_讓我努力步驟一_
-
-- **智能產品分析**：上傳產品圖片，AI 自動解讀視覺特徵與品牌語意
-- **三條策略路線**：即時生成 3 種截然不同的行銷策略方向
-- **詳細策略資訊**：每條路線包含主打標語、視覺風格、目標受眾
-- **快速響應**：無需等待圖片生成，3 秒內完成策略分析
-
-### 第二階段：完整內容企劃
-
-_不努力步驟二_
-
-#### 多平台尺寸支援
-
-| 尺寸              | 適用場景                    |
-| ----------------- | --------------------------- |
-| **1:1 方形圖**    | FB 貼文、IG 輪播、電商主圖  |
-| **9:16 直式長圖** | 限時動態、Reels、手機全螢幕 |
-| **4:5 直式圖**    | IG Feed 主頁、優化手機瀏覽  |
-| **16:9 橫式長圖** | 封面、廣告圖片              |
-| **1:1 商業攝影**  | 專業商品攝影風格            |
-
-#### 內容企劃功能
-
-- **每個尺寸 3 組方案**
-  - 功能導向（強調產品功能、特點）
-  - 情感導向（強調生活情境、感受）
-  - 數據/背書導向（強調成效、評價）
-
-- **雙模式切換**
-  - **內容來嘴看看**（腳本審閱模式）
-  - **爆肝產圖**（圖片製作模式）
-
-### 專業圖片生成
-
-#### 提詞版 & 參考版
-
-| 模式       | 說明                           |
-| ---------- | ------------------------------ |
-| **提詞版** | 使用 AI 生成的視覺 Prompt 創作 |
-| **參考版** | 上傳參考圖片，控制相似度生成   |
-
-**相似度控制：**
-
-- 低：創意自由（僅參考色調與氛圍）
-- 中：適度參考（光線與色彩，構圖彈性）
-- 高：高度相似（構圖、佈局、風格）
-
-#### 文字與視覺控制
-
-- 可選擇在圖片上疊加標題和文案
-- 4 種字重（思源黑體）
-- 品牌 Logo 自動放置
-- 即時編輯
-- 每張圖片獨立設定
+在 Railway 設定 `TRUST_PROXY=1`，限流才能辨識真實 IP。
 
 ---
 
-## 技術棧
+## 功能
 
-| 類別    | 技術                                                       |
-| ------- | ---------------------------------------------------------- |
-| 框架    | Next.js 16 + React 19 + TypeScript                         |
-| AI 模型 | Google Gemini                                              |
-|         | `gemini-3.1-pro-preview`（文字分析與內容規劃）             |
-|         | `gemini-3.1-flash-image-preview`（專業圖片生成）           |
-| 樣式    | Tailwind CSS                                               |
-| 字體    | Inter + Playfair Display（介面）、Noto Sans TC（生成圖片） |
-| 認證    | Cloudflare Zero Trust（選填）                              |
+### 相似圖（主要模式）
+
+- **參考圖＋產品圖 → 新圖**：產品原樣保留，參考圖只提供風格
+- **相似度**
+  - **低**：只借參考圖的色調氛圍，構圖、場景、光線全部重新發想
+  - **中**：保留光線、色調與場景風格，換構圖、角度與道具
+  - **高**：幾乎照抄參考圖的畫面，只把主角換成你的產品
+- 10 種比例（1:1 到 21:9）、一次 1–8 張、可加副產品、補充指示、預留文字空間
+
+### 完整企劃（次要模式）
+
+產品 → 分析與 3 條行銷路線 → 依版型（FB、限時動態、IG、橫式、商業攝影）規劃內容 → 逐組生成。標題、文案、生圖指令都可以改。
+
+### 共用工具
+
+- **一句話修圖**：「背景換成淺藍色」，每次修改都是一個新版本，可以從任一版本繼續
+- **延伸比例**：把完成的圖重新構圖成其他比例
+- **文字與 Logo 圖層**：AI 只產生乾淨的圖，文字在編輯器裡加（拖曳、縮放、旋轉、中文網頁字型、描邊、陰影、版型範本、套用到同組），以原圖解析度輸出
+- **批次與打包**：可設定同時生成張數、可取消，一鍵打包 zip（原圖、含文字版、文案、專案資訊）
+- **模型切換**：生圖 Nano Banana 2.1（預設）、Nano Banana Pro、Nano Banana 2 Lite；文字 Gemini 3.8 Flash 或 3.1 Pro
+- **專案保存**：所有內容存在瀏覽器（IndexedDB），重新整理也不會不見
+- 深淺色主題、繁體中文與英文
 
 ---
 
-## 安裝
+## 開發
 
-### 環境要求
-
-- Node.js 18+
-- pnpm（推薦）或 npm
-
-### 快速開始
+需要 Node.js 20.9 以上與 pnpm。
 
 ```bash
-# 克隆專案
-git clone https://github.com/your-username/IGiveUpOnLife.git
+git clone https://github.com/supra126/IGiveUpOnLife.git
 cd IGiveUpOnLife
-
-# 安裝依賴（泡杯咖啡，讓 pnpm 努力）
-pnpm install
-
-# 複製環境變數
+pnpm install   # 泡杯咖啡，讓 pnpm 努力
 cp .env.example .env.local
-
-# 啟動開發伺服器
 pnpm dev
 ```
 
-### 建置與部署
-
 ```bash
-# 伺服器版（需要 Node.js 伺服器）
-pnpm build
-pnpm start
-
-# 靜態版（可部署到 GitHub Pages、Cloudflare Pages 等）
-pnpm build:static
-pnpm start:static  # 本地測試
-# 輸出目錄: ./dist
+pnpm build          # 伺服器版（standalone，Docker 使用）
+pnpm build:static   # 靜態版 → ./dist（npx igiveup 使用）
+pnpm test:run       # 單元測試
+pnpm typecheck && pnpm lint
 ```
 
-### 環境變數設定
+### 環境變數
 
-複製 `.env.example` 為 `.env.local`：
+完整說明見 `.env.example`。
 
-```bash
-# Gemini API 金鑰（選填 - 若設定，用戶可免費使用）
-GEMINI_API_KEY=your-api-key
+| 變數 | 用途 |
+| --- | --- |
+| `GEMINI_API_KEY` | 共用的伺服器金鑰，選填；使用者隨時可以輸入自己的 |
+| `GEMINI_IMAGE_MODEL` / `GEMINI_TEXT_MODEL` | 預設模型（`gemini-nano-banana-2.1` / `gemini-3.8-flash`） |
+| `GEMINI_ALLOWED_IMAGE_MODELS` / `GEMINI_ALLOWED_TEXT_MODELS` | 伺服器金鑰可用的模型白名單（逗號分隔，例如公開 demo 不開放 Pro） |
+| `RATE_LIMIT_MAX_REQUESTS` / `RATE_LIMIT_WINDOW_MS` | 伺服器金鑰的限流（預設每 60 秒 2 次） |
+| `TRUST_PROXY` | `cloudflare`，或可信代理的層數（Railway 設 `1`）。未設定時所有人共用同一份額度 |
+| `NEXT_PUBLIC_GEMINI_*_MODEL` | 靜態版的預設模型 |
 
-# Gemini 模型設定（選填）
-GEMINI_TEXT_MODEL=gemini-3.1-pro-preview
-GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview
-GEMINI_THINKING_BUDGET=2048
+### 金鑰規則（伺服器版）
 
-# 速率限制（僅在使用伺服器 API 金鑰時生效）
-RATE_LIMIT_WINDOW_MS=60000
-RATE_LIMIT_MAX_REQUESTS=10
-RATE_LIMIT_ENABLED=true
+- 使用者自己輸入的金鑰優先使用，不限流、不受白名單限制；請求會經由你的伺服器轉送（本程式不會記錄金鑰，但架站的人技術上看得到），金鑰存在瀏覽器的 `localStorage`。
+- 沒有輸入時才使用伺服器金鑰，並套用限流與模型白名單。
+- 靜態版（`npx igiveup`）由瀏覽器直接用使用者的金鑰連線 Google。
 
-# Cloudflare Zero Trust（選填 - 經過驗證的用戶不受速率限制）
-CF_ACCESS_TEAM_NAME=your-team-name
-CF_ACCESS_AUD=your-application-aud
-```
+### Cloudflare Zero Trust
 
-> **取得 API Key**: [Google AI Studio](https://aistudio.google.com/app/apikey)
-
-### 伺服器版 vs 靜態版
-
-| 功能       | 伺服器版       | 靜態版       |
-| ---------- | -------------- | ------------ |
-| API 金鑰   | 支援伺服器端   | 用戶必須提供 |
-| 速率限制   | 伺服器控制     | 無           |
-| Zero Trust | 支援           | 不支援       |
-| 部署方式   | Node.js 伺服器 | 任何靜態託管 |
-| 輸出目錄   | `.next/`       | `dist/`      |
-
----
-
-## Cloudflare Zero Trust 整合
-
-如果你的網站經過 Cloudflare Zero Trust 保護，經過驗證的用戶不受速率限制。
-
-### 設定步驟
-
-1. 在 Cloudflare Zero Trust Dashboard 建立 Access Application
-2. 取得 Team Name 和 Application AUD
-3. 設定在 `.env.local`：
+經過 Cloudflare Access 驗證的使用者不受伺服器金鑰限流：
 
 ```bash
 CF_ACCESS_TEAM_NAME=your-team-name
 CF_ACCESS_AUD=your-application-aud
 ```
-
----
-
-## 使用流程
-
-1. **一次填完所有資訊**：上傳產品圖片、產品名稱、資訊、網址、參考文案
-2. **AI 策略分析**：點擊「啟動努力」，等待約 3-5 秒
-3. **選擇視覺策略路線**：查看 3 條不同的策略路線
-4. **選擇圖片尺寸**：勾選你需要的尺寸
-5. **自動生成內容腳本**：AI 為每個尺寸生成 3 組方案
-6. **上傳產品圖與 Logo**：產品圖片（必要）、品牌 Logo（選填）
-7. **腳本審閱與編輯**：切換至「內容來嘴看看」模式，編輯內容
-8. **圖片製作**：切換至「爆肝產圖」模式，生成與下載
-9. **匯出報告**：點擊「下載策略報告」
-
----
-
-## 為什麼做這個
-
-### 使用者體驗
-
-- 零設計門檻
-- 極速響應（約 3 秒完成策略分析）
-- 流暢體驗，精緻動畫
-- AI 生成內容完全可控
-
-### 行銷專業
-
-- 基於品牌故事與特色的品牌一致性
-- 從參考文案獲得競品洞察
-- 多角度策略（功能、情感、數據）
-- 一次支援多平台
-
-### 技術優勢
-
-- 成本優化 - 只生成需要的內容
-- 彈性部署 - 伺服器或靜態皆可
-- 企業整合 - Cloudflare Zero Trust 支援
 
 ---
 
@@ -540,13 +278,9 @@ CF_ACCESS_AUD=your-application-aud
 | <a href="https://github.com/mag477"><img src="https://github.com/mag477.png" width="80" alt="mag477"/><br/><sub>@mag477</sub></a> | <a href="https://github.com/supra126"><img src="https://github.com/supra126.png" width="80" alt="supra126"/><br/><sub>@supra126</sub></a> |
 | :-------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 
----
-
 ## 授權
 
 MIT License
-
----
 
 <p align="center">
   <i>用咖啡和「不想努力」的心情打造。</i>
