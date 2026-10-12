@@ -66,10 +66,12 @@ export async function guard(options: {
   const serverKey = process.env.GEMINI_API_KEY;
   if (!serverKey) throw new GeminiError("API_KEY_MISSING");
 
-  // 沒設定白名單時，伺服器金鑰可使用任何模型
+  // 沒設定白名單時，伺服器金鑰可使用任何模型。
+  // 檢查「實際會用到」的模型：沒帶 model 的請求會退回預設值，預設值也必須在白名單內
   const allowlist = getServerAllowlists()[options.kind];
-  if (options.model && allowlist && !allowlist.includes(options.model)) {
-    throw new GeminiError("MODEL_NOT_ALLOWED", options.model);
+  const effectiveModel = options.model || (options.kind === "text" ? defaults.textModel : defaults.imageModel);
+  if (allowlist && !allowlist.includes(effectiveModel)) {
+    throw new GeminiError("MODEL_NOT_ALLOWED", effectiveModel);
   }
 
   await applyRateLimit();

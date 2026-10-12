@@ -40,7 +40,20 @@ let state: WorkspaceState = {
 };
 
 const listeners = new Set<() => void>();
+/*
+ * 記憶體模式（IndexedDB 無法使用）的暫存：圖片、以及切換離開的專案與其生成紀錄。
+ * 正常模式下不放這裡，避免所有圖片的 Blob 一直佔著記憶體
+ */
 const memoryAssets = new Map<string, Asset>();
+const memoryProjects = new Map<string, Project>();
+const memoryGenerations = new Map<string, Generation>();
+
+/** 記憶體模式下，切換專案前把目前專案的完整內容留著，之後才切得回來 */
+function stashCurrentProject(): void {
+  if (state.persistent || !state.project) return;
+  memoryProjects.set(state.project.id, state.project);
+  for (const generation of state.generations) memoryGenerations.set(generation.id, generation);
+}
 /** 這個分頁裡仍在佇列或執行中的生成，切換專案時不能當成已中斷 */
 const activeGenerations = new Set<string>();
 
@@ -116,9 +129,13 @@ export async function initWorkspace(): Promise<void> {
 
 export async function openProject(id: string): Promise<void> {
   await flushSave();
-  const project = await safe(() => db.getProject(id), undefined);
+  stashCurrentProject();
+  const inMemory = memoryProjects.get(id);
+  const project = inMemory ?? (await safe(() => db.getProject(id), undefined));
   if (!project) return;
-  const generations = await safe(() => db.listGenerations(id), []);
+  const generations = inMemory
+    ? [...memoryGenerations.values()].filter((g) => g.projectId === id).sort((a, b) => a.createdAt - b.createdAt)
+    : await safe(() => db.listGenerations(id), []);
   // 上次關閉時還在跑的工作已經無法完成；這個分頁仍在跑的則保留，完成後會寫回
   const cleaned = generations.map((g) =>
     (g.status === "running" || g.status === "queued") && !activeGenerations.has(g.id)
@@ -131,6 +148,7 @@ export async function openProject(id: string): Promise<void> {
 
 export async function newProject(kind: ProjectKind, settings: ProjectSettings, name: string): Promise<Project> {
   await flushSave();
+  stashCurrentProject();
   const project = createProject(kind, settings, name);
   setState({ project, generations: [], projects: [toSummary(project), ...state.projects] });
   await safe(() => db.saveProject(project), undefined);
@@ -140,6 +158,13 @@ export async function newProject(kind: ProjectKind, settings: ProjectSettings, n
 
 export async function deleteProject(id: string): Promise<void> {
   await safe(() => db.deleteProject(id), undefined);
+  memoryProjects.delete(id);
+  for (const [key, generation] of memoryGenerations) {
+    if (generation.projectId === id) memoryGenerations.delete(key);
+  }
+  for (const [key, asset] of memoryAssets) {
+    if (asset.projectId === id) memoryAssets.delete(key);
+  }
   const projects = state.projects.filter((p) => p.id !== id);
   if (state.project?.id === id) {
     setState({ projects, project: null, generations: [] });
@@ -182,9 +207,18 @@ export async function addAsset(blob: Blob, role: AssetRole, projectId = state.pr
     height: size?.height,
     createdAt: Date.now(),
   };
-  memoryAssets.set(asset.id, asset);
-  await safe(() => db.putAsset(asset), undefined);
+  const saved = await safe(async () => {
+    await db.putAsset(asset);
+    return true;
+  }, false);
+  if (!saved) memoryAssets.set(asset.id, asset);
   return asset.id;
+}
+
+/** 刪除不再被引用的圖片（例如被新合成圖取代的舊合成圖） */
+export async function deleteAsset(id: string): Promise<void> {
+  memoryAssets.delete(id);
+  await safe(() => db.deleteAsset(id), undefined);
 }
 
 export async function getAssetRecord(id: string): Promise<Asset | undefined> {
@@ -217,7 +251,12 @@ export function patchGeneration(id: string, patch: Partial<Generation>): void {
     upsertGeneration({ ...current, ...patch });
     return;
   }
-  // 使用者已切到其他專案：直接更新資料庫裡的紀錄，切回來時才看得到結果
+  // 使用者已切到其他專案：直接更新暫存或資料庫裡的紀錄，切回來時才看得到結果
+  const stashed = memoryGenerations.get(id);
+  if (stashed) {
+    memoryGenerations.set(id, { ...stashed, ...patch });
+    return;
+  }
   void safe(async () => {
     const stored = await db.getGeneration(id);
     if (stored) await db.saveGeneration({ ...stored, ...patch });
@@ -228,6 +267,9 @@ export async function removeGeneration(id: string): Promise<void> {
   const generation = state.generations.find((g) => g.id === id);
   if (!generation) return;
   setState({ generations: state.generations.filter((g) => g.id !== id) });
+  memoryGenerations.delete(id);
+  if (generation.assetId) memoryAssets.delete(generation.assetId);
+  if (generation.compositeAssetId) memoryAssets.delete(generation.compositeAssetId);
   await safe(() => db.deleteGeneration(generation), undefined);
   if (state.project?.coverAssetId && state.project.coverAssetId === generation.assetId) {
     const next = state.generations.find((g) => g.status === "done" && g.assetId);
@@ -236,9 +278,11 @@ export async function removeGeneration(id: string): Promise<void> {
 }
 
 /** 測試用 */
-export function resetWorkspaceForTests(): void {
-  state = { ready: false, persistent: true, projects: [], project: null, generations: [] };
+export function resetWorkspaceForTests({ persistent = true }: { persistent?: boolean } = {}): void {
+  state = { ready: false, persistent, projects: [], project: null, generations: [] };
   memoryAssets.clear();
+  memoryProjects.clear();
+  memoryGenerations.clear();
   activeGenerations.clear();
 }
 

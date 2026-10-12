@@ -2,6 +2,8 @@ import "fake-indexeddb/auto";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import * as db from "../db";
 import {
+  addAsset,
+  getAssetRecord,
   getState,
   newProject,
   openProject,
@@ -75,5 +77,44 @@ describe("生成途中切換專案", () => {
     upsertGeneration({ ...job, status: "done", assetId: "asset-a" });
     expect(getState().project?.id).toBe(b.id);
     expect(getState().project?.coverAssetId).toBeUndefined();
+  });
+});
+
+describe("記憶體模式（IndexedDB 無法使用）", () => {
+  it("切換專案後還能切回來，生成紀錄與圖片都在", async () => {
+    resetWorkspaceForTests({ persistent: false });
+    const a = await newProject("similar", settings, "A");
+    const assetId = await addAsset(new Blob(["png"], { type: "image/png" }), "generated");
+    upsertGeneration({ ...queued(a.id), status: "done", assetId });
+
+    await newProject("similar", settings, "B");
+    expect(getState().generations).toHaveLength(0);
+
+    await openProject(a.id);
+    expect(getState().project?.name).toBe("A");
+    expect(getState().generations).toEqual([expect.objectContaining({ assetId })]);
+    expect(await getAssetRecord(assetId)).toBeDefined();
+  });
+
+  it("背景完成的工作會寫回暫存中的專案", async () => {
+    resetWorkspaceForTests({ persistent: false });
+    const a = await newProject("similar", settings, "A");
+    const job = queued(a.id);
+    upsertGeneration(job);
+    setGenerationActive(job.id, true);
+    await newProject("similar", settings, "B");
+
+    patchGeneration(job.id, { status: "done", assetId: "asset-1" });
+    setGenerationActive(job.id, false);
+    await openProject(a.id);
+    expect(getState().generations).toEqual([expect.objectContaining({ id: job.id, status: "done" })]);
+  });
+});
+
+describe("正常模式", () => {
+  it("圖片存進資料庫，不另外留在記憶體", async () => {
+    await newProject("similar", settings, "A");
+    const assetId = await addAsset(new Blob(["png"], { type: "image/png" }), "generated");
+    expect(await db.getAsset(assetId)).toBeDefined();
   });
 });
